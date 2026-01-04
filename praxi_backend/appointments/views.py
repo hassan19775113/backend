@@ -1279,6 +1279,9 @@ class AppointmentListCreateView(generics.ListCreateAPIView):
 			return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 		read_serializer = AppointmentSerializer(appointment, context={'request': request})
+		# Ensure patient-related create actions are always audited, regardless of
+		# whether we use the legacy serializer path or the scheduling service.
+		log_patient_action(request.user, 'appointment_create', appointment.patient_id)
 		headers = self.get_success_headers(read_serializer.data)
 		return Response(read_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -1561,6 +1564,11 @@ class AppointmentTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
 		response = super().update(request, *args, **kwargs)
 		log_patient_action(request.user, 'appointment_type_update')
 		return response
+
+	def destroy(self, request, *args, **kwargs):
+		r = super().destroy(request, *args, **kwargs)
+		log_patient_action(request.user, 'appointment_type_delete')
+		return r
 
 
 class OperationTypeListCreateView(generics.ListCreateAPIView):

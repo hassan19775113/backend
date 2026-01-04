@@ -16,6 +16,11 @@ class HoursMiniTests(TestCase):
 		client.force_authenticate(user=user)
 		return client
 
+	def _rows(self, payload):
+		if isinstance(payload, dict):
+			return payload.get("results", payload)
+		return payload
+
 	def _assert_last_audit(self, *, before_count: int, action: str, user: User):
 		after_count = AuditLog.objects.using("default").count()
 		self.assertEqual(after_count, before_count + 1)
@@ -141,9 +146,10 @@ class HoursMiniTests(TestCase):
 		self.assertEqual(r_list.status_code, 200)
 		self._assert_last_audit(before_count=before, action="doctor_hours_list", user=self.doctor1)
 
-		self.assertIsInstance(r_list.data, list)
-		self.assertEqual(len(r_list.data), 1)
-		self.assertEqual(r_list.data[0]["doctor"], self.doctor1.id)
+		rows = self._rows(r_list.data)
+		self.assertIsInstance(rows, list)
+		self.assertEqual(len(rows), 1)
+		self.assertEqual(rows[0]["doctor"], self.doctor1.id)
 
 		# 4) doctor1 cannot retrieve doctor2 hours (queryset filtered) -> 404
 		r_forbidden_detail = doctor_client.get(f"/api/doctor-hours/{doctor2_hours_id}/")

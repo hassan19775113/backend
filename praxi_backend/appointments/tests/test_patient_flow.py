@@ -189,7 +189,7 @@ class PatientFlowMiniTest(TestCase):
 
 		# GET detail -> computed times
 		frozen_now = timezone.make_aware(datetime.combine(self.day, time(9, 0)), self.tz)
-		with patch("appointments.serializers.timezone.now", return_value=frozen_now):
+		with patch("praxi_backend.appointments.serializers.timezone.now", return_value=frozen_now):
 			r_detail = admin_client.get(f"/api/patient-flow/{flow_id}/")
 			self.assertEqual(r_detail.status_code, 200)
 			self.assertEqual(int(r_detail.data["wait_time_minutes"]), 20)

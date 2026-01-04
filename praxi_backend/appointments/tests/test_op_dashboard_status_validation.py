@@ -93,7 +93,7 @@ class OpDashboardStatusValidationMiniTest(TestCase):
 		)
 
 		now_0950 = timezone.make_aware(datetime.combine(self.day, time(9, 50)), self.tz)
-		with patch("appointments.views.timezone.now", return_value=now_0950):
+		with patch("praxi_backend.appointments.views.timezone.now", return_value=now_0950):
 			before = AuditLog.objects.using("default").count()
 			r = self.client.patch(
 				f"/api/op-dashboard/{op.id}/status/",
@@ -121,7 +121,7 @@ class OpDashboardStatusValidationMiniTest(TestCase):
 		)
 
 		now_1005 = timezone.make_aware(datetime.combine(self.day, time(10, 5)), self.tz)
-		with patch("appointments.views.timezone.now", return_value=now_1005):
+		with patch("praxi_backend.appointments.views.timezone.now", return_value=now_1005):
 			r = self.client.patch(
 				f"/api/op-dashboard/{op.id}/status/",
 				{"status": "running"},
@@ -145,7 +145,7 @@ class OpDashboardStatusValidationMiniTest(TestCase):
 		)
 
 		now_1010 = timezone.make_aware(datetime.combine(self.day, time(10, 10)), self.tz)
-		with patch("appointments.views.timezone.now", return_value=now_1010):
+		with patch("praxi_backend.appointments.views.timezone.now", return_value=now_1010):
 			r = self.client.patch(
 				f"/api/op-dashboard/{op.id}/status/",
 				{"status": "done"},
@@ -180,7 +180,7 @@ class OpDashboardStatusValidationMiniTest(TestCase):
 		)
 
 		now_1015 = timezone.make_aware(datetime.combine(self.day, time(10, 15)), self.tz)
-		with patch("appointments.views.timezone.now", return_value=now_1015):
+		with patch("praxi_backend.appointments.views.timezone.now", return_value=now_1015):
 			r1 = self.client.patch(
 				f"/api/op-dashboard/{op_planned.id}/status/",
 				{"status": "cancelled"},

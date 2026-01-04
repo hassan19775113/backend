@@ -103,8 +103,8 @@ class OpDashboardMiniTest(TestCase):
 		doctor_client = self._client_for(self.doctor)
 
 		frozen_now = timezone.make_aware(datetime.combine(self.day, time(10, 30)), self.tz)
-		with patch("appointments.serializers.timezone.now", return_value=frozen_now), patch(
-			"appointments.views.timezone.now", return_value=frozen_now
+		with patch("praxi_backend.appointments.serializers.timezone.now", return_value=frozen_now), patch(
+			"praxi_backend.appointments.views.timezone.now", return_value=frozen_now
 		):
 			before = AuditLog.objects.using("default").count()
 			r = admin_client.get("/api/op-dashboard/", {"date": self.day.isoformat()})

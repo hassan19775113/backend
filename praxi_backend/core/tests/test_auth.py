@@ -16,7 +16,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Role, User
+from praxi_backend.core.models import Role, User
 
 
 class AuthenticationTest(TestCase):
@@ -263,7 +263,9 @@ class AuthenticationTest(TestCase):
 
         # Check user_id is in token
         self.assertIn("user_id", decoded)
-        self.assertEqual(decoded["user_id"], self.admin.id)
+        # Depending on JWT encode/decode and settings, numeric claims may come back
+        # as strings. Normalize to int for a stable assertion.
+        self.assertEqual(int(decoded["user_id"]), self.admin.id)
 
     def test_refresh_token_contains_role(self):
         """Refresh token contains role claim."""

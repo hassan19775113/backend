@@ -1,7 +1,22 @@
+"""Legacy medical database models (read-only).
+
+Important:
+- Models in this app are **unmanaged** (``managed = False``) and represent tables
+    owned by an external/legacy practice system.
+- In production, ORM access is routed to the ``medical`` database alias.
+- Django must never create migrations for these tables.
+"""
+
 from django.db import models
 
 
 class Patient(models.Model):
+    """Patient master record from the legacy medical database.
+
+    This model is intentionally minimal and read-only from the perspective of
+    PraxiApp. Managed application tables reference patients via integer
+    ``patient_id`` to avoid cross-database foreign keys.
+    """
     id = models.AutoField(primary_key=True)
 
     first_name = models.CharField(max_length=100)

@@ -1,8 +1,31 @@
+"""Domain models for scheduling, operations and patient flow.
+
+This module contains the core *managed* domain entities of PraxiApp.
+
+Medical-domain note (critical):
+
+- Patient master data lives in the legacy database (app ``praxi_backend.medical``).
+- Therefore, managed models must not use a ForeignKey to a medical-db model.
+- Instead, models store an integer ``patient_id`` that references the legacy patient.
+
+Architectural note:
+
+- All ORM access for these models should use the ``default`` database alias.
+	In production, routing is enforced by ``praxi_backend.db_router.PraxiAppRouter``.
+"""
+
 from django.conf import settings
 from django.db import models
 
 
 class AppointmentType(models.Model):
+	"""Configurable appointment category.
+
+	Used for:
+	- UI display (name/color)
+	- Optional default duration (`duration_minutes`)
+	- Enabling/disabling types without deleting historical data (`active`)
+	"""
 	name = models.CharField(max_length=100)
 	color = models.CharField(max_length=7, blank=True, null=True, default="#2E8B57")
 	duration_minutes = models.IntegerField(blank=True, null=True)
@@ -18,6 +41,12 @@ class AppointmentType(models.Model):
 
 
 class PracticeHours(models.Model):
+	"""Practice-wide opening hours.
+
+	These hours represent when the practice is open/operational.
+	Scheduling (suggestions and validations) requires that a time slot lies
+	within practice hours *and* within the doctor's hours.
+	"""
 	weekday = models.IntegerField()  # 0=Monday ... 6=Sunday
 	start_time = models.TimeField()
 	end_time = models.TimeField()
@@ -33,6 +62,12 @@ class PracticeHours(models.Model):
 
 
 class DoctorHours(models.Model):
+	"""Doctor-specific working hours.
+
+	Medical meaning:
+	- Defines when a doctor can see patients.
+	- Used by scheduling validations to reject appointments outside availability.
+	"""
 	doctor = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
 		on_delete=models.CASCADE,
@@ -53,6 +88,12 @@ class DoctorHours(models.Model):
 
 
 class DoctorAbsence(models.Model):
+	"""Doctor absence spanning a date range.
+
+	Examples: vacation, sick leave, congress.
+	If an appointment/operation overlaps any active absence date, scheduling
+	should treat the doctor as unavailable.
+	"""
 	doctor = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
 		on_delete=models.CASCADE,
@@ -73,6 +114,13 @@ class DoctorAbsence(models.Model):
 
 
 class DoctorBreak(models.Model):
+	"""Break/blocked time on a specific date.
+
+	- If ``doctor`` is NULL: practice-wide break (e.g. team meeting).
+	- If ``doctor`` is set: doctor-specific break.
+
+	Used for fine-grained scheduling conflicts within a day.
+	"""
 	# doctor=NULL => praxisweite Pause
 	doctor = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
@@ -97,6 +145,17 @@ class DoctorBreak(models.Model):
 
 
 class Appointment(models.Model):
+	"""A scheduled appointment in the practice.
+
+	Medical meaning:
+	- Represents an encounter slot (consultation/treatment) for a patient.
+	- Can optionally consume resources (room/device) and has a responsible doctor.
+
+	Technical notes:
+	- ``patient_id`` references legacy patient data (medical DB) and is not a FK.
+	- ``resources`` is a M2M through ``AppointmentResource`` to support efficient
+	  constraints and unique pairing.
+	"""
 	STATUS_SCHEDULED = 'scheduled'
 	STATUS_CONFIRMED = 'confirmed'
 	STATUS_CANCELLED = 'cancelled'
@@ -147,6 +206,15 @@ class Appointment(models.Model):
 
 
 class Resource(models.Model):
+	"""A schedulable resource.
+
+	Types:
+	- ``room``: physical room (e.g. treatment room, OP room)
+	- ``device``: equipment shared across appointments/operations
+
+	Resources can be used by both appointments and operations, and are considered
+	by scheduling conflict checks.
+	"""
 	TYPE_ROOM = "room"
 	TYPE_DEVICE = "device"
 
@@ -170,6 +238,11 @@ class Resource(models.Model):
 
 
 class AppointmentResource(models.Model):
+	"""Join table connecting appointments and resources.
+
+	Uniqueness:
+	- A resource can be attached at most once per appointment.
+	"""
 	appointment = models.ForeignKey(
 		Appointment,
 		on_delete=models.CASCADE,
@@ -187,6 +260,15 @@ class AppointmentResource(models.Model):
 
 
 class OperationType(models.Model):
+	"""Configurable operation category.
+
+	Durations are split into:
+	- preparation (`prep_duration`)
+	- operation (`op_duration`)
+	- post-processing (`post_duration`)
+
+	This supports schedule planning beyond a single "OP runtime".
+	"""
 	name = models.CharField(max_length=255)
 	prep_duration = models.IntegerField(default=0)
 	op_duration = models.IntegerField(default=0)
@@ -204,6 +286,17 @@ class OperationType(models.Model):
 
 
 class Operation(models.Model):
+	"""A scheduled operation (OP) for a patient.
+
+	Medical meaning:
+	- Represents a time window in which an operation (including prep/post) occurs.
+	- Consumes an OP room and optional devices.
+	- Has participating clinicians: primary surgeon, assistant, anesthesist.
+
+	Technical notes:
+	- ``patient_id`` references the legacy patient (medical DB).
+	- Device usage is represented via M2M through ``OperationDevice``.
+	"""
 	STATUS_PLANNED = "planned"
 	STATUS_CONFIRMED = "confirmed"
 	STATUS_RUNNING = "running"
@@ -269,6 +362,7 @@ class Operation(models.Model):
 
 
 class OperationDevice(models.Model):
+	"""Join table connecting operations and device resources."""
 	operation = models.ForeignKey(
 		Operation,
 		on_delete=models.CASCADE,
@@ -286,6 +380,16 @@ class OperationDevice(models.Model):
 
 
 class PatientFlow(models.Model):
+	"""Track the patient's journey/status through a visit or operation.
+
+	Medical meaning:
+	- Captures operational workflow states (arrival, waiting, preparation, treatment,
+	  recovery, done).
+
+	Association:
+	- A flow may be linked to an ``Appointment`` or an ``Operation``.
+	  (Both fields are nullable; domain logic should typically ensure exactly one.)
+	"""
 	STATUS_REGISTERED = "registered"
 	STATUS_WAITING = "waiting"
 	STATUS_PREPARING = "preparing"
@@ -326,5 +430,3 @@ class PatientFlow(models.Model):
 
 	def __str__(self) -> str:
 		return f"PatientFlow #{self.id} ({self.status})"
-
-# Create your models here.

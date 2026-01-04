@@ -16,7 +16,7 @@ Does NOT query medical.Patient - uses patient_id as integer.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import time, timedelta
 from unittest.mock import patch
 
 from django.test import TestCase
@@ -26,7 +26,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from praxi_backend.core.models import Role, User
-from praxi_backend.appointments.models import Appointment, AppointmentType
+from praxi_backend.appointments.models import Appointment, AppointmentType, DoctorHours, PracticeHours
 
 
 class AppointmentCRUDTest(TestCase):
@@ -85,6 +85,37 @@ class AppointmentCRUDTest(TestCase):
             role=self.role_billing,
         )
 
+        # The AppointmentCreateUpdateSerializer enforces availability checks
+        # (PracticeHours + DoctorHours). Seed a wide schedule so time-based tests
+        # remain stable regardless of what weekday "tomorrow" lands on.
+        for weekday in range(7):
+            PracticeHours.objects.using("default").get_or_create(
+                weekday=weekday,
+                defaults={
+                    "start_time": time(8, 0),
+                    "end_time": time(18, 0),
+                    "active": True,
+                },
+            )
+            DoctorHours.objects.using("default").get_or_create(
+                doctor=self.doctor,
+                weekday=weekday,
+                defaults={
+                    "start_time": time(8, 0),
+                    "end_time": time(18, 0),
+                    "active": True,
+                },
+            )
+            DoctorHours.objects.using("default").get_or_create(
+                doctor=self.doctor2,
+                weekday=weekday,
+                defaults={
+                    "start_time": time(8, 0),
+                    "end_time": time(18, 0),
+                    "active": True,
+                },
+            )
+
         # Create an appointment type
         self.appt_type = AppointmentType.objects.using("default").create(
             name="Checkup",
@@ -118,6 +149,15 @@ class AppointmentCRUDTest(TestCase):
         client.force_authenticate(user=user)
         return client
 
+    def _rows(self, payload):
+        """Normalize DRF list responses.
+
+        List endpoints may return either a list or a pagination dict.
+        """
+        if isinstance(payload, dict):
+            return payload.get("results", payload)
+        return payload
+
     # ========== LIST TESTS ==========
 
     def test_list_as_admin_returns_all_appointments(self):
@@ -126,8 +166,9 @@ class AppointmentCRUDTest(TestCase):
         response = client.get("/api/appointments/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["patient_id"], 99999)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["patient_id"], 99999)
 
     def test_list_as_assistant_returns_all_appointments(self):
         """Assistant can list all appointments."""
@@ -135,7 +176,8 @@ class AppointmentCRUDTest(TestCase):
         response = client.get("/api/appointments/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
 
     def test_list_as_doctor_returns_only_own_appointments(self):
         """Doctor can only see their own appointments."""
@@ -153,16 +195,18 @@ class AppointmentCRUDTest(TestCase):
         response = client.get("/api/appointments/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["patient_id"], 99999)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["patient_id"], 99999)
 
         # doctor2 should only see their own appointment
         client2 = self._client_for(self.doctor2)
         response2 = client2.get("/api/appointments/")
 
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response2.data), 1)
-        self.assertEqual(response2.data[0]["patient_id"], 88888)
+        rows2 = self._rows(response2.data)
+        self.assertEqual(len(rows2), 1)
+        self.assertEqual(rows2[0]["patient_id"], 88888)
 
     def test_list_as_billing_returns_all_appointments(self):
         """Billing can list all appointments (read-only)."""
@@ -170,7 +214,8 @@ class AppointmentCRUDTest(TestCase):
         response = client.get("/api/appointments/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
 
     def test_list_unauthenticated_forbidden(self):
         """Unauthenticated requests are forbidden."""

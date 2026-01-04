@@ -5,10 +5,11 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
+from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Role, User
-from patients.models import Patient
+from praxi_backend.core.models import Role, User
+from praxi_backend.patients.models import Patient
 
 
 class PatientAPITest(TestCase):
@@ -82,6 +83,17 @@ class PatientAPITest(TestCase):
         client.force_authenticate(user=user)
         return client
 
+    def _rows(self, payload):
+        """Normalize DRF list responses.
+
+        Depending on settings, list endpoints may return either:
+        - a plain list, or
+        - a pagination dict with a `results` list.
+        """
+        if isinstance(payload, dict):
+            return payload.get("results", payload)
+        return payload
+
     # ========== LIST TESTS ==========
 
     def test_list_as_admin_returns_patients(self):
@@ -89,33 +101,37 @@ class PatientAPITest(TestCase):
         client = self._client_for(self.admin)
         response = client.get("/api/patients/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["patient_id"], 1001)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["patient_id"], 1001)
 
     def test_list_as_doctor_returns_patients(self):
         """Doctor can list all patients."""
         client = self._client_for(self.doctor)
         response = client.get("/api/patients/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
 
     def test_list_as_assistant_returns_patients(self):
         """Assistant can list all patients."""
         client = self._client_for(self.assistant)
         response = client.get("/api/patients/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
 
     def test_list_as_billing_returns_patients(self):
         """Billing can list all patients (read-only)."""
         client = self._client_for(self.billing)
         response = client.get("/api/patients/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rows = self._rows(response.data)
+        self.assertEqual(len(rows), 1)
 
     def test_list_unauthenticated_forbidden(self):
         """Unauthenticated requests are forbidden."""
