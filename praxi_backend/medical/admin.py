@@ -25,6 +25,7 @@ from praxi_backend.core.admin import praxi_admin_site
 from .models import Patient
 
 
+
 @admin.register(Patient, site=praxi_admin_site)
 class PatientAdmin(admin.ModelAdmin):
     """Admin-Klasse für Patienten (Read-Only, legacy medical DB).
