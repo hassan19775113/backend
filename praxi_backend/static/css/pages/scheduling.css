@@ -1,0 +1,432 @@
+/*
+================================================================================
+CSS für: scheduling.html (Terminplanung-Dashboard)
+================================================================================
+Version: 3.0.0
+Design: Calm Medical UI - Outlook-Inspired
+Seite: Terminplanung KPIs, Buchungs-Funnel, Trends
+
+Farbschema:
+- Primär: #0078D4 (Outlook Blue)
+- Sekundär: #4FB3BF (Soft Teal)
+- Akzent: #7BC6B0 (Mint Green)
+- Hintergrund: #F5F7FA
+- Rahmen: #E1E4E8
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Page Header
+   ============================================================================ */
+
+.page-scheduling .prx-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-scheduling .prx-section__title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.page-scheduling .prx-section__subtitle {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 8px 0 0 0;
+}
+
+/* ============================================================================
+   Abschnitt: Efficiency Score Card
+   ============================================================================ */
+
+.page-scheduling .efficiency-score-card {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    min-width: 200px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.page-scheduling .efficiency-score-value {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.page-scheduling .efficiency-score-value--excellent {
+    color: #22C55E;
+}
+
+.page-scheduling .efficiency-score-value--good {
+    color: #F4A259;
+}
+
+.page-scheduling .efficiency-score-value--poor {
+    color: #D9534F;
+}
+
+.page-scheduling .efficiency-score-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+}
+
+/* ============================================================================
+   Abschnitt: KPI Grid (Mini-Cards)
+   ============================================================================ */
+
+.page-scheduling .prx-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+.page-scheduling .prx-kpi {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.page-scheduling .prx-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.page-scheduling .prx-kpi:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* KPI Varianten */
+.page-scheduling .prx-kpi--primary::before { background: #0078D4; }
+.page-scheduling .prx-kpi--success::before { background: #22C55E; }
+.page-scheduling .prx-kpi--warning::before { background: #F4A259; }
+.page-scheduling .prx-kpi--danger::before { background: #D9534F; }
+.page-scheduling .prx-kpi--info::before { background: #0EA5E9; }
+.page-scheduling .prx-kpi--accent::before { background: #7BC6B0; }
+
+.page-scheduling .prx-kpi__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6B7280;
+    margin-bottom: 6px;
+}
+
+.page-scheduling .prx-kpi__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1F2937;
+    line-height: 1;
+}
+
+.page-scheduling .prx-kpi__unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #9CA3AF;
+    margin-left: 2px;
+}
+
+.page-scheduling .prx-kpi__description {
+    font-size: 11px;
+    color: #9CA3AF;
+    margin-top: 8px;
+}
+
+/* ============================================================================
+   Abschnitt: Booking Funnel
+   ============================================================================ */
+
+.page-scheduling .funnel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.page-scheduling .funnel-stage {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+}
+
+.page-scheduling .funnel-stage:hover {
+    transform: translateX(4px);
+}
+
+.page-scheduling .funnel-stage--scheduled {
+    background: linear-gradient(90deg, #E1EFFF 0%, #F0F7FF 100%);
+    border-left: 4px solid #0078D4;
+}
+
+.page-scheduling .funnel-stage--confirmed {
+    background: linear-gradient(90deg, #E6F7F9 0%, #F0FAFA 100%);
+    border-left: 4px solid #4FB3BF;
+}
+
+.page-scheduling .funnel-stage--completed {
+    background: linear-gradient(90deg, #F0FDF4 0%, #F5FFF8 100%);
+    border-left: 4px solid #22C55E;
+}
+
+.page-scheduling .funnel-stage--cancelled {
+    background: linear-gradient(90deg, #FEF2F2 0%, #FFF5F5 100%);
+    border-left: 4px solid #D9534F;
+}
+
+.page-scheduling .funnel-count {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1F2937;
+    min-width: 50px;
+}
+
+.page-scheduling .funnel-label {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.page-scheduling .funnel-percent {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+}
+
+/* ============================================================================
+   Abschnitt: Cards
+   ============================================================================ */
+
+.page-scheduling .prx-card {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.page-scheduling .prx-card__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-scheduling .prx-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.page-scheduling .prx-card__body {
+    padding: 20px;
+}
+
+/* ============================================================================
+   Abschnitt: Stat Items
+   ============================================================================ */
+
+.page-scheduling .prx-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-scheduling .prx-stat__label {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.page-scheduling .prx-stat__value {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.page-scheduling .prx-stat__value--primary {
+    color: #0078D4;
+}
+
+.page-scheduling .prx-stat__value--success {
+    color: #22C55E;
+}
+
+.page-scheduling .prx-stat__value--danger {
+    color: #D9534F;
+}
+
+/* ============================================================================
+   Abschnitt: Charts
+   ============================================================================ */
+
+.page-scheduling .prx-content-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.page-scheduling .prx-content-grid--2-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 1024px) {
+    .page-scheduling .prx-content-grid--2-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.page-scheduling .prx-chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.page-scheduling .prx-chart-container--md {
+    height: 280px;
+}
+
+/* ============================================================================
+   Abschnitt: Tables
+   ============================================================================ */
+
+.page-scheduling .prx-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.page-scheduling .prx-table th {
+    background: #F5F7FA;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    text-align: left;
+    border-bottom: 1px solid #E1E4E8;
+}
+
+.page-scheduling .prx-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-scheduling .prx-table tbody tr:hover td {
+    background: #F5F7FA;
+}
+
+/* ============================================================================
+   Abschnitt: Badges
+   ============================================================================ */
+
+.page-scheduling .prx-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.page-scheduling .prx-badge--success {
+    background: #F0FDF4;
+    color: #15803D;
+}
+
+.page-scheduling .prx-badge--warning {
+    background: #FFFBEB;
+    color: #B45309;
+}
+
+.page-scheduling .prx-badge--danger {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+/* ============================================================================
+   Abschnitt: Buttons
+   ============================================================================ */
+
+.page-scheduling .prx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.page-scheduling .prx-btn--primary {
+    background: #0078D4;
+    color: #FFFFFF;
+}
+
+.page-scheduling .prx-btn--primary:hover {
+    background: #106EBE;
+}
+
+.page-scheduling .prx-btn--outline {
+    background: #FFFFFF;
+    color: #0078D4;
+    border: 1px solid #0078D4;
+}
+
+.page-scheduling .prx-btn--outline:hover {
+    background: #F0F7FF;
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .page-scheduling .prx-section__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-scheduling .efficiency-score-card {
+        min-width: 100%;
+    }
+    
+    .page-scheduling .prx-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .page-scheduling .prx-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}

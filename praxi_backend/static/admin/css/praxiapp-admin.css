@@ -1,0 +1,1588 @@
+/*
+================================================================================
+PRAXIAPP ADMIN DESIGN - CALM MEDICAL UI
+================================================================================
+Unified Admin Styling - Light Theme for Django Admin
+Forces light mode regardless of system preference
+================================================================================
+*/
+
+/*
+================================================================================
+1. FORCE LIGHT MODE - Override System Dark Mode
+================================================================================
+*/
+
+:root {
+    color-scheme: light only !important;
+    
+    /* Primary Colors */
+    --primary: #0078D4 !important;
+    --primary-fg: #FFFFFF !important;
+    --secondary: #4FB3BF !important;
+    --accent: #7BC6B0 !important;
+    
+    /* Body/Page */
+    --body-fg: #2E2E2E !important;
+    --body-bg: #FFFFFF !important;
+    --body-quiet-color: #6B7280 !important;
+    --body-loud-color: #1F2937 !important;
+    
+    /* Header */
+    --header-color: #FFFFFF !important;
+    --header-branding-color: #FFFFFF !important;
+    --header-bg: #0078D4 !important;
+    --header-link-color: rgba(255, 255, 255, 0.9) !important;
+    
+    /* Breadcrumbs */
+    --breadcrumbs-fg: #FFFFFF !important;
+    --breadcrumbs-link-fg: rgba(255, 255, 255, 0.9) !important;
+    --breadcrumbs-bg: #106EBE !important;
+    
+    /* Links */
+    --link-fg: #0078D4 !important;
+    --link-hover-color: #005A9E !important;
+    --link-selected-fg: #005A9E !important;
+    
+    /* Borders */
+    --hairline-color: #E1E4E8 !important;
+    --border-color: #E1E4E8 !important;
+    
+    /* Messages */
+    --message-success-bg: #F0FDF4 !important;
+    --message-warning-bg: #FFFBEB !important;
+    --message-error-bg: #FEF2F2 !important;
+    
+    /* Darken */
+    --darkened-bg: #F0F2F5 !important;
+    
+    /* Selected */
+    --selected-bg: #E6F0FA !important;
+    --selected-row: #E1EFFF !important;
+    
+    /* Buttons */
+    --button-fg: #FFFFFF !important;
+    --button-bg: #0078D4 !important;
+    --button-hover-bg: #106EBE !important;
+    --default-button-bg: #F5F7FA !important;
+    --default-button-hover-bg: #E6F0FA !important;
+    
+    /* Close button */
+    --close-button-bg: #D9534F !important;
+    --close-button-hover-bg: #C9302C !important;
+    
+    /* Delete button */
+    --delete-button-bg: #D9534F !important;
+    --delete-button-hover-bg: #C9302C !important;
+    
+    /* Object tools */
+    --object-tools-bg: #4FB3BF !important;
+    --object-tools-hover-bg: #3D9AA6 !important;
+    
+    /* Error Colors */
+    --error-fg: #D9534F !important;
+}
+
+html, 
+html[data-theme="dark"],
+html[data-theme="auto"] {
+    color-scheme: light only !important;
+}
+
+/* Force light mode variables on dark theme selectors */
+html[data-theme="dark"],
+html[data-theme="auto"] {
+    --primary: #0078D4 !important;
+    --primary-fg: #FFFFFF !important;
+    --secondary: #4FB3BF !important;
+    --accent: #7BC6B0 !important;
+    --body-fg: #2E2E2E !important;
+    --body-bg: #F5F7FA !important;
+    --body-quiet-color: #6B7280 !important;
+    --body-loud-color: #1F2937 !important;
+    --header-color: #FFFFFF !important;
+    --header-branding-color: #FFFFFF !important;
+    --header-bg: #0078D4 !important;
+    --header-link-color: rgba(255, 255, 255, 0.9) !important;
+    --breadcrumbs-fg: #FFFFFF !important;
+    --breadcrumbs-link-fg: rgba(255, 255, 255, 0.9) !important;
+    --breadcrumbs-bg: #106EBE !important;
+    --link-fg: #0078D4 !important;
+    --link-hover-color: #005A9E !important;
+    --link-selected-fg: #005A9E !important;
+    --hairline-color: #E1E4E8 !important;
+    --border-color: #E1E4E8 !important;
+    --message-success-bg: #F0FDF4 !important;
+    --message-warning-bg: #FFFBEB !important;
+    --message-error-bg: #FEF2F2 !important;
+    --darkened-bg: #F0F2F5 !important;
+    --selected-bg: #E6F0FA !important;
+    --selected-row: #E1EFFF !important;
+    --button-fg: #FFFFFF !important;
+    --button-bg: #0078D4 !important;
+    --button-hover-bg: #106EBE !important;
+    --default-button-bg: #F5F7FA !important;
+    --default-button-hover-bg: #E6F0FA !important;
+    --close-button-bg: #D9534F !important;
+    --close-button-hover-bg: #C9302C !important;
+    --delete-button-bg: #D9534F !important;
+    --delete-button-hover-bg: #C9302C !important;
+    --object-tools-bg: #4FB3BF !important;
+    --object-tools-hover-bg: #3D9AA6 !important;
+    --error-fg: #D9534F !important;
+}
+
+/* Override for prefers-color-scheme: dark - separate media query */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light only !important;
+        --primary: #0078D4 !important;
+        --primary-fg: #FFFFFF !important;
+        --body-fg: #2E2E2E !important;
+        --body-bg: #F5F7FA !important;
+        --header-bg: #0078D4 !important;
+        --header-color: #FFFFFF !important;
+    }
+}
+
+/*
+================================================================================
+2. TYPOGRAPHY
+================================================================================
+*/
+
+body {
+    font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif !important;
+    font-size: 14px !important;
+    color: #2E2E2E !important;
+    background-color: #FFFFFF !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/*
+================================================================================
+3. HEADER STYLING
+================================================================================
+*/
+
+#header {
+    background: linear-gradient(135deg, #0078D4 0%, #106EBE 100%) !important;
+    padding: 12px 24px !important;
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15) !important;
+    border-bottom: none !important;
+}
+
+#branding h1 {
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    font-size: 18px !important;
+}
+
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: #FFFFFF !important;
+}
+
+#user-tools {
+    font-size: 13px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#user-tools a {
+    color: rgba(255, 255, 255, 0.9) !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    transition: background 150ms ease !important;
+    text-decoration: none !important;
+}
+
+#user-tools a:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
+}
+
+/* Dark mode override for header */
+html[data-theme="dark"] #header {
+    background: linear-gradient(135deg, #0078D4 0%, #106EBE 100%) !important;
+}
+
+html[data-theme="dark"] #branding h1 a:link,
+html[data-theme="dark"] #branding h1 a:visited {
+    color: #FFFFFF !important;
+}
+
+html[data-theme="dark"] #user-tools,
+html[data-theme="dark"] #user-tools a {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/*
+================================================================================
+4. BREADCRUMBS
+================================================================================
+*/
+
+div.breadcrumbs {
+    background: #106EBE !important;
+    padding: 10px 24px !important;
+    font-size: 13px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: none !important;
+}
+
+div.breadcrumbs a {
+    color: #FFFFFF !important;
+    text-decoration: none !important;
+}
+
+div.breadcrumbs a:hover {
+    text-decoration: underline !important;
+}
+
+html[data-theme="dark"] div.breadcrumbs {
+    background: #106EBE !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html[data-theme="dark"] div.breadcrumbs a {
+    color: #FFFFFF !important;
+}
+
+/*
+================================================================================
+5. MAIN CONTAINER
+================================================================================
+*/
+
+#container {
+    background: #FFFFFF !important;
+}
+
+#content {
+    padding: 24px !important;
+}
+
+#content-main {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] #container,
+html[data-theme="dark"] #content,
+html[data-theme="dark"] #content-main {
+    background: #FFFFFF !important;
+}
+
+/*
+================================================================================
+6. SIDEBAR NAVIGATION
+================================================================================
+*/
+
+#nav-sidebar {
+    background: #FFFFFF !important;
+    border-right: 1px solid #E1E4E8 !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04) !important;
+    width: 260px !important;
+}
+
+.module caption,
+#nav-sidebar .module caption {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 10px 16px !important;
+    border-top: 1px solid #E1E4E8 !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+}
+
+#nav-sidebar .module th {
+    padding: 0 !important;
+}
+
+#nav-sidebar .module th a {
+    display: block !important;
+    padding: 10px 16px !important;
+    color: #4B5563 !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    border-left: 3px solid transparent !important;
+    transition: all 150ms ease !important;
+}
+
+#nav-sidebar .module th a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+#nav-sidebar .module th a.current-model {
+    background: #E1EFFF !important;
+    color: #0078D4 !important;
+    border-left-color: #0078D4 !important;
+    font-weight: 500 !important;
+}
+
+#nav-sidebar .current-app caption,
+#nav-sidebar .current-model caption {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+}
+
+/* Toggle Sidebar Button */
+#toggle-nav-sidebar {
+    background: transparent !important;
+    color: #6B7280 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
+}
+
+#toggle-nav-sidebar:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+/* Dark mode override for sidebar */
+html[data-theme="dark"] #nav-sidebar {
+    background: #FFFFFF !important;
+    border-right-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] .module caption,
+html[data-theme="dark"] #nav-sidebar .module caption {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] #nav-sidebar .module th a {
+    color: #4B5563 !important;
+}
+
+html[data-theme="dark"] #nav-sidebar .module th a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] #nav-sidebar .module th a.current-model {
+    background: #E1EFFF !important;
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+7. MODULE STYLING (Admin App Boxes)
+================================================================================
+*/
+
+.module {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+}
+
+.module h2,
+.module caption {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+    margin: 0 !important;
+}
+
+.module table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+}
+
+.module table th {
+    text-align: left !important;
+    padding: 10px 16px !important;
+    background: transparent !important;
+    color: #4B5563 !important;
+    font-weight: 500 !important;
+    border-bottom: 1px solid #F0F2F5 !important;
+}
+
+.module table td {
+    padding: 10px 16px !important;
+    color: #2E2E2E !important;
+    border-bottom: 1px solid #F0F2F5 !important;
+}
+
+.module table tr:hover td {
+    background: #E6F0FA !important;
+}
+
+.module table a {
+    color: #0078D4 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.module table a:hover {
+    color: #005A9E !important;
+    text-decoration: underline !important;
+}
+
+/* Dark mode override for modules */
+html[data-theme="dark"] .module {
+    background: #FFFFFF !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] .module h2,
+html[data-theme="dark"] .module caption {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+    border-bottom-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] .module table th {
+    color: #4B5563 !important;
+}
+
+html[data-theme="dark"] .module table td {
+    color: #2E2E2E !important;
+}
+
+html[data-theme="dark"] .module table tr:hover td {
+    background: #E6F0FA !important;
+}
+
+html[data-theme="dark"] .module table a {
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+8. CHANGE LIST TABLES
+================================================================================
+*/
+
+#changelist {
+    background: transparent !important;
+}
+
+#changelist-form {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden !important;
+}
+
+#changelist table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 13px !important;
+}
+
+#changelist table thead th {
+    background: #F5F7FA !important;
+    padding: 12px 16px !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #4B5563 !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+    white-space: nowrap !important;
+}
+
+#changelist table thead th a {
+    color: #4B5563 !important;
+    text-decoration: none !important;
+}
+
+#changelist table thead th a:hover {
+    color: #0078D4 !important;
+}
+
+#changelist table tbody td {
+    padding: 12px 16px !important;
+    color: #2E2E2E !important;
+    border-bottom: 1px solid #F0F2F5 !important;
+    vertical-align: middle !important;
+}
+
+#changelist table tbody tr:hover td {
+    background: #E6F0FA !important;
+}
+
+#changelist table tbody tr.selected td {
+    background: #E1EFFF !important;
+}
+
+#changelist table tbody td a {
+    color: #0078D4 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+#changelist table tbody td a:hover {
+    color: #005A9E !important;
+    text-decoration: underline !important;
+}
+
+/* Sortable column indicators */
+#changelist table thead th.sorted {
+    background: #E6F0FA !important;
+}
+
+#changelist table thead th.sorted a {
+    color: #0078D4 !important;
+}
+
+/* Dark mode override for changelist */
+html[data-theme="dark"] #changelist {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] #changelist-form {
+    background: #FFFFFF !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] #changelist table thead th {
+    background: #F5F7FA !important;
+    color: #4B5563 !important;
+    border-bottom-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] #changelist table tbody td {
+    color: #2E2E2E !important;
+    border-bottom-color: #F0F2F5 !important;
+}
+
+html[data-theme="dark"] #changelist table tbody tr:hover td {
+    background: #E6F0FA !important;
+}
+
+html[data-theme="dark"] #changelist table tbody td a {
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+9. FILTER SIDEBAR
+================================================================================
+*/
+
+#changelist-filter {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    width: 220px !important;
+    order: 1 !important;
+    margin-left: 24px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+#changelist-filter h2 {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+#changelist-filter h3 {
+    background: #F5F7FA !important;
+    color: #4B5563 !important;
+    padding: 10px 16px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    border-top: 1px solid #E1E4E8 !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+}
+
+#changelist-filter ul {
+    list-style: none !important;
+    padding: 8px !important;
+    margin: 0 !important;
+}
+
+#changelist-filter li {
+    margin: 0 !important;
+}
+
+#changelist-filter li a {
+    display: block !important;
+    padding: 8px 12px !important;
+    color: #4B5563 !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+    transition: all 150ms ease !important;
+}
+
+#changelist-filter li a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+#changelist-filter li.selected a {
+    background: #E1EFFF !important;
+    color: #0078D4 !important;
+    font-weight: 500 !important;
+}
+
+/* Dark mode override for filter */
+html[data-theme="dark"] #changelist-filter {
+    background: #FFFFFF !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] #changelist-filter h2 {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+}
+
+html[data-theme="dark"] #changelist-filter h3 {
+    background: #F5F7FA !important;
+    color: #4B5563 !important;
+}
+
+html[data-theme="dark"] #changelist-filter li a {
+    color: #4B5563 !important;
+}
+
+html[data-theme="dark"] #changelist-filter li a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] #changelist-filter li.selected a {
+    background: #E1EFFF !important;
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+10. BUTTONS
+================================================================================
+*/
+
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+button,
+a.button {
+    font-family: 'Segoe UI', 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    cursor: pointer !important;
+    transition: all 150ms ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Primary button (default) */
+input[type="submit"],
+.submit-row input[type="submit"],
+button[type="submit"],
+.button.default {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+    border-color: #0078D4 !important;
+}
+
+input[type="submit"]:hover,
+.submit-row input[type="submit"]:hover,
+button[type="submit"]:hover,
+.button.default:hover {
+    background: #106EBE !important;
+    border-color: #106EBE !important;
+}
+
+/* Secondary/Default button */
+.button,
+a.button,
+.submit-row .default {
+    background: #FFFFFF !important;
+    color: #0078D4 !important;
+    border-color: #0078D4 !important;
+}
+
+.button:hover,
+a.button:hover {
+    background: #E6F0FA !important;
+}
+
+/* Danger button */
+input.default[name="action"][value*="delete"],
+.deletelink,
+.delete-confirmation input[type="submit"],
+a.deletelink {
+    background: #D9534F !important;
+    color: #FFFFFF !important;
+    border-color: #D9534F !important;
+}
+
+input.default[name="action"][value*="delete"]:hover,
+.deletelink:hover,
+a.deletelink:hover {
+    background: #C9302C !important;
+    border-color: #C9302C !important;
+}
+
+/* Object tools buttons */
+.object-tools a {
+    background: #4FB3BF !important;
+    color: #FFFFFF !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+}
+
+.object-tools a:hover {
+    background: #3D9AA6 !important;
+}
+
+/* Dark mode button overrides */
+html[data-theme="dark"] input[type="submit"],
+html[data-theme="dark"] button[type="submit"] {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+}
+
+/*
+================================================================================
+11. FORMS & FIELDSETS
+================================================================================
+*/
+
+fieldset {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+}
+
+fieldset h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+}
+
+fieldset .form-row {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #F0F2F5 !important;
+    background: #FFFFFF !important;
+}
+
+fieldset .form-row:last-child {
+    border-bottom: none !important;
+}
+
+fieldset .form-row label {
+    color: #374151 !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+
+.form-row.errors {
+    background: #FEF2F2 !important;
+    border-left: 4px solid #D9534F !important;
+}
+
+/* Input fields */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 6px !important;
+    background: #FFFFFF !important;
+    color: #2E2E2E !important;
+    transition: border-color 150ms ease, box-shadow 150ms ease !important;
+    font-family: 'Segoe UI', 'Inter', sans-serif !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: #0078D4 !important;
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15) !important;
+}
+
+/* Dark mode form overrides */
+html[data-theme="dark"] fieldset {
+    background: #FFFFFF !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] fieldset h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] .form-row {
+    background: #FFFFFF !important;
+}
+
+html[data-theme="dark"] .form-row label {
+    color: #374151 !important;
+}
+
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+    background: #FFFFFF !important;
+    color: #2E2E2E !important;
+    border-color: #D1D5DB !important;
+}
+
+/*
+================================================================================
+12. SUBMIT ROW
+================================================================================
+*/
+
+.submit-row {
+    background: #F5F7FA !important;
+    padding: 16px !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    margin-top: 24px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+}
+
+.submit-row p {
+    margin: 0 !important;
+}
+
+.submit-row .deletelink-box {
+    margin-left: auto !important;
+}
+
+html[data-theme="dark"] .submit-row {
+    background: #F5F7FA !important;
+    border-color: #E1E4E8 !important;
+}
+
+/*
+================================================================================
+13. MESSAGES / ALERTS
+================================================================================
+*/
+
+.messagelist {
+    padding: 0 24px !important;
+    margin: 0 0 16px 0 !important;
+}
+
+.messagelist li {
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.messagelist li.success {
+    background: #F0FDF4 !important;
+    color: #166534 !important;
+    border: 1px solid #BBF7D0 !important;
+}
+
+.messagelist li.warning {
+    background: #FFFBEB !important;
+    color: #92400E !important;
+    border: 1px solid #FDE68A !important;
+}
+
+.messagelist li.error {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+    border: 1px solid #FECACA !important;
+}
+
+.messagelist li.info {
+    background: #F0F9FF !important;
+    color: #0369A1 !important;
+    border: 1px solid #BAE6FD !important;
+}
+
+html[data-theme="dark"] .messagelist li.success {
+    background: #F0FDF4 !important;
+    color: #166534 !important;
+}
+
+html[data-theme="dark"] .messagelist li.warning {
+    background: #FFFBEB !important;
+    color: #92400E !important;
+}
+
+html[data-theme="dark"] .messagelist li.error {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+}
+
+/*
+================================================================================
+14. PAGINATION
+================================================================================
+*/
+
+.paginator {
+    padding: 16px !important;
+    background: #FFFFFF !important;
+    border-top: 1px solid #E1E4E8 !important;
+    text-align: center !important;
+}
+
+.paginator a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 14px !important;
+    margin: 0 2px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 6px !important;
+    color: #4B5563 !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 150ms ease !important;
+}
+
+.paginator a:hover {
+    background: #E6F0FA !important;
+    border-color: #0078D4 !important;
+    color: #0078D4 !important;
+}
+
+.paginator .this-page {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 14px !important;
+    margin: 0 2px !important;
+    background: #0078D4 !important;
+    border: 1px solid #0078D4 !important;
+    border-radius: 6px !important;
+    color: #FFFFFF !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+html[data-theme="dark"] .paginator {
+    background: #FFFFFF !important;
+}
+
+html[data-theme="dark"] .paginator a {
+    background: #FFFFFF !important;
+    color: #4B5563 !important;
+    border-color: #D1D5DB !important;
+}
+
+html[data-theme="dark"] .paginator a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+15. ACTION BAR / TOOLBAR
+================================================================================
+*/
+
+#changelist .actions {
+    background: #F5F7FA !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+}
+
+#changelist .actions label {
+    color: #4B5563 !important;
+    font-size: 13px !important;
+}
+
+#changelist .actions select {
+    margin: 0 8px !important;
+}
+
+html[data-theme="dark"] #changelist .actions {
+    background: #F5F7FA !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] #changelist .actions label {
+    color: #4B5563 !important;
+}
+
+/*
+================================================================================
+16. SEARCH BAR
+================================================================================
+*/
+
+#toolbar {
+    background: transparent !important;
+    padding: 0 0 16px 0 !important;
+}
+
+#searchbar {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 8px !important;
+    background: #FFFFFF !important;
+    min-width: 300px !important;
+    transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+#searchbar:focus {
+    outline: none !important;
+    border-color: #0078D4 !important;
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15) !important;
+}
+
+#changelist-search input[type="submit"] {
+    margin-left: 8px !important;
+}
+
+html[data-theme="dark"] #searchbar {
+    background: #FFFFFF !important;
+    border-color: #D1D5DB !important;
+    color: #2E2E2E !important;
+}
+
+/*
+================================================================================
+17. HELP TEXT & DESCRIPTIONS
+================================================================================
+*/
+
+.help,
+.help-block,
+p.help {
+    color: #6B7280 !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+}
+
+.description {
+    font-size: 13px !important;
+    color: #4B5563 !important;
+}
+
+/*
+================================================================================
+18. RELATED WIDGET WRAPPER
+================================================================================
+*/
+
+.related-widget-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.related-widget-wrapper-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+    background: #F5F7FA !important;
+    color: #4B5563 !important;
+    text-decoration: none !important;
+    transition: all 150ms ease !important;
+}
+
+.related-widget-wrapper-link:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+/*
+================================================================================
+19. DASHBOARD (HOME) PAGE
+================================================================================
+*/
+
+#content-main > .module {
+    margin-bottom: 24px !important;
+}
+
+.dashboard #content-main {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 24px !important;
+}
+
+/* Recent actions */
+#recent-actions-module {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+}
+
+#recent-actions-module h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+}
+
+#recent-actions-module li {
+    padding: 10px 16px !important;
+    border-bottom: 1px solid #F0F2F5 !important;
+}
+
+#recent-actions-module li:hover {
+    background: #E6F0FA !important;
+}
+
+html[data-theme="dark"] #recent-actions-module {
+    background: #FFFFFF !important;
+}
+
+html[data-theme="dark"] #recent-actions-module h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] #recent-actions-module li {
+    border-color: #F0F2F5 !important;
+}
+
+html[data-theme="dark"] #recent-actions-module li:hover {
+    background: #E6F0FA !important;
+}
+
+/*
+================================================================================
+20. LINKS
+================================================================================
+*/
+
+a:link,
+a:visited {
+    color: #0078D4 !important;
+}
+
+a:hover {
+    color: #005A9E !important;
+}
+
+/* Ensure dark mode doesn't change link colors */
+html[data-theme="dark"] a:link,
+html[data-theme="dark"] a:visited {
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] a:hover {
+    color: #005A9E !important;
+}
+
+/*
+================================================================================
+21. CHECKBOX & RADIO
+================================================================================
+*/
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #0078D4 !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/*
+================================================================================
+22. INLINE FORMS
+================================================================================
+*/
+
+.inline-group {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+}
+
+.inline-group h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #E1E4E8 !important;
+}
+
+.inline-related {
+    border-bottom: 1px solid #F0F2F5 !important;
+    padding: 16px !important;
+}
+
+.inline-related h3 {
+    color: #374151 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-bottom: 12px !important;
+}
+
+.inline-related:hover {
+    background: #FAFBFC !important;
+}
+
+html[data-theme="dark"] .inline-group {
+    background: #FFFFFF !important;
+    border-color: #E1E4E8 !important;
+}
+
+html[data-theme="dark"] .inline-group h2 {
+    background: #F5F7FA !important;
+    color: #0078D4 !important;
+}
+
+html[data-theme="dark"] .inline-related {
+    border-color: #F0F2F5 !important;
+}
+
+html[data-theme="dark"] .inline-related:hover {
+    background: #FAFBFC !important;
+}
+
+/*
+================================================================================
+23. CALENDAR & DATE PICKER
+================================================================================
+*/
+
+.calendarbox,
+.calendar {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.calendar caption {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+    padding: 10px !important;
+    font-weight: 600 !important;
+}
+
+.calendar td a {
+    color: #2E2E2E !important;
+    padding: 6px !important;
+    border-radius: 4px !important;
+}
+
+.calendar td a:hover {
+    background: #E6F0FA !important;
+    color: #0078D4 !important;
+}
+
+.calendar td.today a {
+    background: #0078D4 !important;
+    color: #FFFFFF !important;
+}
+
+/*
+================================================================================
+24. SELECTORS (FILTER HORIZONTAL / VERTICAL)
+================================================================================
+*/
+
+.selector {
+    background: #FFFFFF !important;
+    border: 1px solid #E1E4E8 !important;
+    border-radius: 8px !important;
+}
+
+.selector .selector-available h2,
+.selector .selector-chosen h2 {
+    background: #F5F7FA !important;
+    color: #374151 !important;
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+.selector select {
+    border-radius: 0 !important;
+    border: none !important;
+    border-top: 1px solid #E1E4E8 !important;
+}
+
+.selector-chooser {
+    background: #F5F7FA !important;
+}
+
+/*
+================================================================================
+25. SCROLLBAR STYLING
+================================================================================
+*/
+
+::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #F5F7FA !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D1D5DB !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF !important;
+}
+
+/*
+================================================================================
+26. PRINT STYLES
+================================================================================
+*/
+
+@media print {
+    #header,
+    #nav-sidebar,
+    #changelist-filter,
+    .submit-row,
+    .object-tools,
+    .paginator {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        font-size: 12pt !important;
+    }
+    
+    .module,
+    fieldset,
+    #changelist-form {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+}
+
+/*
+================================================================================
+27. OUTLOOK / FLUENT UI PALETTE OVERRIDES
+================================================================================
+
+Goal: Make the Django Admin look closer to Outlook (Fluent light theme)
+while keeping the overall page background white.
+
+We keep these overrides at the end of the file so they win without having to
+refactor every earlier hard-coded color.
+*/
+
+:root {
+    --prx-outlook-primary: #0F6CBD !important;      /* Fluent/Outlook blue */
+    --prx-outlook-primary-dark: #115EA3 !important; /* darker blue */
+    --prx-outlook-link: #0F6CBD !important;
+    --prx-outlook-link-hover: #0B5CAD !important;
+    --prx-outlook-surface-2: #FAF9F8 !important;   /* subtle header surface */
+    --prx-outlook-border: #E1DFDD !important;      /* Fluent neutral stroke */
+    --prx-outlook-hover: #EFF6FC !important;       /* hover row */
+    --prx-outlook-selected: #E5F1FB !important;    /* selection */
+}
+
+/* Global links */
+a:link,
+a:visited {
+    color: var(--prx-outlook-link) !important;
+}
+
+a:hover {
+    color: var(--prx-outlook-link-hover) !important;
+}
+
+/* Header + breadcrumbs */
+#header {
+    background: linear-gradient(135deg, var(--prx-outlook-primary) 0%, var(--prx-outlook-primary-dark) 100%) !important;
+}
+
+div.breadcrumbs {
+    background: var(--prx-outlook-primary-dark) !important;
+}
+
+/* Sidebar */
+#nav-sidebar {
+    border-right-color: var(--prx-outlook-border) !important;
+}
+
+.module caption,
+#nav-sidebar .module caption,
+fieldset h2,
+#recent-actions-module h2 {
+    background: var(--prx-outlook-surface-2) !important;
+    border-bottom-color: var(--prx-outlook-border) !important;
+    border-top-color: var(--prx-outlook-border) !important;
+    color: var(--prx-outlook-primary) !important;
+}
+
+#nav-sidebar .current-app caption,
+#nav-sidebar .current-model caption {
+    background: var(--prx-outlook-primary) !important;
+}
+
+#nav-sidebar .module th a:hover {
+    background: var(--prx-outlook-hover) !important;
+    color: var(--prx-outlook-primary) !important;
+}
+
+#nav-sidebar .module th a.current-model {
+    background: var(--prx-outlook-selected) !important;
+    color: var(--prx-outlook-primary) !important;
+    border-left-color: var(--prx-outlook-primary) !important;
+}
+
+/* Changelist table */
+#changelist-form {
+    border-color: var(--prx-outlook-border) !important;
+}
+
+#changelist table thead th {
+    background: var(--prx-outlook-surface-2) !important;
+    border-bottom-color: var(--prx-outlook-border) !important;
+}
+
+#changelist table thead th.sorted {
+    background: var(--prx-outlook-hover) !important;
+}
+
+#changelist table tbody tr:hover td {
+    background: var(--prx-outlook-hover) !important;
+}
+
+#changelist table tbody tr.selected td {
+    background: var(--prx-outlook-selected) !important;
+}
+
+#changelist table tbody td a {
+    color: var(--prx-outlook-link) !important;
+}
+
+#changelist table tbody td a:hover {
+    color: var(--prx-outlook-link-hover) !important;
+}
+
+/* Filter sidebar */
+#changelist-filter {
+    border-color: var(--prx-outlook-border) !important;
+}
+
+#changelist-filter h2 {
+    background: var(--prx-outlook-primary) !important;
+}
+
+#changelist-filter h3 {
+    background: var(--prx-outlook-surface-2) !important;
+    border-top-color: var(--prx-outlook-border) !important;
+    border-bottom-color: var(--prx-outlook-border) !important;
+}
+
+#changelist-filter li a:hover {
+    background: var(--prx-outlook-hover) !important;
+    color: var(--prx-outlook-primary) !important;
+}
+
+#changelist-filter li.selected a {
+    background: var(--prx-outlook-selected) !important;
+    color: var(--prx-outlook-primary) !important;
+}
+
+/* Primary buttons */
+input[type="submit"],
+.submit-row input[type="submit"],
+button[type="submit"],
+.button.default {
+    background: var(--prx-outlook-primary) !important;
+    border-color: var(--prx-outlook-primary) !important;
+}
+
+input[type="submit"]:hover,
+.submit-row input[type="submit"]:hover,
+button[type="submit"]:hover,
+.button.default:hover {
+    background: var(--prx-outlook-primary-dark) !important;
+    border-color: var(--prx-outlook-primary-dark) !important;
+}
+
+/* Focus rings */
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--prx-outlook-primary) !important;
+    box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.18) !important;
+}

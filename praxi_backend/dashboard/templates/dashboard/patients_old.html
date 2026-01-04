@@ -1,0 +1,1257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | PraxiApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #0D6EFD;
+            --primary-light: #3D8BFD;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --info: #17A2B8;
+            --secondary: #6C757D;
+            --dark: #212529;
+            --light: #F8F9FA;
+            --white: #FFFFFF;
+            --border: #DEE2E6;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #F0F4F8 0%, #E2E8F0 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0056D2 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .header-nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        .header-nav a:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .patient-selector {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .patient-selector option {
+            color: var(--dark);
+            background: var(--white);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Patient Profile Card */
+        .profile-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .profile-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .profile-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-status {
+            background: var(--light);
+        }
+
+        .badge-risk {
+            color: var(--white);
+        }
+
+        .allergy-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .allergy-tag {
+            background: #FDECEA;
+            color: var(--danger);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .kpi-card.success::before { background: var(--success); }
+        .kpi-card.warning::before { background: var(--warning); }
+        .kpi-card.danger::before { background: var(--danger); }
+        .kpi-card.info::before { background: var(--info); }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .kpi-subtitle {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .kpi-trend.up { color: var(--danger); }
+        .kpi-trend.down { color: var(--success); }
+        .kpi-trend.stable { color: var(--secondary); }
+
+        /* Section Cards */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--light);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-body {
+            padding: 1.25rem;
+        }
+
+        /* Vitals Display */
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .vital-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+
+        .vital-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .vital-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .vital-label {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        .vital-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .vital-status.normal { background: #D4EDDA; color: var(--success); }
+        .vital-status.elevated { background: #FFF3CD; color: #856404; }
+        .vital-status.critical { background: #F8D7DA; color: var(--danger); }
+
+        /* Lab Traffic Light */
+        .lab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .lab-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .lab-item.green { border-left-color: var(--success); }
+        .lab-item.yellow { border-left-color: var(--warning); }
+        .lab-item.red { border-left-color: var(--danger); }
+
+        .lab-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .lab-indicator.green { background: var(--success); }
+        .lab-indicator.yellow { background: var(--warning); }
+        .lab-indicator.red { background: var(--danger); }
+
+        .lab-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lab-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lab-value {
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        /* Lab Summary */
+        .lab-summary {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+
+        .lab-summary-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lab-summary-count {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.25rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid var(--white);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .timeline-item.future::before {
+            background: var(--success);
+            box-shadow: 0 0 0 2px var(--success);
+        }
+
+        .timeline-item.cancelled::before {
+            background: var(--secondary);
+            box-shadow: 0 0 0 2px var(--secondary);
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-meta {
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        /* Diagnoses List */
+        .diagnosis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .diagnosis-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+
+        .diagnosis-icd {
+            font-family: monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--white);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        .diagnosis-name {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .diagnosis-badges {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .diagnosis-badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        .diagnosis-badge.chronic {
+            background: #E2E3F3;
+            color: #4A4E69;
+        }
+
+        .diagnosis-badge.active {
+            background: #D4EDDA;
+            color: var(--success);
+        }
+
+        /* Medications List */
+        .medication-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .medication-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+
+        .medication-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .medication-info {
+            flex: 1;
+        }
+
+        .medication-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .medication-dosage {
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .medication-compliance {
+            text-align: right;
+        }
+
+        .compliance-bar {
+            width: 60px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .compliance-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .compliance-value {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 0.2rem;
+        }
+
+        /* Risk Score Display */
+        .risk-display {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .risk-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .risk-score-value {
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+
+        .risk-score-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .risk-factors {
+            margin-top: 1rem;
+        }
+
+        .risk-factor {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .risk-factor:last-child {
+            border-bottom: none;
+        }
+
+        .risk-factor-points {
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Full Width Section */
+        .full-width-section {
+            grid-column: 1 / -1;
+        }
+
+        /* Charts Row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Error State */
+        .error-message {
+            background: #F8D7DA;
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .profile-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .profile-badges {
+                align-items: center;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .vitals-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🏥 Patienten-Dashboard</h1>
+            <div class="header-nav">
+                <a href="/praxiadmin/dashboard/">← Haupt-Dashboard</a>
+                <a href="/praxiadmin/dashboard/scheduling/">Scheduling</a>
+                <select class="patient-selector" onchange="if(this.value) window.location.href='/praxiadmin/dashboard/patients/' + this.value + '/'">
+                    <option value="">Patient wählen...</option>
+                    {% for p in patient_list %}
+                    <option value="{{ p.id }}" {% if patient and patient.id == p.id %}selected{% endif %}>
+                        {{ p.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        {% if error %}
+        <div class="error-message">
+            <strong>Fehler:</strong> {{ error }}
+        </div>
+        {% else %}
+
+        <!-- Patient Profile Card -->
+        {% if patient %}
+        <div class="profile-card">
+            <div class="profile-avatar">
+                {{ patient.first_name|slice:":1" }}{{ patient.last_name|slice:":1" }}
+            </div>
+            <div class="profile-info">
+                <h2>{{ patient.full_name }}</h2>
+                <div class="profile-meta">
+                    <span>{{ patient.gender_icon }} {{ patient.gender }}</span>
+                    <span>📅 {{ patient.birth_date }} ({{ patient.age }} Jahre)</span>
+                    {% if patient.phone %}<span>📞 {{ patient.phone }}</span>{% endif %}
+                    {% if patient.email %}<span>✉️ {{ patient.email }}</span>{% endif %}
+                </div>
+                {% if patient.has_allergies %}
+                <div class="allergy-tags">
+                    <strong style="font-size: 0.8rem; color: var(--danger);">⚠️ Allergien:</strong>
+                    {% for allergy in patient.allergies %}
+                    <span class="allergy-tag">{{ allergy }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="profile-badges">
+                <span class="badge badge-status" style="background: {{ status.color }}20; color: {{ status.color }};">
+                    {{ status.icon }} {{ status.label }}
+                </span>
+                <span class="badge badge-risk" style="background: {{ risk.level_color }};">
+                    Risiko: {{ risk.score }}/100
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <!-- Terminstatus -->
+            <div class="kpi-card info">
+                <div class="kpi-label">Termine (12 Monate)</div>
+                <div class="kpi-value">{{ appointments.total_past }}</div>
+                <div class="kpi-subtitle">{{ appointments.future }} zukünftig geplant</div>
+            </div>
+
+            <!-- Letzter Kontakt -->
+            <div class="kpi-card {% if appointments.last_appointment.days_ago > 180 %}warning{% else %}success{% endif %}">
+                <div class="kpi-label">Letzter Besuch</div>
+                <div class="kpi-value">
+                    {% if appointments.last_appointment.days_ago != None %}
+                        vor {{ appointments.last_appointment.days_ago }} Tagen
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="kpi-subtitle">{{ appointments.last_appointment.type|default:"" }}</div>
+            </div>
+
+            <!-- Nächster Termin -->
+            <div class="kpi-card {% if appointments.next_appointment.days_until != None %}success{% else %}warning{% endif %}">
+                <div class="kpi-label">Nächster Termin</div>
+                <div class="kpi-value">
+                    {% if appointments.next_appointment.days_until != None %}
+                        in {{ appointments.next_appointment.days_until }} Tagen
+                    {% else %}
+                        Keiner geplant
+                    {% endif %}
+                </div>
+                <div class="kpi-subtitle">{{ appointments.next_appointment.type|default:"" }}</div>
+            </div>
+
+            <!-- No-Shows -->
+            <div class="kpi-card {% if appointments.no_shows > 2 %}danger{% elif appointments.no_shows > 0 %}warning{% else %}success{% endif %}">
+                <div class="kpi-label">No-Shows</div>
+                <div class="kpi-value">{{ appointments.no_shows }}</div>
+                <div class="kpi-subtitle">{{ appointments.completion_rate }}% Erscheinungsrate</div>
+            </div>
+
+            <!-- Compliance -->
+            <div class="kpi-card {% if compliance.score >= 90 %}success{% elif compliance.score >= 75 %}info{% elif compliance.score >= 60 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-label">Medikations-Compliance</div>
+                <div class="kpi-value">
+                    {% if compliance.score != None %}
+                        {{ compliance.score }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="kpi-subtitle">{{ compliance.label }} ({{ compliance.active_count }} Medikamente)</div>
+            </div>
+
+            <!-- Chronische Erkrankungen -->
+            <div class="kpi-card {% if conditions.chronic_count > 3 %}danger{% elif conditions.chronic_count > 1 %}warning{% else %}info{% endif %}">
+                <div class="kpi-label">Chronische Erkrankungen</div>
+                <div class="kpi-value">{{ conditions.chronic_count }}</div>
+                <div class="kpi-subtitle">{{ conditions.total }} Diagnosen gesamt</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="section-grid">
+            <!-- Vitaldaten -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>❤️ Aktuelle Vitaldaten</h3>
+                    <span style="font-size: 0.8rem; color: var(--secondary);">
+                        {{ vitals.current.date|default:"—" }}
+                    </span>
+                </div>
+                <div class="section-body">
+                    {% if vitals.current %}
+                    <div class="vitals-grid">
+                        <div class="vital-item">
+                            <div class="vital-icon">🩸</div>
+                            <div class="vital-value">{{ vitals.current.systolic }}/{{ vitals.current.diastolic }}</div>
+                            <div class="vital-label">Blutdruck (mmHg)</div>
+                            <span class="vital-status {{ vitals.evaluations.systolic.status }}">
+                                {{ vitals.evaluations.systolic.label }}
+                            </span>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-icon">💓</div>
+                            <div class="vital-value">{{ vitals.current.pulse }}</div>
+                            <div class="vital-label">Puls (bpm)</div>
+                            <span class="vital-status {{ vitals.evaluations.pulse.status }}">
+                                {{ vitals.evaluations.pulse.label }}
+                            </span>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-icon">⚖️</div>
+                            <div class="vital-value">{{ vitals.current.bmi }}</div>
+                            <div class="vital-label">BMI</div>
+                            <span class="vital-status {% if vitals.evaluations.bmi.status == 'high' %}elevated{% else %}{{ vitals.evaluations.bmi.status }}{% endif %}">
+                                {{ vitals.evaluations.bmi.label }}
+                            </span>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-icon">🌡️</div>
+                            <div class="vital-value">{{ vitals.current.temperature }}°C</div>
+                            <div class="vital-label">Temperatur</div>
+                            <span class="vital-status {{ vitals.evaluations.temperature.status }}">
+                                {{ vitals.evaluations.temperature.label }}
+                            </span>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-icon">💨</div>
+                            <div class="vital-value">{{ vitals.current.spo2 }}%</div>
+                            <div class="vital-label">SpO2</div>
+                            <span class="vital-status {{ vitals.evaluations.spo2.status }}">
+                                {{ vitals.evaluations.spo2.label }}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Vitaldaten vorhanden</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Risiko-Score -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⚠️ Patientenrisiko-Score</h3>
+                </div>
+                <div class="section-body">
+                    <div class="risk-display">
+                        <div class="risk-circle" style="background: {{ risk.level_color }};">
+                            <span class="risk-score-value">{{ risk.score }}</span>
+                            <span class="risk-score-label">{{ risk.level_label }}</span>
+                        </div>
+                        {% if risk.factors %}
+                        <div class="risk-factors">
+                            {% for factor in risk.factors %}
+                            <div class="risk-factor">
+                                <span>{{ factor.name }}</span>
+                                <span class="risk-factor-points" style="background: {% if factor.severity == 'high' %}#F8D7DA{% elif factor.severity == 'medium' %}#FFF3CD{% else %}#D4EDDA{% endif %}; color: {% if factor.severity == 'high' %}var(--danger){% elif factor.severity == 'medium' %}#856404{% else %}var(--success){% endif %};">
+                                    +{{ factor.points }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Laborwerte Ampel -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🔬 Laborwerte</h3>
+                    <span style="font-size: 0.8rem; color: var(--secondary);">
+                        {{ labs.latest_date|default:"—" }}
+                    </span>
+                </div>
+                <div class="section-body">
+                    {% if labs.values %}
+                    <div class="lab-summary">
+                        <div class="lab-summary-item">
+                            <span class="lab-indicator green"></span>
+                            <span class="lab-summary-count">{{ labs.summary.green }}</span>
+                            <span>Normal</span>
+                        </div>
+                        <div class="lab-summary-item">
+                            <span class="lab-indicator yellow"></span>
+                            <span class="lab-summary-count">{{ labs.summary.yellow }}</span>
+                            <span>Auffällig</span>
+                        </div>
+                        <div class="lab-summary-item">
+                            <span class="lab-indicator red"></span>
+                            <span class="lab-summary-count">{{ labs.summary.red }}</span>
+                            <span>Kritisch</span>
+                        </div>
+                    </div>
+                    <div class="lab-grid">
+                        {% for key, lab in labs.values.items %}
+                        <div class="lab-item {{ lab.status }}">
+                            <span class="lab-indicator {{ lab.status }}"></span>
+                            <div class="lab-info">
+                                <div class="lab-name">{{ lab.name }}</div>
+                                <div class="lab-value">{{ lab.value }} {{ lab.unit }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Laborwerte vorhanden</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Termine Timeline -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📅 Termine</h3>
+                </div>
+                <div class="section-body" style="max-height: 350px; overflow-y: auto;">
+                    {% if charts.appointments.timeline %}
+                    <div class="timeline">
+                        {% for appt in charts.appointments.timeline|slice:":10" %}
+                        <div class="timeline-item {% if appt.is_future %}future{% endif %} {% if appt.status == 'cancelled' %}cancelled{% endif %}">
+                            <div class="timeline-date">
+                                {{ appt.date|slice:":10" }} {{ appt.date|slice:"11:16" }}
+                            </div>
+                            <div class="timeline-title" style="color: {{ appt.type_color }};">
+                                {{ appt.type }}
+                            </div>
+                            <div class="timeline-meta">
+                                {{ appt.doctor_name }} · {{ appt.status_label }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Termine vorhanden</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Diagnosen -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🏥 Diagnosen</h3>
+                    <span style="font-size: 0.8rem; color: var(--secondary);">
+                        {{ conditions.total }} gesamt
+                    </span>
+                </div>
+                <div class="section-body">
+                    {% if conditions.diagnoses %}
+                    <div class="diagnosis-list">
+                        {% for diag in conditions.diagnoses %}
+                        <div class="diagnosis-item">
+                            <span class="diagnosis-icd">{{ diag.icd }}</span>
+                            <span class="diagnosis-name">{{ diag.name }}</span>
+                            <div class="diagnosis-badges">
+                                {% if diag.chronic %}
+                                <span class="diagnosis-badge chronic">Chronisch</span>
+                                {% endif %}
+                                {% if diag.active %}
+                                <span class="diagnosis-badge active">Aktiv</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Diagnosen erfasst</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Medikation -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>💊 Medikation</h3>
+                    <span style="font-size: 0.8rem; color: var(--secondary);">
+                        {{ compliance.active_count }} aktiv
+                    </span>
+                </div>
+                <div class="section-body">
+                    {% if compliance.medications %}
+                    <div class="medication-list">
+                        {% for med in compliance.medications %}
+                        {% if med.active %}
+                        <div class="medication-item">
+                            <div class="medication-icon">💊</div>
+                            <div class="medication-info">
+                                <div class="medication-name">{{ med.name }}</div>
+                                <div class="medication-dosage">{{ med.dosage }} · {{ med.indication }}</div>
+                            </div>
+                            <div class="medication-compliance">
+                                <div class="compliance-bar">
+                                    <div class="compliance-fill" style="width: {{ med.compliance }}%; background: {% if med.compliance >= 90 %}var(--success){% elif med.compliance >= 75 %}var(--info){% elif med.compliance >= 60 %}var(--warning){% else %}var(--danger){% endif %};"></div>
+                                </div>
+                                <div class="compliance-value">{{ med.compliance }}%</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Medikation erfasst</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="section-grid">
+            <!-- Blutdruck Trend -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📈 Blutdruck-Verlauf</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="bloodPressureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Laborwerte Trend -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📊 Laborwert-Verlauf</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="labsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Termin-Historie -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📅 Termin-Historie</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="appointmentHistoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMI Trend -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⚖️ BMI-Verlauf</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="bmiChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+    </main>
+
+    <script>
+        // Chart Data from Django
+        const chartsData = {{ charts_json|safe|default:"{}" }};
+
+        // Blood Pressure Chart
+        if (chartsData.vitals && chartsData.vitals.blood_pressure) {
+            const bpData = chartsData.vitals.blood_pressure;
+            new Chart(document.getElementById('bloodPressureChart'), {
+                type: 'line',
+                data: {
+                    labels: bpData.labels,
+                    datasets: bpData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            min: 50,
+                            max: 180,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Labs Chart
+        if (chartsData.labs && chartsData.labs.key_labs) {
+            const labsData = chartsData.labs.key_labs;
+            new Chart(document.getElementById('labsChart'), {
+                type: 'line',
+                data: {
+                    labels: labsData.labels,
+                    datasets: labsData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Appointment History Chart
+        if (chartsData.appointments && chartsData.appointments.history) {
+            const apptData = chartsData.appointments.history;
+            new Chart(document.getElementById('appointmentHistoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: apptData.labels,
+                    datasets: apptData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            stacked: true,
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // BMI Chart
+        if (chartsData.vitals && chartsData.vitals.bmi) {
+            const bmiData = chartsData.vitals.bmi;
+            new Chart(document.getElementById('bmiChart'), {
+                type: 'line',
+                data: {
+                    labels: bmiData.labels,
+                    datasets: bmiData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                overweight: {
+                                    type: 'line',
+                                    yMin: 25,
+                                    yMax: 25,
+                                    borderColor: '#FFC107',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: 'Übergewicht',
+                                        enabled: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 15,
+                            max: 40,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

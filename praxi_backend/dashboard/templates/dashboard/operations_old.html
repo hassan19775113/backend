@@ -1,0 +1,941 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | PraxiApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #0D6EFD;
+            --primary-light: #3D8BFD;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --info: #17A2B8;
+            --secondary: #6C757D;
+            --dark: #212529;
+            --light: #F8F9FA;
+            --white: #FFFFFF;
+            --border: #DEE2E6;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #F0F4F8 0%, #E2E8F0 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4A90A4 0%, #2C5F6E 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        .header-nav a:hover { background: rgba(255,255,255,0.15); }
+
+        .period-selector, .mode-selector {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .period-selector option, .mode-selector option {
+            color: var(--dark);
+            background: var(--white);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* KPI Cards Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .kpi-card.success::before { background: var(--success); }
+        .kpi-card.warning::before { background: var(--warning); }
+        .kpi-card.danger::before { background: var(--danger); }
+        .kpi-card.info::before { background: var(--info); }
+
+        .kpi-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        .kpi-subtitle {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Section Grid */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1400px) {
+            .section-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .section-grid { grid-template-columns: 1fr; }
+        }
+
+        .section-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .section-card.span-2 {
+            grid-column: span 2;
+        }
+
+        .section-card.span-3 {
+            grid-column: span 3;
+        }
+
+        @media (max-width: 1400px) {
+            .section-card.span-3 { grid-column: span 2; }
+        }
+
+        @media (max-width: 900px) {
+            .section-card.span-2, .section-card.span-3 { grid-column: span 1; }
+        }
+
+        .section-header {
+            background: var(--light);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-body {
+            padding: 1.25rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .chart-container.small {
+            height: 200px;
+        }
+
+        .chart-container.large {
+            height: 350px;
+        }
+
+        /* Patient Flow */
+        .flow-pipeline {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+
+        .flow-stage {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            position: relative;
+        }
+
+        .flow-stage::after {
+            content: '→';
+            position: absolute;
+            right: -0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+
+        .flow-stage:last-child::after { display: none; }
+
+        .flow-count {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .flow-label {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: var(--white);
+            opacity: 0.9;
+        }
+
+        /* Resource Table */
+        .resource-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .resource-table th, .resource-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .resource-table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .resource-table tr:hover {
+            background: var(--light);
+        }
+
+        .resource-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .resource-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .utilization-bar {
+            width: 100%;
+            max-width: 120px;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .utilization-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .heatmap-table th, .heatmap-table td {
+            padding: 0.4rem;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .heatmap-table th {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .heatmap-cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.7rem;
+            margin: 0 auto;
+        }
+
+        /* Bottleneck Badge */
+        .bottleneck-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .bottleneck-badge.low {
+            background: #D4EDDA;
+            color: var(--success);
+        }
+
+        .bottleneck-badge.medium {
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        .bottleneck-badge.high {
+            background: #F8D7DA;
+            color: var(--danger);
+        }
+
+        .bottleneck-badge.critical {
+            background: #DC3545;
+            color: var(--white);
+        }
+
+        /* Services Table */
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .services-table th, .services-table td {
+            padding: 0.6rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .services-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+
+        .services-table .code {
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Flow Times Display */
+        .flow-times-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .flow-time-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .flow-time-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .flow-time-label {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Punctuality Indicator */
+        .punctuality-display {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .punctuality-rate {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .punctuality-label {
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        /* Status Pills */
+        .status-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Realtime Indicator */
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .realtime-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .flow-times-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>⚙️ Operations-Dashboard</h1>
+            <div class="header-nav">
+                <a href="/praxiadmin/dashboard/">← Haupt-Dashboard</a>
+                <a href="/praxiadmin/dashboard/scheduling/">Scheduling</a>
+                <a href="/praxiadmin/dashboard/patients/">Patienten</a>
+                <a href="/praxiadmin/dashboard/doctors/">Ärzte</a>
+                
+                <select class="mode-selector" onchange="window.location.href='?mode=' + this.value + '&days={{ selected_days }}'">
+                    <option value="overview" {% if view_mode == 'overview' %}selected{% endif %}>Übersicht</option>
+                    <option value="realtime" {% if view_mode == 'realtime' %}selected{% endif %}>Echtzeit</option>
+                </select>
+                
+                <select class="period-selector" onchange="window.location.href='?days=' + this.value + '&mode={{ view_mode }}'">
+                    <option value="1" {% if selected_days == 1 %}selected{% endif %}>Heute</option>
+                    <option value="7" {% if selected_days == 7 %}selected{% endif %}>7 Tage</option>
+                    <option value="30" {% if selected_days == 30 %}selected{% endif %}>30 Tage</option>
+                    <option value="90" {% if selected_days == 90 %}selected{% endif %}>90 Tage</option>
+                </select>
+                
+                {% if view_mode == 'realtime' %}
+                <div class="realtime-indicator">
+                    <span class="realtime-dot"></span>
+                    Live
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- KPI Cards -->
+        <div class="kpi-row">
+            <div class="kpi-card {% if utilization.utilization >= 80 %}success{% elif utilization.utilization >= 60 %}warning{% else %}info{% endif %}">
+                <div class="kpi-icon">📊</div>
+                <div class="kpi-value">{{ utilization.utilization }}%</div>
+                <div class="kpi-label">Gesamtauslastung</div>
+                <div class="kpi-subtitle">{{ utilization.booked_hours }}h / {{ utilization.available_hours }}h</div>
+            </div>
+            
+            <div class="kpi-card info">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-value">{{ throughput.total }}</div>
+                <div class="kpi-label">Patientendurchsatz</div>
+                <div class="kpi-subtitle">Ø {{ throughput.avg_per_day }} / Tag</div>
+            </div>
+            
+            <div class="kpi-card {% if no_show.no_show_rate <= 5 %}success{% elif no_show.no_show_rate <= 10 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-icon">⚠️</div>
+                <div class="kpi-value">{{ no_show.no_show_rate }}%</div>
+                <div class="kpi-label">No-Show-Rate</div>
+                <div class="kpi-subtitle">{{ no_show.no_show_count }} von {{ no_show.total_past }}</div>
+            </div>
+            
+            <div class="kpi-card {% if cancellation.cancellation_rate <= 10 %}success{% elif cancellation.cancellation_rate <= 20 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-icon">❌</div>
+                <div class="kpi-value">{{ cancellation.cancellation_rate }}%</div>
+                <div class="kpi-label">Stornoquote</div>
+                <div class="kpi-subtitle">{{ cancellation.cancelled_count }} Stornos</div>
+            </div>
+            
+            <div class="kpi-card {% if punctuality.on_time_rate >= 80 %}success{% elif punctuality.on_time_rate >= 60 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-icon">⏱️</div>
+                <div class="kpi-value">{{ punctuality.on_time_rate }}%</div>
+                <div class="kpi-label">Pünktlichkeit</div>
+                <div class="kpi-subtitle">Ø {{ punctuality.avg_delay_minutes }} min Verzögerung</div>
+            </div>
+            
+            <div class="kpi-card {% if documentation.compliance_rate >= 90 %}success{% elif documentation.compliance_rate >= 75 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-icon">📝</div>
+                <div class="kpi-value">{{ documentation.compliance_rate }}%</div>
+                <div class="kpi-label">Dokumentation</div>
+                <div class="kpi-subtitle">{{ documentation.overdue }} überfällig</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">🏥</div>
+                <div class="kpi-value">{{ resources.avg_room_utilization }}%</div>
+                <div class="kpi-label">Raumauslastung</div>
+                <div class="kpi-subtitle">{{ resources.rooms|length }} Räume</div>
+            </div>
+            
+            <div class="kpi-card {% if bottleneck.category == 'low' %}success{% elif bottleneck.category == 'medium' %}warning{% elif bottleneck.category == 'high' %}danger{% else %}danger{% endif %}">
+                <div class="kpi-icon">🚨</div>
+                <div class="kpi-value">{{ bottleneck.index }}</div>
+                <div class="kpi-label">Engpass-Index</div>
+                <div class="kpi-subtitle">{{ bottleneck.label }}</div>
+            </div>
+        </div>
+
+        <!-- Patient Flow Pipeline -->
+        <div class="section-card span-3" style="margin-bottom: 1.5rem;">
+            <div class="section-header">
+                <h3>🚶 Patientenfluss (Heute)</h3>
+                <span style="font-size: 0.85rem; color: var(--secondary);">
+                    {{ patient_flow.total_active }} aktiv | {{ patient_flow.done_today }} abgeschlossen
+                </span>
+            </div>
+            <div class="section-body">
+                <div class="flow-pipeline">
+                    {% for status in patient_flow.statuses %}
+                    <div class="flow-stage" style="background: {{ status.color }}; color: white;">
+                        <div class="flow-count">{{ status.count }}</div>
+                        <div class="flow-label">{{ status.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="section-grid">
+            <!-- Stündliche Verteilung -->
+            <div class="section-card span-2">
+                <div class="section-header">
+                    <h3>📈 Stündliche Verteilung</h3>
+                    <span style="font-size: 0.85rem; color: var(--secondary);">
+                        Peak: {{ hourly.peak_hour }}:00 Uhr
+                    </span>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Durchlaufzeiten -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⏱️ Durchlaufzeiten</h3>
+                </div>
+                <div class="section-body">
+                    <div class="flow-times-grid">
+                        <div class="flow-time-item" style="background: #FFF3CD;">
+                            <div class="flow-time-value" style="color: #856404;">{{ flow_times.avg_wait_time }}</div>
+                            <div class="flow-time-label">Wartezeit (min)</div>
+                        </div>
+                        <div class="flow-time-item" style="background: #D1ECF1;">
+                            <div class="flow-time-value" style="color: var(--info);">{{ flow_times.avg_prep_time }}</div>
+                            <div class="flow-time-label">Vorbereitung</div>
+                        </div>
+                        <div class="flow-time-item" style="background: #D4EDDA;">
+                            <div class="flow-time-value" style="color: var(--success);">{{ flow_times.avg_treatment_time }}</div>
+                            <div class="flow-time-label">Behandlung</div>
+                        </div>
+                        <div class="flow-time-item" style="background: #CCE5FF;">
+                            <div class="flow-time-value" style="color: var(--primary);">{{ flow_times.avg_post_time }}</div>
+                            <div class="flow-time-label">Nachbereitung</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; padding: 0.75rem; background: var(--light); border-radius: var(--radius-sm);">
+                        <strong>Ø Gesamtdauer:</strong> {{ flow_times.avg_total_time }} Minuten
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ressourcen-Auslastung -->
+            <div class="section-card span-2">
+                <div class="section-header">
+                    <h3>🏥 Ressourcen-Auslastung</h3>
+                </div>
+                <div class="section-body" style="max-height: 350px; overflow-y: auto;">
+                    <table class="resource-table">
+                        <thead>
+                            <tr>
+                                <th>Ressource</th>
+                                <th>Typ</th>
+                                <th>Auslastung</th>
+                                <th>Stunden</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resource in resources.resources %}
+                            <tr>
+                                <td>
+                                    <span class="resource-name">
+                                        <span class="resource-dot" style="background: {{ resource.color }};"></span>
+                                        {{ resource.name }}
+                                    </span>
+                                </td>
+                                <td>{% if resource.type == 'room' %}Raum{% else %}Gerät{% endif %}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div class="utilization-bar">
+                                            <div class="utilization-fill" style="width: {{ resource.utilization }}%; background: {% if resource.utilization >= 80 %}var(--danger){% elif resource.utilization >= 60 %}var(--warning){% else %}var(--success){% endif %};"></div>
+                                        </div>
+                                        <span style="font-weight: 600; min-width: 40px;">{{ resource.utilization }}%</span>
+                                    </div>
+                                </td>
+                                <td>{{ resource.booked_hours }}h</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Engpass-Analyse -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🚨 Engpass-Analyse</h3>
+                </div>
+                <div class="section-body">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div class="bottleneck-badge {{ bottleneck.category }}">
+                            {{ bottleneck.index }} – {{ bottleneck.label }}
+                        </div>
+                    </div>
+                    
+                    <h4 style="font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--secondary);">Einflussfaktoren:</h4>
+                    {% for factor in bottleneck.contributing_factors %}
+                    <div style="margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                            <span>{{ factor.name }}</span>
+                            <span style="font-weight: 600;">{{ factor.score }}</span>
+                        </div>
+                        <div class="utilization-bar" style="max-width: none;">
+                            <div class="utilization-fill" style="width: {{ factor.score }}%; background: {% if factor.score >= 70 %}var(--danger){% elif factor.score >= 40 %}var(--warning){% else %}var(--success){% endif %};"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if bottleneck.high_util_resources %}
+                    <h4 style="font-size: 0.85rem; margin: 1rem 0 0.5rem; color: var(--secondary);">Hochausgelastete Ressourcen:</h4>
+                    <div class="status-pills">
+                        {% for r in bottleneck.high_util_resources %}
+                        <span class="status-pill" style="background: #F8D7DA; color: var(--danger);">
+                            {{ r.name }} ({{ r.utilization }}%)
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status-Verteilung -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📊 Status-Verteilung</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container small">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pünktlichkeit -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⏰ Pünktlichkeit</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container small">
+                        <canvas id="punctualityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dokumentation -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📝 Dokumentationsstatus</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container small">
+                        <canvas id="documentationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Täglicher Trend -->
+            <div class="section-card span-3">
+                <div class="section-header">
+                    <h3>📈 Täglicher Trend</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="dailyTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raum-Heatmap -->
+            <div class="section-card span-2">
+                <div class="section-header">
+                    <h3>🔥 Raum-Heatmap</h3>
+                </div>
+                <div class="section-body">
+                    {% if charts.room_heatmap.rooms %}
+                    {% with room=charts.room_heatmap.rooms.0 %}
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+                        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{ room.room_color }}; margin-right: 0.5rem;"></span>
+                        {{ room.room_name }}
+                    </h4>
+                    <div class="heatmap-container">
+                        <table class="heatmap-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    {% for hour in charts.room_heatmap.hours %}
+                                    <th>{{ hour }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in room.data %}
+                                <tr>
+                                    <th>{{ row.day }}</th>
+                                    {% for cell in row.hours %}
+                                    <td>
+                                        <div class="heatmap-cell" style="background: rgba(74, 144, 164, {{ cell.intensity }}%);">
+                                            {% if cell.count > 0 %}{{ cell.count }}{% endif %}
+                                        </div>
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endwith %}
+                    {% else %}
+                    <p style="color: var(--secondary); text-align: center;">Keine Heatmap-Daten verfügbar</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Leistungsübersicht -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📋 Top Leistungen</h3>
+                </div>
+                <div class="section-body" style="max-height: 300px; overflow-y: auto;">
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th>Ziffer</th>
+                                <th>Anz.</th>
+                                <th>Punkte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in services|slice:":10" %}
+                            <tr>
+                                <td class="code">{{ service.code }}</td>
+                                <td>{{ service.count }}</td>
+                                <td>{{ service.total_points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const chartsData = {{ charts_json|safe }};
+
+        // Stündliche Verteilung
+        if (chartsData.hourly_distribution) {
+            new Chart(document.getElementById('hourlyChart'), {
+                type: 'bar',
+                data: chartsData.hourly_distribution,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, stacked: true },
+                        x: { stacked: true }
+                    }
+                }
+            });
+        }
+
+        // Status-Verteilung
+        if (chartsData.status_distribution) {
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: chartsData.status_distribution,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Pünktlichkeit
+        if (chartsData.punctuality) {
+            new Chart(document.getElementById('punctualityChart'), {
+                type: 'doughnut',
+                data: chartsData.punctuality,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Dokumentation
+        if (chartsData.documentation) {
+            new Chart(document.getElementById('documentationChart'), {
+                type: 'doughnut',
+                data: chartsData.documentation,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Täglicher Trend
+        if (chartsData.daily_trend) {
+            new Chart(document.getElementById('dailyTrendChart'), {
+                type: 'line',
+                data: chartsData.daily_trend,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

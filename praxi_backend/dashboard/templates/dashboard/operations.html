@@ -1,0 +1,488 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Operations-Dashboard{% endblock %}
+{% block header_title %}PraxiApp - Operationen{% endblock %}
+{% block nav_active_operations %}prx-header__link--active{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/pages/haupt_dashboard.css' %}">
+{% endblock %}
+
+{% block page_header %}
+<section class="prx-section">
+    <div class="prx-section__header">
+        <div>
+            <h1 class="prx-section__title">
+                <span>🩺</span> Operations-Dashboard
+            </h1>
+            <p class="prx-section__subtitle">
+                Patientenfluss, Ressourcen und OP-Kennzahlen
+            </p>
+        </div>
+        <div class="flex gap-2 items-center">
+            <select class="selector" id="periodSelect" onchange="window.location.href='?period=' + this.value" style="background: var(--color-accent-500); color: white;">
+                <option value="today" {% if period == "today" %}selected{% endif %}>Heute</option>
+                <option value="week" {% if period == "week" %}selected{% endif %}>Woche</option>
+                <option value="month" {% if period == "month" %}selected{% endif %}>Monat</option>
+            </select>
+            <a href="{% url 'dashboard:index' %}" class="prx-btn prx-btn--outline">
+                ← Zurück
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block kpi_section %}
+<section class="prx-kpi-grid" style="margin-bottom: var(--space-6);">
+    <div class="prx-kpi prx-kpi--primary">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">🩺</span>
+        </div>
+        <div class="prx-kpi__label">Operationen</div>
+        <div class="prx-kpi__value">{{ kpis.total_operations|default:"0" }}</div>
+        <div class="prx-kpi__description">{{ period_label }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--success">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">✅</span>
+        </div>
+        <div class="prx-kpi__label">Abgeschlossen</div>
+        <div class="prx-kpi__value">{{ kpis.completed|default:"0" }}</div>
+        <div class="prx-kpi__footer">
+            <span class="prx-kpi__trend prx-kpi__trend--up">{{ kpis.completion_rate|default:"0" }}%</span>
+        </div>
+    </div>
+    <div class="prx-kpi prx-kpi--warning">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">🔄</span>
+        </div>
+        <div class="prx-kpi__label">In Bearbeitung</div>
+        <div class="prx-kpi__value">{{ kpis.in_progress|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--info">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">⏱️</span>
+        </div>
+        <div class="prx-kpi__label">Ø OP-Dauer</div>
+        <div class="prx-kpi__value">{{ kpis.avg_duration|default:"0" }}<span class="prx-kpi__unit">min</span></div>
+    </div>
+    <div class="prx-kpi prx-kpi--accent">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">🏥</span>
+        </div>
+        <div class="prx-kpi__label">Raum-Auslastung</div>
+        <div class="prx-kpi__value">{{ kpis.room_utilization|default:"0" }}<span class="prx-kpi__unit">%</span></div>
+    </div>
+    <div class="prx-kpi prx-kpi--{% if kpis.punctuality_rate >= 90 %}success{% elif kpis.punctuality_rate >= 70 %}warning{% else %}danger{% endif %}">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">⏰</span>
+        </div>
+        <div class="prx-kpi__label">Pünktlichkeit</div>
+        <div class="prx-kpi__value">{{ kpis.punctuality_rate|default:"0" }}<span class="prx-kpi__unit">%</span></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Patient Flow Pipeline -->
+<section class="prx-section">
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🚶</span>
+                Patientenfluss Live
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="flow-pipeline">
+                {% for status in patient_flow.statuses %}
+                <div class="flow-stage" style="background: {{ status.color }};">
+                    <div class="flow-count">{{ status.count }}</div>
+                    <div class="flow-label">{{ status.label }}</div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Keine Patientenfluss-Daten</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content Grid -->
+<div class="prx-content-grid">
+    <!-- Stündliche Verteilung -->
+    <div class="prx-card prx-span-2">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">📈</span>
+                Stündliche Verteilung
+            </h3>
+            <span class="prx-badge prx-badge--info">Peak: {{ hourly.peak_hour }}:00 Uhr</span>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Durchlaufzeiten -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">⏱️</span>
+                Durchlaufzeiten
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="flow-times-grid">
+                <div class="flow-time-item" style="background: var(--color-warning-50);">
+                    <div class="flow-time-value" style="color: var(--color-warning-600);">{{ flow_times.avg_wait_time|default:"0" }}</div>
+                    <div class="flow-time-label">Wartezeit (min)</div>
+                </div>
+                <div class="flow-time-item" style="background: var(--color-info-50);">
+                    <div class="flow-time-value" style="color: var(--color-info-600);">{{ flow_times.avg_prep_time|default:"0" }}</div>
+                    <div class="flow-time-label">Vorbereitung</div>
+                </div>
+                <div class="flow-time-item" style="background: var(--color-success-50);">
+                    <div class="flow-time-value" style="color: var(--color-success-600);">{{ flow_times.avg_treatment_time|default:"0" }}</div>
+                    <div class="flow-time-label">Behandlung</div>
+                </div>
+                <div class="flow-time-item" style="background: var(--color-primary-50);">
+                    <div class="flow-time-value" style="color: var(--color-primary-600);">{{ flow_times.avg_post_time|default:"0" }}</div>
+                    <div class="flow-time-label">Nachbereitung</div>
+                </div>
+            </div>
+            <div class="prx-text-center text-sm font-semibold" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--color-neutral-100); border-radius: var(--radius-lg);">
+                Ø Gesamtdauer: {{ flow_times.avg_total_time|default:"0" }} min
+            </div>
+        </div>
+    </div>
+
+    <!-- Ressourcen-Auslastung -->
+    <div class="prx-card prx-span-2">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🏥</span>
+                Ressourcen-Auslastung
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-table-wrapper">
+                <table class="prx-table">
+                    <thead>
+                        <tr>
+                            <th>Ressource</th>
+                            <th>Typ</th>
+                            <th>Auslastung</th>
+                            <th>Stunden</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resource in resources.resources %}
+                        <tr>
+                            <td>
+                                <span class="flex items-center gap-2">
+                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ resource.color }};"></span>
+                                    {{ resource.name }}
+                                </span>
+                            </td>
+                            <td>{% if resource.type == 'room' %}🚪 Raum{% else %}🔧 Gerät{% endif %}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="prx-progress" style="width: 100px;">
+                                        <div class="prx-progress__bar" style="width: {{ resource.utilization }}%; background: {% if resource.utilization >= 80 %}var(--color-danger-500){% elif resource.utilization >= 60 %}var(--color-warning-500){% else %}var(--color-success-500){% endif %};"></div>
+                                    </div>
+                                    <span class="font-semibold">{{ resource.utilization }}%</span>
+                                </div>
+                            </td>
+                            <td>{{ resource.booked_hours }}h</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="prx-text-center text-muted">Keine Ressourcen</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engpass-Analyse -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🚨</span>
+                Engpass-Analyse
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-text-center mb-4">
+                <div class="bottleneck-badge {{ bottleneck.category|default:'low' }}">
+                    {{ bottleneck.index|default:"—" }} – {{ bottleneck.label|default:"Keine Engpässe" }}
+                </div>
+            </div>
+            
+            {% if bottleneck.contributing_factors %}
+            <h4 class="text-xs text-muted mb-2" style="text-transform: uppercase; letter-spacing: 0.5px;">Einflussfaktoren:</h4>
+            {% for factor in bottleneck.contributing_factors %}
+            <div style="margin-bottom: var(--space-3);">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>{{ factor.name }}</span>
+                    <span class="font-semibold">{{ factor.score }}</span>
+                </div>
+                <div class="prx-progress">
+                    <div class="prx-progress__bar" style="width: {{ factor.score }}%; background: {% if factor.score >= 70 %}var(--color-danger-500){% elif factor.score >= 40 %}var(--color-warning-500){% else %}var(--color-success-500){% endif %};"></div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            {% if bottleneck.high_util_resources %}
+            <h4 class="text-xs text-muted mb-2" style="text-transform: uppercase; letter-spacing: 0.5px; margin-top: var(--space-4);">Hochausgelastete Ressourcen:</h4>
+            <div class="flex gap-2 flex-wrap">
+                {% for r in bottleneck.high_util_resources %}
+                <span class="prx-badge prx-badge--danger">{{ r.name }} ({{ r.utilization }}%)</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Charts Row -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📊 Status-Verteilung</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--sm">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">⏰ Pünktlichkeit</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--sm">
+                <canvas id="punctualityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📝 Dokumentation</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--sm">
+                <canvas id="documentationChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Trend -->
+    <div class="prx-card prx-span-full">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">📈</span>
+                Täglicher Trend
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="dailyTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Heatmap -->
+    <div class="prx-card prx-span-2">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🔥</span>
+                Raum-Heatmap
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            {% if charts.room_heatmap.rooms %}
+            {% with room=charts.room_heatmap.rooms.0 %}
+            <h4 class="text-sm font-medium mb-3">
+                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: {{ room.room_color }}; margin-right: 0.5rem;"></span>
+                {{ room.room_name }}
+            </h4>
+            <div class="heatmap-container">
+                <table class="heatmap-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            {% for hour in charts.room_heatmap.hours %}
+                            <th>{{ hour }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in room.data %}
+                        <tr>
+                            <th class="font-semibold">{{ row.day }}</th>
+                            {% for cell in row.hours %}
+                            <td>
+                                <div class="heatmap-cell" style="background: rgba(79, 179, 191, {{ cell.intensity }}%);">
+                                    {% if cell.count > 0 %}{{ cell.count }}{% endif %}
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endwith %}
+            {% else %}
+            <p class="text-muted prx-text-center">Keine Heatmap-Daten verfügbar</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Services -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">📋</span>
+                Top Leistungen
+            </h3>
+        </div>
+        <div class="prx-card__body" style="max-height: 300px; overflow-y: auto;">
+            <div class="prx-table-wrapper" style="border: none;">
+                <table class="prx-table prx-table--compact">
+                    <thead>
+                        <tr>
+                            <th>Ziffer</th>
+                            <th class="prx-table__cell--right">Anz.</th>
+                            <th class="prx-table__cell--right">Punkte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in services|slice:":10" %}
+                        <tr>
+                            <td class="prx-table__cell--mono font-semibold" style="color: var(--color-primary-500);">{{ service.code }}</td>
+                            <td class="prx-table__cell--right">{{ service.count }}</td>
+                            <td class="prx-table__cell--right">{{ service.total_points }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="prx-text-center text-muted">Keine Leistungen</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block inline_scripts %}
+<script>
+    const chartsData = {{ charts_json|safe|default:"{}" }};
+    
+    // Stündliche Verteilung
+    if (chartsData.hourly_distribution) {
+        chartsData.hourly_distribution.datasets.forEach((ds, i) => {
+            ds.backgroundColor = PRX_COLORS.palette[i];
+        });
+        
+        new Chart(document.getElementById('hourlyChart'), {
+            type: 'bar',
+            data: chartsData.hourly_distribution,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } },
+                scales: {
+                    y: { beginAtZero: true, stacked: true, grid: { color: PRX_COLORS.neutralLight } },
+                    x: { stacked: true, grid: { display: false } }
+                }
+            }
+        });
+    }
+    
+    // Status-Verteilung
+    if (chartsData.status_distribution) {
+        chartsData.status_distribution.datasets[0].backgroundColor = [
+            PRX_COLORS.success, PRX_COLORS.warning, PRX_COLORS.accent, PRX_COLORS.neutralMedium
+        ];
+        
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: chartsData.status_distribution,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8 } } }
+            }
+        });
+    }
+    
+    // Pünktlichkeit
+    if (chartsData.punctuality) {
+        chartsData.punctuality.datasets[0].backgroundColor = [
+            PRX_COLORS.success, PRX_COLORS.warning, PRX_COLORS.danger
+        ];
+        
+        new Chart(document.getElementById('punctualityChart'), {
+            type: 'doughnut',
+            data: chartsData.punctuality,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8 } } }
+            }
+        });
+    }
+    
+    // Dokumentation
+    if (chartsData.documentation) {
+        chartsData.documentation.datasets[0].backgroundColor = [
+            PRX_COLORS.success, PRX_COLORS.danger
+        ];
+        
+        new Chart(document.getElementById('documentationChart'), {
+            type: 'doughnut',
+            data: chartsData.documentation,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8 } } }
+            }
+        });
+    }
+    
+    // Täglicher Trend
+    if (chartsData.daily_trend) {
+        chartsData.daily_trend.datasets.forEach((ds, i) => {
+            ds.borderColor = PRX_COLORS.palette[i];
+            ds.backgroundColor = PRX_COLORS.paletteLight[i];
+            ds.fill = true;
+        });
+        
+        new Chart(document.getElementById('dailyTrendChart'), {
+            type: 'line',
+            data: chartsData.daily_trend,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: PRX_COLORS.neutralLight } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

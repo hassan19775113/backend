@@ -1,0 +1,480 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Ärzte-Dashboard{% endblock %}
+{% block header_title %}PraxiApp - Ärzte{% endblock %}
+{% block nav_active_doctors %}prx-header__link--active{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/pages/haupt_dashboard.css' %}">
+{% endblock %}
+
+{% block page_header %}
+<section class="prx-section">
+    <div class="prx-section__header">
+        <div>
+            <h1 class="prx-section__title">
+                <span>👨‍⚕️</span> Ärzte-Dashboard
+            </h1>
+            <p class="prx-section__subtitle">
+                Performance, Termine und Auslastung der Behandler
+            </p>
+        </div>
+        <div class="flex gap-2 items-center">
+            <select
+                class="selector"
+                id="doctorSelect"
+                data-current-period="{{ period|default:'week' }}"
+                style="background: var(--color-secondary-500); color: var(--color-neutral-900);"
+            >
+                <option value="">Alle Ärzte</option>
+                {% for doc in doctors_list %}
+                <option value="{{ doc.id }}" {% if doc.id == selected_doctor_id %}selected{% endif %}>
+                    {{ doc.full_name }}
+                </option>
+                {% endfor %}
+            </select>
+            <select
+                class="selector"
+                id="periodSelect"
+                data-current-doctor-id="{{ selected_doctor_id|default:'' }}"
+                style="background: var(--color-secondary-500); color: var(--color-neutral-900);"
+            >
+                <option value="week" {% if period == "week" %}selected{% endif %}>Woche</option>
+                <option value="month" {% if period == "month" %}selected{% endif %}>Monat</option>
+                <option value="quarter" {% if period == "quarter" %}selected{% endif %}>Quartal</option>
+            </select>
+            <a href="{% url 'dashboard:index' %}" class="prx-btn prx-btn--outline">
+                ← Zurück
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block kpi_section %}
+<!-- Aggregated Stats (All Doctors) -->
+<section class="prx-kpi-grid" style="margin-bottom: var(--space-6);">
+    <div class="prx-kpi prx-kpi--primary">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">👨‍⚕️</span>
+        </div>
+        <div class="prx-kpi__label">Aktive Ärzte</div>
+        <div class="prx-kpi__value">{{ stats.active_doctors|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--success">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">📅</span>
+        </div>
+        <div class="prx-kpi__label">Termine Gesamt</div>
+        <div class="prx-kpi__value">{{ stats.total_appointments|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--accent">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">🩺</span>
+        </div>
+        <div class="prx-kpi__label">Operationen</div>
+        <div class="prx-kpi__value">{{ stats.total_operations|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--info">
+        <div class="prx-kpi__header">
+            <span class="prx-kpi__icon">⏱️</span>
+        </div>
+        <div class="prx-kpi__label">Ø Auslastung</div>
+        <div class="prx-kpi__value">{{ stats.avg_utilization|default:"0" }}<span class="prx-kpi__unit">%</span></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+{% if doctor %}
+<!-- Doctor Profile -->
+<section class="prx-section">
+    <div class="prx-card">
+        <div class="doctor-card-content">
+            <div
+                class="prx-avatar prx-avatar--xl prx-js-bg"
+                data-bg="{{ doctor.color|default:'var(--color-secondary-500)' }}"
+                style="background: var(--color-secondary-500); color: white; font-size: 2rem;"
+            >
+                {{ doctor.initials }}
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold">{{ doctor.title }} {{ doctor.full_name }}</h2>
+                <div class="flex gap-4 flex-wrap text-secondary text-sm" style="margin-top: var(--space-2);">
+                    <span>🏥 {{ doctor.specialty|default:"Allgemeinmedizin" }}</span>
+                    <span>📧 {{ doctor.email }}</span>
+                    {% if doctor.phone %}<span>📞 {{ doctor.phone }}</span>{% endif %}
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 items-end">
+                <span class="prx-badge prx-badge--{% if doctor.is_active %}success{% else %}warning{% endif %}">
+                    {% if doctor.is_active %}Aktiv{% else %}Inaktiv{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Doctor KPIs -->
+<section class="prx-kpi-grid" style="margin-bottom: var(--space-6);">
+    <div class="prx-kpi prx-kpi--primary">
+        <div class="prx-kpi__label">Termine</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.appointments|default:"0" }}</div>
+        <div class="prx-kpi__description">im {{ period_label }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--success">
+        <div class="prx-kpi__label">Abgeschlossen</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.completed|default:"0" }}</div>
+        <div class="prx-kpi__footer">
+            <span class="prx-kpi__trend prx-kpi__trend--up">{{ doctor_kpis.completion_rate|default:"0" }}%</span>
+        </div>
+    </div>
+    <div class="prx-kpi prx-kpi--warning">
+        <div class="prx-kpi__label">Operationen</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.operations|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--info">
+        <div class="prx-kpi__label">Auslastung</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.utilization|default:"0" }}<span class="prx-kpi__unit">%</span></div>
+    </div>
+    <div class="prx-kpi prx-kpi--danger">
+        <div class="prx-kpi__label">No-Shows</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.no_shows|default:"0" }}</div>
+        <div class="prx-kpi__description">{{ doctor_kpis.no_show_rate|default:"0" }}% Rate</div>
+    </div>
+    <div class="prx-kpi prx-kpi--accent">
+        <div class="prx-kpi__label">Ø Dauer</div>
+        <div class="prx-kpi__value">{{ doctor_kpis.avg_duration|default:"0" }}<span class="prx-kpi__unit">min</span></div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="prx-content-grid--2-cols prx-content-grid">
+    <!-- Schedule -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🗓️</span>
+                Arbeitszeiten
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="schedule-grid">
+                {% for day in schedule %}
+                <div class="schedule-day {% if not day.active %}off{% endif %}">
+                    <div class="schedule-day-name">{{ day.name }}</div>
+                    <div class="schedule-day-hours">
+                        {% if day.active %}{{ day.start }} - {{ day.end }}{% else %}—{% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-sm">Keine Arbeitszeiten konfiguriert</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">📅</span>
+                Nächste Termine
+            </h3>
+        </div>
+        <div class="prx-card__body" style="max-height: 300px; overflow-y: auto;">
+            {% if upcoming_appointments %}
+            <ul class="prx-list">
+                {% for appt in upcoming_appointments|slice:":8" %}
+                <li class="prx-list-item">
+                    <div
+                        class="prx-avatar prx-avatar--sm prx-js-bg"
+                        data-bg="{{ appt.type_color|default:'var(--color-primary-500)' }}"
+                        style="background: var(--color-primary-500); color: white;"
+                    >
+                        {{ appt.patient_initials }}
+                    </div>
+                    <div class="prx-list-item__content">
+                        <div class="prx-list-item__title">{{ appt.patient_name }}</div>
+                        <div class="prx-list-item__subtitle">{{ appt.type_name }} · {{ appt.date|slice:":10" }} {{ appt.date|slice:"11:16" }}</div>
+                    </div>
+                    <span class="prx-badge prx-badge--{{ appt.status_class|default:'info' }}">{{ appt.status_label }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted text-sm prx-text-center">Keine anstehenden Termine</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📈 Termine pro Tag</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="appointmentsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📊 Status-Verteilung</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- All Doctors Overview -->
+<div class="prx-content-grid">
+    <!-- Doctors List -->
+    <div class="prx-card prx-span-2">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">👨‍⚕️</span>
+                Alle Ärzte
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-table-wrapper">
+                <table class="prx-table">
+                    <thead>
+                        <tr>
+                            <th>Arzt</th>
+                            <th>Termine</th>
+                            <th>Operationen</th>
+                            <th>Auslastung</th>
+                            <th>No-Show</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in doctors_overview %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="prx-avatar prx-avatar--sm prx-js-bg"
+                                        data-bg="{{ doc.color|default:'var(--color-secondary-500)' }}"
+                                        style="background: var(--color-secondary-500); color: white;"
+                                    >
+                                        {{ doc.initials }}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">{{ doc.full_name }}</div>
+                                        <div class="text-xs text-muted">{{ doc.specialty|default:"Allgemein" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="font-semibold">{{ doc.appointments }}</td>
+                            <td>{{ doc.operations }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="prx-progress" style="width: 80px;">
+                                        <div
+                                            class="prx-progress__bar prx-js-util-bar"
+                                            data-width="{{ doc.utilization }}"
+                                            data-util="{{ doc.utilization }}"
+                                            style="width: 0%; background: var(--color-neutral-200);"
+                                        ></div>
+                                    </div>
+                                    <span class="text-sm">{{ doc.utilization }}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="prx-badge prx-badge--{% if doc.no_show_rate > 10 %}danger{% elif doc.no_show_rate > 5 %}warning{% else %}success{% endif %}">
+                                    {{ doc.no_show_rate }}%
+                                </span>
+                            </td>
+                            <td>
+                                <a href="?doctor_id={{ doc.id }}" class="prx-btn prx-btn--ghost prx-btn--xs">
+                                    Details →
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="prx-text-center text-muted">Keine Ärzte konfiguriert</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Utilization Chart -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📊 Auslastung pro Arzt</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--lg">
+                <canvas id="utilizationChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block inline_scripts %}
+<script type="application/json" id="prx-doctors-charts-data">{{ charts_json|default:"{}"|safe }}</script>
+
+<script>
+    (function () {
+        const readJson = (id, fallback) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            try {
+                return JSON.parse(el.textContent || '');
+            } catch (e) {
+                return fallback;
+            }
+        };
+
+        const chartsData = readJson('prx-doctors-charts-data', {});
+        window.PRX_DASHBOARD_DATA = chartsData;
+
+        // 1) Navigation controls (avoid Django template syntax in inline JS)
+        const doctorSelect = document.getElementById('doctorSelect');
+        const periodSelect = document.getElementById('periodSelect');
+
+        const navigate = (doctorId, period) => {
+            const params = new URLSearchParams(window.location.search);
+            if (doctorId) {
+                params.set('doctor_id', doctorId);
+            } else {
+                params.delete('doctor_id');
+            }
+            if (period) {
+                params.set('period', period);
+            }
+            const qs = params.toString();
+            window.location.search = qs ? `?${qs}` : '';
+        };
+
+        if (doctorSelect) {
+            doctorSelect.addEventListener('change', function () {
+                const period = (doctorSelect.dataset.currentPeriod || (periodSelect && periodSelect.value) || 'week');
+                navigate(doctorSelect.value, period);
+            });
+        }
+        if (periodSelect) {
+            periodSelect.addEventListener('change', function () {
+                const doctorId = (periodSelect.dataset.currentDoctorId || (doctorSelect && doctorSelect.value) || '');
+                navigate(doctorId, periodSelect.value);
+            });
+        }
+
+        // 2) Apply data-driven styles (keep style="..." free of Django syntax)
+        for (const el of document.querySelectorAll('.prx-js-bg')) {
+            const bg = el.dataset.bg;
+            if (bg) el.style.background = bg;
+        }
+        for (const el of document.querySelectorAll('.prx-js-util-bar')) {
+            const widthRaw = el.dataset.width;
+            const width = Number.parseFloat(widthRaw);
+            if (Number.isFinite(width)) {
+                el.style.width = `${Math.max(0, Math.min(100, width))}%`;
+            }
+            const utilRaw = el.dataset.util;
+            const util = Number.parseFloat(utilRaw);
+            if (Number.isFinite(util)) {
+                el.style.background = util >= 80 ? 'var(--color-success-500)' : util >= 50 ? 'var(--color-warning-500)' : 'var(--color-danger-500)';
+            }
+        }
+    })();
+</script>
+
+{% if doctor %}
+<script>
+    (function () {
+        const chartsData = window.PRX_DASHBOARD_DATA || {};
+
+        // Appointments per Day Chart
+        if (chartsData.appointments_per_day) {
+            chartsData.appointments_per_day.datasets[0].borderColor = PRX_COLORS.primary;
+            chartsData.appointments_per_day.datasets[0].backgroundColor = PRX_COLORS.paletteLight[0];
+            chartsData.appointments_per_day.datasets[0].fill = true;
+
+            new Chart(document.getElementById('appointmentsChart'), {
+                type: 'line',
+                data: chartsData.appointments_per_day,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: PRX_COLORS.neutralLight } },
+                        x: { grid: { display: false } },
+                    },
+                },
+            });
+        }
+
+        // Status Distribution Chart
+        if (chartsData.status_distribution) {
+            chartsData.status_distribution.datasets[0].backgroundColor = [
+                PRX_COLORS.success,
+                PRX_COLORS.warning,
+                PRX_COLORS.danger,
+                PRX_COLORS.neutralMedium,
+            ];
+
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: chartsData.status_distribution,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } } },
+                },
+            });
+        }
+    })();
+</script>
+{% else %}
+<script>
+    (function () {
+        const chartsData = window.PRX_DASHBOARD_DATA || {};
+
+        // Utilization by Doctor Chart
+        if (chartsData.utilization_by_doctor) {
+            chartsData.utilization_by_doctor.datasets[0].backgroundColor = PRX_COLORS.palette;
+
+            new Chart(document.getElementById('utilizationChart'), {
+                type: 'bar',
+                data: chartsData.utilization_by_doctor,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: (v) => v + '%' },
+                            grid: { color: PRX_COLORS.neutralLight },
+                        },
+                        y: { grid: { display: false } },
+                    },
+                },
+            });
+        }
+    })();
+</script>
+{% endif %}
+{% endblock %}

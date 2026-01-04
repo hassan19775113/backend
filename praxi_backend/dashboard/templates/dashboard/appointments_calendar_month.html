@@ -1,0 +1,125 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Termine – Monat{% endblock %}
+{% block header_title %}PraxiApp - Termine{% endblock %}
+{% block nav_active_scheduling %}prx-header__link--active{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/pages/appointments_calendar.css' %}?v=1.1">
+{% endblock %}
+
+{% block page_header %}
+<section class="cal-page cal-page--full">
+	<div class="cal-page__header">
+		<div>
+			<h1 class="cal-title">Termine·Monat</h1>
+			<p class="cal-subtitle">{{ month_display }}</p>
+		</div>
+		<div class="cal-actions">
+			<a class="cal-btn cal-btn--ghost" href="?date={{ prev_month }}">← Monat</a>
+			<a class="cal-btn" href="?date={{ anchor|date:'Y-m-d' }}">Dieser Monat</a>
+			<a class="cal-btn cal-btn--ghost" href="?date={{ next_month }}">Monat →</a>
+			<span class="cal-sep" aria-hidden="true"></span>
+			<a class="cal-btn cal-btn--ghost" href="{% url 'dashboard:appointments_calendar_day' %}?date={{ anchor|date:'Y-m-d' }}">Tag</a>
+			<a class="cal-btn cal-btn--ghost" href="{% url 'dashboard:appointments_calendar_week' %}?date={{ anchor|date:'Y-m-d' }}">Woche</a>
+			<a class="cal-btn" aria-current="page" href="{% url 'dashboard:appointments_calendar_month' %}?date={{ anchor|date:'Y-m-d' }}">Monat</a>
+			<span class="cal-sep" aria-hidden="true"></span>
+			<a class="cal-btn cal-btn--ghost" href="{% url 'dashboard:index' %}">← Zurück</a>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="cal-page cal-page--full">
+	<div class="cal-shell cal-shell--full">
+		<div class="cal-layout">
+			<div class="cal-main">
+				<div class="cal-container" aria-label="Monatskalender">
+					<div class="cal-scroller" role="region" aria-label="Monatsraster">
+						<div class="cal-month">
+							{% for w in weekday_labels %}
+							<div class="cal-month__dow">{{ w }}</div>
+							{% endfor %}
+
+							{% for week in weeks %}
+								{% for day in week %}
+								<div class="cal-month__cell {% if not day.in_month %}cal-month__cell--out{% endif %} {% if day.is_today %}cal-month__cell--today{% endif %}">
+									<div class="cal-month__cellhead">
+										<a class="cal-month__daylink" href="{% url 'dashboard:appointments_calendar_day' %}?date={{ day.iso }}&doctor={{ doctor_query|urlencode }}{% if selected_doctor_id %}&doctor_id={{ selected_doctor_id }}{% endif %}">{{ day.day }}</a>
+									</div>
+									<div class="cal-month__events">
+										{% for a in day.events %}
+										<div class="cal-month__event" style="--cal-accent: {{ a.accent }};">
+											<span class="cal-month__eventtime">{{ a.time }}</span>
+											<span class="cal-month__eventtext">{{ a.doctor }} · P{{ a.patient_id }}</span>
+										</div>
+										{% endfor %}
+										{% if day.more_count %}
+										<div class="cal-month__more">
+											+{{ day.more_count }} weitere · <a href="{% url 'dashboard:appointments_calendar_day' %}?date={{ day.iso }}&doctor={{ doctor_query|urlencode }}{% if selected_doctor_id %}&doctor_id={{ selected_doctor_id }}{% endif %}">anzeigen</a>
+										</div>
+										{% endif %}
+									</div>
+								</div>
+								{% endfor %}
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<aside class="cal-side" aria-label="Filter">
+				<div class="cal-filter">
+					<div class="cal-filter__head">
+						<div class="cal-filter__title">Filter</div>
+						<div class="cal-filter__subtitle">Arzt / Ärztin</div>
+					</div>
+
+					<form class="cal-filter__form" method="get" action="">
+						<input type="hidden" name="date" value="{{ anchor|date:'Y-m-d' }}" />
+						<div class="cal-filter__field">
+							<label class="cal-filter__label" for="doctor">Name enthält</label>
+							<input
+								id="doctor"
+								name="doctor"
+								type="text"
+								value="{{ doctor_query }}"
+								placeholder="z.B. Anna, Müller, dash_doc…"
+								class="cal-filter__input"
+								autocomplete="off"
+							/>
+						</div>
+						<div class="cal-filter__actions">
+							<button class="cal-btn" type="submit">Suchen</button>
+							<a class="cal-btn cal-btn--ghost" href="?date={{ anchor|date:'Y-m-d' }}">Zurücksetzen</a>
+						</div>
+					</form>
+
+					{% if selected_doctor_id %}
+					<div class="cal-filter__current">
+						<span class="cal-filter__pill">Aktiv: {{ selected_doctor_name }}</span>
+						<a class="cal-filter__clear" href="?date={{ anchor|date:'Y-m-d' }}">Filter entfernen</a>
+					</div>
+					{% endif %}
+
+					<div class="cal-filter__list" role="list">
+						{% for d in doctors %}
+						<a
+							role="listitem"
+							class="cal-filter__item {% if d.id == selected_doctor_id %}cal-filter__item--active{% endif %}"
+							href="?date={{ anchor|date:'Y-m-d' }}&doctor={{ doctor_query|urlencode }}&doctor_id={{ d.id }}"
+						>
+							{{ d.name }}
+						</a>
+						{% empty %}
+						<div class="cal-filter__empty">Keine Ärzt:innen gefunden.</div>
+						{% endfor %}
+					</div>
+				</div>
+			</aside>
+		</div>
+	</div>
+</section>
+{% endblock %}

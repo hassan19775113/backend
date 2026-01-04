@@ -1,0 +1,176 @@
+# ==============================================================================
+# PraxiApp Backend - Production Docker Compose
+# ==============================================================================
+# Start:   docker-compose -f docker-compose.prod.yml up -d
+# Stop:    docker-compose -f docker-compose.prod.yml down
+# Logs:    docker-compose -f docker-compose.prod.yml logs -f
+# Scale:   docker-compose -f docker-compose.prod.yml up -d --scale web=3
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  # ============================================================================
+  # Nginx Reverse Proxy
+  # ============================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: praxiapp-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+      - static_prod:/app/staticfiles:ro
+      - media_prod:/app/media:ro
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+  # ============================================================================
+  # Django + Gunicorn
+  # ============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: praxiapp-web
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod
+    volumes:
+      - static_prod:/app/staticfiles
+      - media_prod:/app/media
+      - logs_prod:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: praxiapp-db
+    expose:
+      - "5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${SYS_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${SYS_DB_PASSWORD}
+      POSTGRES_MULTIPLE_DATABASES: ${SYS_DB_NAME},${MED_DB_NAME}
+    volumes:
+      - postgres_prod:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+      - ./docker/backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+  # ============================================================================
+  # Redis Cache & Message Broker
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: praxiapp-redis
+    expose:
+      - "6379"
+    volumes:
+      - redis_prod:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+  # ============================================================================
+  # Celery Worker
+  # ============================================================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: praxiapp-celery-worker
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod
+    volumes:
+      - logs_prod:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A praxi_backend worker --loglevel=info --concurrency=4
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+  # ============================================================================
+  # Celery Beat Scheduler
+  # ============================================================================
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: praxiapp-celery-beat
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod
+    volumes:
+      - logs_prod:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A praxi_backend beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    restart: unless-stopped
+    networks:
+      - praxiapp-prod
+
+volumes:
+  postgres_prod:
+  redis_prod:
+  static_prod:
+  media_prod:
+  logs_prod:
+
+networks:
+  praxiapp-prod:
+    driver: bridge

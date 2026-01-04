@@ -1,0 +1,1077 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | PraxiApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #0D6EFD;
+            --primary-light: #3D8BFD;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --info: #17A2B8;
+            --secondary: #6C757D;
+            --dark: #212529;
+            --light: #F8F9FA;
+            --white: #FFFFFF;
+            --border: #DEE2E6;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #F0F4F8 0%, #E2E8F0 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2E8B57 0%, #228B22 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        .header-nav a:hover { background: rgba(255,255,255,0.15); }
+
+        .doctor-selector, .period-selector {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .doctor-selector option, .period-selector option {
+            color: var(--dark);
+            background: var(--white);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Aggregated Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-info p {
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        /* Doctor Profile Card (Detail View) */
+        .profile-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .profile-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .kpi-card.success::before { background: var(--success); }
+        .kpi-card.warning::before { background: var(--warning); }
+        .kpi-card.danger::before { background: var(--danger); }
+        .kpi-card.info::before { background: var(--info); }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .kpi-subtitle {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Section Cards */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .section-grid { grid-template-columns: 1fr; }
+        }
+
+        .section-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .section-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .section-header {
+            background: var(--light);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-body {
+            padding: 1.25rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .chart-container.small {
+            height: 200px;
+        }
+
+        /* Ranking Table */
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th, .ranking-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ranking-table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .ranking-table tr:hover {
+            background: var(--light);
+        }
+
+        .ranking-table .rank {
+            width: 40px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .ranking-table .rank-1 { color: #FFD700; }
+        .ranking-table .rank-2 { color: #C0C0C0; }
+        .ranking-table .rank-3 { color: #CD7F32; }
+
+        .doctor-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .doctor-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .metric-cell {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-cell {
+            font-weight: 700;
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .heatmap-table th, .heatmap-table td {
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .heatmap-table th {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .heatmap-cell {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: var(--dark);
+            margin: 0 auto;
+        }
+
+        /* Services Table */
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .services-table th, .services-table td {
+            padding: 0.6rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .services-table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+
+        .services-table .code {
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Progress Bars */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        /* Satisfaction Display */
+        .satisfaction-display {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .satisfaction-score {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .satisfaction-stars {
+            font-size: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .satisfaction-count {
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        /* Waiting Times */
+        .waiting-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .waiting-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+
+        .waiting-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .waiting-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        .waiting-trend {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .waiting-trend.up { color: var(--danger); }
+        .waiting-trend.down { color: var(--success); }
+
+        /* Doctor Cards Grid */
+        .doctor-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .doctor-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .doctor-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .doctor-card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .doctor-card-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .doctor-card-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .doctor-card-metric {
+            font-size: 0.8rem;
+        }
+
+        .doctor-card-metric-value {
+            font-weight: 600;
+        }
+
+        .doctor-card-metric-label {
+            color: var(--secondary);
+        }
+
+        /* Error State */
+        .error-message {
+            background: #F8D7DA;
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; }
+            .profile-card { grid-template-columns: 1fr; text-align: center; }
+            .profile-badges { align-items: center; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .waiting-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🩺 Ärzte-Dashboard</h1>
+            <div class="header-nav">
+                <a href="/praxiadmin/dashboard/">← Haupt-Dashboard</a>
+                <a href="/praxiadmin/dashboard/scheduling/">Scheduling</a>
+                <a href="/praxiadmin/dashboard/patients/">Patienten</a>
+                
+                <select class="doctor-selector" onchange="if(this.value) window.location.href='/praxiadmin/dashboard/doctors/' + this.value + '/?days={{ selected_days }}'">
+                    <option value="">Alle Ärzte</option>
+                    {% for d in doctor_list %}
+                    <option value="{{ d.id }}" {% if is_detail and doctor.id == d.id %}selected{% endif %}>
+                        {{ d.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                
+                <select class="period-selector" onchange="window.location.href='?days=' + this.value">
+                    <option value="7" {% if selected_days == 7 %}selected{% endif %}>7 Tage</option>
+                    <option value="30" {% if selected_days == 30 %}selected{% endif %}>30 Tage</option>
+                    <option value="90" {% if selected_days == 90 %}selected{% endif %}>90 Tage</option>
+                    <option value="365" {% if selected_days == 365 %}selected{% endif %}>1 Jahr</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        {% if error %}
+        <div class="error-message">
+            <strong>Fehler:</strong> {{ error }}
+        </div>
+        {% else %}
+
+        {% if is_detail %}
+        <!-- ============== EINZELARZT-ANSICHT ============== -->
+
+        <!-- Doctor Profile -->
+        <div class="profile-card">
+            <div class="profile-avatar" style="background: {{ doctor.calendar_color }};">
+                {{ doctor.first_name|slice:":1" }}{{ doctor.last_name|slice:":1" }}
+            </div>
+            <div class="profile-info">
+                <h2>{{ doctor.name }}</h2>
+                <div class="profile-meta">
+                    <span>📧 {{ doctor.email }}</span>
+                    <span>📅 {{ doctor.working_days|join:", " }}</span>
+                    <span>⏱️ {{ doctor.weekly_hours }}h / Woche</span>
+                </div>
+            </div>
+            <div class="profile-badges">
+                <span class="badge" style="background: {% if utilization.utilization >= 80 %}#D4EDDA{% elif utilization.utilization >= 60 %}#FFF3CD{% else %}#F8D7DA{% endif %}; color: {% if utilization.utilization >= 80 %}var(--success){% elif utilization.utilization >= 60 %}#856404{% else %}var(--danger){% endif %};">
+                    {{ utilization.utilization }}% Auslastung
+                </span>
+                <span class="badge" style="background: #E7F1FF; color: var(--primary);">
+                    {{ volume.total }} Termine
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card {% if utilization.utilization >= 80 %}success{% elif utilization.utilization >= 60 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-label">Auslastung</div>
+                <div class="kpi-value">{{ utilization.utilization }}%</div>
+                <div class="kpi-subtitle">{{ utilization.booked_hours }}h / {{ utilization.available_hours }}h</div>
+            </div>
+            
+            <div class="kpi-card info">
+                <div class="kpi-label">Termine gesamt</div>
+                <div class="kpi-value">{{ volume.total }}</div>
+                <div class="kpi-subtitle">Ø {{ volume.avg_per_day }} pro Tag</div>
+            </div>
+            
+            <div class="kpi-card {% if no_show.no_show_rate <= 5 %}success{% elif no_show.no_show_rate <= 10 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-label">No-Show-Rate</div>
+                <div class="kpi-value">{{ no_show.no_show_rate }}%</div>
+                <div class="kpi-subtitle">{{ no_show.no_show_count }} von {{ no_show.total_past }}</div>
+            </div>
+            
+            <div class="kpi-card {% if cancellation.cancellation_rate <= 10 %}success{% elif cancellation.cancellation_rate <= 20 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-label">Stornoquote</div>
+                <div class="kpi-value">{{ cancellation.cancellation_rate }}%</div>
+                <div class="kpi-subtitle">{{ cancellation.cancelled_count }} Stornierungen</div>
+            </div>
+            
+            <div class="kpi-card info">
+                <div class="kpi-label">Ø Behandlungsdauer</div>
+                <div class="kpi-value">{{ duration.avg_actual }} min</div>
+                <div class="kpi-subtitle">{{ duration.efficiency }}% Effizienz</div>
+            </div>
+            
+            <div class="kpi-card success">
+                <div class="kpi-label">Neupatienten-Quote</div>
+                <div class="kpi-value">{{ new_patients.new_patient_rate }}%</div>
+                <div class="kpi-subtitle">{{ new_patients.new_patients }} von {{ new_patients.total_patients }}</div>
+            </div>
+            
+            <div class="kpi-card {% if documentation.compliance_rate >= 90 %}success{% elif documentation.compliance_rate >= 75 %}warning{% else %}danger{% endif %}">
+                <div class="kpi-label">Dokumentation</div>
+                <div class="kpi-value">{{ documentation.compliance_rate }}%</div>
+                <div class="kpi-subtitle">{{ documentation.overdue }} überfällig</div>
+            </div>
+            
+            <div class="kpi-card {% if satisfaction.score >= 4.5 %}success{% elif satisfaction.score >= 4.0 %}info{% else %}warning{% endif %}">
+                <div class="kpi-label">Zufriedenheit</div>
+                <div class="kpi-value">{{ satisfaction.score }}/5</div>
+                <div class="kpi-subtitle">{{ satisfaction.reviews_count }} Bewertungen</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="section-grid">
+            <!-- Peak-Times Heatmap -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🔥 Peak-Times</h3>
+                    <span style="font-size: 0.8rem; color: var(--secondary);">
+                        Stoßzeiten: {{ peak_times.busiest_day }} {{ peak_times.busiest_hour }}:00
+                    </span>
+                </div>
+                <div class="section-body">
+                    <div class="heatmap-container">
+                        <table class="heatmap-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    {% for hour in peak_times.working_hours %}
+                                    <th>{{ hour }}:00</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in peak_times.heatmap %}
+                                <tr>
+                                    <th>{{ row.day }}</th>
+                                    {% for cell in row.hours %}
+                                    <td>
+                                        <div class="heatmap-cell" style="background: rgba(46, 139, 87, {{ cell.intensity|floatformat:2 }}%);">
+                                            {{ cell.count }}
+                                        </div>
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Satisfaction -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⭐ Patientenzufriedenheit</h3>
+                </div>
+                <div class="section-body">
+                    <div class="satisfaction-display">
+                        <div class="satisfaction-score" style="color: {% if satisfaction.score >= 4.5 %}var(--success){% elif satisfaction.score >= 4.0 %}var(--info){% else %}var(--warning){% endif %};">
+                            {{ satisfaction.score }}
+                        </div>
+                        <div class="satisfaction-stars">
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= satisfaction.score %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="satisfaction-count">
+                            Basierend auf {{ satisfaction.reviews_count }} Bewertungen
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting Times -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⏱️ Wartezeiten</h3>
+                </div>
+                <div class="section-body">
+                    <div class="waiting-grid">
+                        <div class="waiting-item">
+                            <div class="waiting-value">{{ waiting_times.booking_lead_time }}</div>
+                            <div class="waiting-label">Tage bis Termin</div>
+                            <div class="waiting-trend {% if waiting_times.booking_lead_time_trend > 0 %}up{% else %}down{% endif %}">
+                                {% if waiting_times.booking_lead_time_trend > 0 %}↑{% else %}↓{% endif %}
+                                {{ waiting_times.booking_lead_time_trend|floatformat:1 }} Tage
+                            </div>
+                        </div>
+                        <div class="waiting-item">
+                            <div class="waiting-value">{{ waiting_times.waiting_room|floatformat:0 }}</div>
+                            <div class="waiting-label">Min. Wartezimmer</div>
+                            <div class="waiting-trend {% if waiting_times.waiting_room_trend > 0 %}up{% else %}down{% endif %}">
+                                {% if waiting_times.waiting_room_trend > 0 %}↑{% else %}↓{% endif %}
+                                {{ waiting_times.waiting_room_trend|floatformat:1 }} min
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Table -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📋 Leistungsübersicht</h3>
+                </div>
+                <div class="section-body" style="max-height: 300px; overflow-y: auto;">
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th>Ziffer</th>
+                                <th>Leistung</th>
+                                <th style="text-align: right;">Anzahl</th>
+                                <th style="text-align: right;">Punkte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in services %}
+                            <tr>
+                                <td class="code">{{ service.code }}</td>
+                                <td>{{ service.name }}</td>
+                                <td style="text-align: right;">{{ service.count }}</td>
+                                <td style="text-align: right;">{{ service.total_points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Weekly Volume Chart -->
+            <div class="section-card full-width">
+                <div class="section-header">
+                    <h3>📈 Terminvolumen (Wochen)</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="weeklyVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- ============== ÜBERSICHTS-ANSICHT ============== -->
+
+        <!-- Aggregated Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon" style="background: #E7F1FF; color: var(--primary);">🩺</div>
+                <div class="stat-info">
+                    <h3>{{ aggregates.doctor_count }}</h3>
+                    <p>Aktive Ärzte</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background: #D4EDDA; color: var(--success);">📊</div>
+                <div class="stat-info">
+                    <h3>{{ aggregates.avg_utilization }}%</h3>
+                    <p>Ø Auslastung</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background: #FFF3CD; color: #856404;">📅</div>
+                <div class="stat-info">
+                    <h3>{{ aggregates.total_appointments }}</h3>
+                    <p>Termine gesamt</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background: #F8D7DA; color: var(--danger);">⚠️</div>
+                <div class="stat-info">
+                    <h3>{{ aggregates.avg_no_show_rate }}%</h3>
+                    <p>Ø No-Show-Rate</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon" style="background: #D1ECF1; color: var(--info);">⭐</div>
+                <div class="stat-info">
+                    <h3>{{ aggregates.avg_satisfaction }}/5</h3>
+                    <p>Ø Zufriedenheit</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Cards -->
+        <div class="doctor-cards">
+            {% for d in doctors %}
+            <div class="doctor-card" style="border-left-color: {{ d.color }};" onclick="window.location.href='/praxiadmin/dashboard/doctors/{{ d.doctor_id }}/?days={{ selected_days }}'">
+                <div class="doctor-card-header">
+                    <div class="doctor-card-avatar" style="background: {{ d.color }};">
+                        {{ d.name|slice:"4:5" }}{{ d.name|slice:"-1:" }}
+                    </div>
+                    <div class="doctor-card-name">{{ d.name }}</div>
+                </div>
+                <div class="doctor-card-metrics">
+                    <div class="doctor-card-metric">
+                        <span class="doctor-card-metric-value">{{ d.utilization }}%</span>
+                        <span class="doctor-card-metric-label">Auslastung</span>
+                    </div>
+                    <div class="doctor-card-metric">
+                        <span class="doctor-card-metric-value">{{ d.appointments }}</span>
+                        <span class="doctor-card-metric-label">Termine</span>
+                    </div>
+                    <div class="doctor-card-metric">
+                        <span class="doctor-card-metric-value">{{ d.no_show_rate }}%</span>
+                        <span class="doctor-card-metric-label">No-Show</span>
+                    </div>
+                    <div class="doctor-card-metric">
+                        <span class="doctor-card-metric-value">{{ d.satisfaction_score }}/5</span>
+                        <span class="doctor-card-metric-label">Zufriedenheit</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="section-grid">
+            <!-- Appointment Volume by Doctor -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📊 Terminvolumen pro Arzt</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Utilization Comparison -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📈 Auslastungsvergleich</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No-Show Comparison -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>⚠️ No-Show-Rate</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="noShowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentation Compliance -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📝 Dokumentationsstatus</h3>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="documentationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking Table -->
+            <div class="section-card full-width">
+                <div class="section-header">
+                    <h3>🏆 Arzt-Ranking</h3>
+                </div>
+                <div class="section-body">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th class="rank">#</th>
+                                <th>Arzt</th>
+                                <th class="metric-cell">Auslastung</th>
+                                <th class="metric-cell">Termine</th>
+                                <th class="metric-cell">No-Show</th>
+                                <th class="metric-cell">Zufriedenheit</th>
+                                <th class="metric-cell">Dokumentation</th>
+                                <th class="metric-cell score-cell">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in charts.ranking %}
+                            <tr onclick="window.location.href='/praxiadmin/dashboard/doctors/{{ r.doctor_id }}/?days={{ selected_days }}'" style="cursor: pointer;">
+                                <td class="rank rank-{{ r.rank }}">
+                                    {% if r.rank == 1 %}🥇{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% else %}{{ r.rank }}{% endif %}
+                                </td>
+                                <td>
+                                    <div class="doctor-name-cell">
+                                        <span class="doctor-color-dot" style="background: {{ r.color }};"></span>
+                                        {{ r.name }}
+                                    </div>
+                                </td>
+                                <td class="metric-cell">{{ r.utilization }}%</td>
+                                <td class="metric-cell">{{ r.appointments }}</td>
+                                <td class="metric-cell">{{ r.no_show_rate }}%</td>
+                                <td class="metric-cell">{{ r.satisfaction }}/5</td>
+                                <td class="metric-cell">{{ r.documentation }}%</td>
+                                <td class="metric-cell score-cell" style="color: {% if r.score >= 80 %}var(--success){% elif r.score >= 60 %}var(--warning){% else %}var(--danger){% endif %};">
+                                    {{ r.score }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+        {% endif %}
+    </main>
+
+    <script>
+        const chartsData = {{ charts_json|safe|default:"{}" }};
+
+        {% if is_detail %}
+        // Weekly Volume Chart (Detail View)
+        if (chartsData.weekly_volume) {
+            new Chart(document.getElementById('weeklyVolumeChart'), {
+                type: 'line',
+                data: chartsData.weekly_volume,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+        {% else %}
+        // Volume Chart (Overview)
+        if (chartsData.appointment_volume) {
+            new Chart(document.getElementById('volumeChart'), {
+                type: 'bar',
+                data: chartsData.appointment_volume,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, stacked: true },
+                        x: { stacked: true }
+                    }
+                }
+            });
+        }
+
+        // Utilization Chart
+        if (chartsData.utilization_comparison) {
+            new Chart(document.getElementById('utilizationChart'), {
+                type: 'bar',
+                data: chartsData.utilization_comparison,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+
+        // No-Show Chart
+        if (chartsData.no_show_comparison) {
+            new Chart(document.getElementById('noShowChart'), {
+                type: 'bar',
+                data: chartsData.no_show_comparison,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, stacked: true },
+                        x: { stacked: true }
+                    }
+                }
+            });
+        }
+
+        // Documentation Chart
+        if (chartsData.documentation_comparison) {
+            new Chart(document.getElementById('documentationChart'), {
+                type: 'bar',
+                data: chartsData.documentation_comparison,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, stacked: true },
+                        x: { stacked: true }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    </script>
+</body>
+</html>

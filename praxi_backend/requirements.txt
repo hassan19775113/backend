@@ -1,0 +1,30 @@
+# Django Core
+Django>=5.0,<6.0
+djangorestframework>=3.15,<4.0
+djangorestframework-simplejwt>=5.3,<6.0
+
+# Database
+# NOTE:
+# - PraxiApp dev mode uses SQLite (settings_dev.py), so Postgres driver is not required.
+# - On Windows (especially newer Python/ARM64), psycopg2-binary may not have wheels and will
+#   try to compile from source, requiring MSVC build tools.
+# - Production (Docker/Linux) still installs this dependency.
+psycopg2-binary>=2.9,<3.0; platform_system != "Windows"
+
+# CORS (für Frontend-Integration)
+django-cors-headers>=4.3,<5.0
+
+# Environment
+python-dotenv>=1.0,<2.0
+
+# Production Server
+gunicorn>=21.0,<23.0
+whitenoise>=6.6,<7.0
+
+# Background Tasks (optional)
+celery>=5.3,<6.0
+redis>=5.0,<6.0
+
+# Development
+pytest>=7.4,<9.0
+pytest-django>=4.7,<5.0

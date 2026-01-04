@@ -1,0 +1,1338 @@
+/*
+================================================================================
+PRAXIAPP DESIGN SYSTEM - CALM MEDICAL UI
+================================================================================
+Version: 3.0.0
+Philosophy: Microsoft Outlook-Inspired Medical Interface
+Style: Light, Modern, Professional, Trustworthy
+
+Design Principles:
+1. CALM MEDICAL UI - Sterile, friendly, uncluttered
+2. OUTLOOK-INSPIRED - Light panels, clear navigation, modern components  
+3. FUNCTIONAL CLARITY - Focus on readability and interaction
+4. TRUST & SAFETY - Colors that convey professionalism and reliability
+
+================================================================================
+*/
+
+/*
+================================================================================
+1. DESIGN TOKENS - COLOR SYSTEM
+================================================================================
+*/
+
+:root {
+    /* ========================================
+       PRIMARY COLORS - Outlook Blue Family
+       ======================================== */
+    --prx-primary-50: #F0F7FF;
+    --prx-primary-100: #E1EFFF;
+    --prx-primary-200: #C3DFFF;
+    --prx-primary-300: #96C8FF;
+    --prx-primary-400: #5AA3F9;
+    --prx-primary-500: #0078D4;      /* Main Outlook Blue */
+    --prx-primary-600: #106EBE;
+    --prx-primary-700: #005A9E;
+    --prx-primary-800: #004578;
+    --prx-primary-900: #002B4D;
+    
+    /* ========================================
+       SECONDARY COLORS - Soft Teal
+       ======================================== */
+    --prx-secondary-50: #E6F7F9;
+    --prx-secondary-100: #CCF0F3;
+    --prx-secondary-200: #99E0E7;
+    --prx-secondary-300: #66D1DB;
+    --prx-secondary-400: #4FB3BF;    /* Main Soft Teal */
+    --prx-secondary-500: #3D9AA6;
+    --prx-secondary-600: #2E7A83;
+    --prx-secondary-700: #1F5A60;
+    --prx-secondary-800: #103A3D;
+    --prx-secondary-900: #001A1A;
+    
+    /* ========================================
+       ACCENT COLORS - Mint Green
+       ======================================== */
+    --prx-accent-50: #EFFAF6;
+    --prx-accent-100: #D5F2E8;
+    --prx-accent-200: #ABE5D1;
+    --prx-accent-300: #7BC6B0;       /* Main Mint Green */
+    --prx-accent-400: #5CB89E;
+    --prx-accent-500: #3D9A82;
+    --prx-accent-600: #2E7A66;
+    --prx-accent-700: #1F5A4A;
+    --prx-accent-800: #103A2E;
+    --prx-accent-900: #001A12;
+    
+    /* ========================================
+       NEUTRAL COLORS - Soft Gray Scale
+       ======================================== */
+    --prx-neutral-0: #FFFFFF;
+    --prx-neutral-50: #FAFBFC;
+    --prx-neutral-100: #F5F7FA;      /* Main Background */
+    --prx-neutral-150: #F0F2F5;
+    --prx-neutral-200: #E8ECF0;
+    --prx-neutral-250: #E1E4E8;      /* Main Border */
+    --prx-neutral-300: #D1D5DB;
+    --prx-neutral-400: #9CA3AF;
+    --prx-neutral-500: #6B7280;
+    --prx-neutral-600: #4B5563;
+    --prx-neutral-700: #374151;
+    --prx-neutral-800: #2E2E2E;      /* Main Text */
+    --prx-neutral-900: #1F2937;
+    
+    /* ========================================
+       SEMANTIC COLORS - Status & Feedback
+       ======================================== */
+    /* Success - Calm Green */
+    --prx-success-50: #F0FDF4;
+    --prx-success-100: #DCFCE7;
+    --prx-success-200: #BBF7D0;
+    --prx-success-300: #86EFAC;
+    --prx-success-400: #4ADE80;
+    --prx-success-500: #22C55E;
+    --prx-success-600: #16A34A;
+    --prx-success-700: #15803D;
+    
+    /* Warning - Soft Orange */
+    --prx-warning-50: #FFFBEB;
+    --prx-warning-100: #FEF3C7;
+    --prx-warning-200: #FDE68A;
+    --prx-warning-300: #FCD34D;
+    --prx-warning-400: #F4A259;      /* Main Soft Orange */
+    --prx-warning-500: #F59E0B;
+    --prx-warning-600: #D97706;
+    --prx-warning-700: #B45309;
+    
+    /* Danger - Medical Red */
+    --prx-danger-50: #FEF2F2;
+    --prx-danger-100: #FEE2E2;
+    --prx-danger-200: #FECACA;
+    --prx-danger-300: #FCA5A5;
+    --prx-danger-400: #F87171;
+    --prx-danger-500: #D9534F;       /* Main Medical Red */
+    --prx-danger-600: #DC2626;
+    --prx-danger-700: #B91C1C;
+    
+    /* Info - Sky Blue */
+    --prx-info-50: #F0F9FF;
+    --prx-info-100: #E0F2FE;
+    --prx-info-200: #BAE6FD;
+    --prx-info-300: #7DD3FC;
+    --prx-info-400: #38BDF8;
+    --prx-info-500: #0EA5E9;
+    --prx-info-600: #0284C7;
+    --prx-info-700: #0369A1;
+    
+    /* ========================================
+       INTERACTION COLORS
+       ======================================== */
+    --prx-hover-bg: #E6F0FA;         /* Hover Background */
+    --prx-active-bg: #D1E5F7;
+    --prx-selected-bg: #E1EFFF;
+    --prx-focus-ring: rgba(0, 120, 212, 0.25);
+    
+    /* ========================================
+       SHADOW SYSTEM
+       ======================================== */
+    --prx-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --prx-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --prx-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+    --prx-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.06), 0 4px 6px rgba(0, 0, 0, 0.03);
+    --prx-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 8px 10px rgba(0, 0, 0, 0.04);
+    --prx-shadow-glow: 0 0 20px rgba(0, 120, 212, 0.15);
+    
+    /* ========================================
+       BORDER RADIUS
+       ======================================== */
+    --prx-radius-xs: 2px;
+    --prx-radius-sm: 4px;
+    --prx-radius-md: 6px;
+    --prx-radius-lg: 8px;
+    --prx-radius-xl: 12px;
+    --prx-radius-2xl: 16px;
+    --prx-radius-full: 9999px;
+    
+    /* ========================================
+       SPACING SYSTEM (8px Base)
+       ======================================== */
+    --prx-space-0: 0;
+    --prx-space-1: 4px;
+    --prx-space-2: 8px;
+    --prx-space-3: 12px;
+    --prx-space-4: 16px;
+    --prx-space-5: 20px;
+    --prx-space-6: 24px;
+    --prx-space-8: 32px;
+    --prx-space-10: 40px;
+    --prx-space-12: 48px;
+    --prx-space-16: 64px;
+    
+    /* ========================================
+       TYPOGRAPHY
+       ======================================== */
+    --prx-font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+    --prx-font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    
+    /* Font Sizes */
+    --prx-text-xs: 11px;
+    --prx-text-sm: 13px;
+    --prx-text-base: 14px;
+    --prx-text-md: 15px;
+    --prx-text-lg: 16px;
+    --prx-text-xl: 18px;
+    --prx-text-2xl: 20px;
+    --prx-text-3xl: 24px;
+    --prx-text-4xl: 30px;
+    
+    /* Font Weights */
+    --prx-font-normal: 400;
+    --prx-font-medium: 500;
+    --prx-font-semibold: 600;
+    --prx-font-bold: 700;
+    
+    /* Line Heights */
+    --prx-leading-tight: 1.25;
+    --prx-leading-normal: 1.5;
+    --prx-leading-relaxed: 1.75;
+    
+    /* ========================================
+       TRANSITIONS
+       ======================================== */
+    --prx-transition-fast: 150ms ease;
+    --prx-transition-normal: 200ms ease;
+    --prx-transition-slow: 300ms ease;
+    --prx-transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* ========================================
+       Z-INDEX SCALE
+       ======================================== */
+    --prx-z-dropdown: 100;
+    --prx-z-sticky: 200;
+    --prx-z-fixed: 300;
+    --prx-z-modal-backdrop: 400;
+    --prx-z-modal: 500;
+    --prx-z-popover: 600;
+    --prx-z-tooltip: 700;
+}
+
+/*
+================================================================================
+2. BASE STYLES - Global Reset & Defaults
+================================================================================
+*/
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: light only;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--prx-font-family);
+    font-size: var(--prx-text-base);
+    font-weight: var(--prx-font-normal);
+    line-height: var(--prx-leading-normal);
+    color: var(--prx-neutral-800);
+    background-color: var(--prx-neutral-100);
+}
+
+/*
+================================================================================
+3. TYPOGRAPHY SYSTEM
+================================================================================
+*/
+
+/* Headings */
+.prx-h1 {
+    font-size: var(--prx-text-4xl);
+    font-weight: var(--prx-font-semibold);
+    line-height: var(--prx-leading-tight);
+    color: var(--prx-neutral-900);
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--prx-space-6) 0;
+}
+
+.prx-h2 {
+    font-size: var(--prx-text-3xl);
+    font-weight: var(--prx-font-semibold);
+    line-height: var(--prx-leading-tight);
+    color: var(--prx-neutral-900);
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--prx-space-5) 0;
+}
+
+.prx-h3 {
+    font-size: var(--prx-text-2xl);
+    font-weight: var(--prx-font-semibold);
+    line-height: var(--prx-leading-tight);
+    color: var(--prx-neutral-900);
+    margin: 0 0 var(--prx-space-4) 0;
+}
+
+.prx-h4 {
+    font-size: var(--prx-text-xl);
+    font-weight: var(--prx-font-semibold);
+    line-height: var(--prx-leading-normal);
+    color: var(--prx-neutral-800);
+    margin: 0 0 var(--prx-space-3) 0;
+}
+
+.prx-h5 {
+    font-size: var(--prx-text-lg);
+    font-weight: var(--prx-font-medium);
+    line-height: var(--prx-leading-normal);
+    color: var(--prx-neutral-800);
+    margin: 0 0 var(--prx-space-2) 0;
+}
+
+.prx-h6 {
+    font-size: var(--prx-text-base);
+    font-weight: var(--prx-font-medium);
+    line-height: var(--prx-leading-normal);
+    color: var(--prx-neutral-700);
+    margin: 0 0 var(--prx-space-2) 0;
+}
+
+/* Body Text */
+.prx-body {
+    font-size: var(--prx-text-base);
+    color: var(--prx-neutral-700);
+    line-height: var(--prx-leading-relaxed);
+}
+
+.prx-body-sm {
+    font-size: var(--prx-text-sm);
+    color: var(--prx-neutral-600);
+    line-height: var(--prx-leading-normal);
+}
+
+/* Caption & Labels */
+.prx-caption {
+    font-size: var(--prx-text-xs);
+    color: var(--prx-neutral-500);
+    letter-spacing: 0.02em;
+}
+
+.prx-label {
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-medium);
+    color: var(--prx-neutral-700);
+    letter-spacing: 0.01em;
+}
+
+.prx-overline {
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--prx-neutral-500);
+}
+
+/*
+================================================================================
+4. LAYOUT SYSTEM - 12-Column Grid
+================================================================================
+*/
+
+.prx-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 var(--prx-space-6);
+}
+
+.prx-grid {
+    display: grid;
+    gap: var(--prx-space-6);
+}
+
+.prx-grid-12 { grid-template-columns: repeat(12, 1fr); }
+.prx-grid-6 { grid-template-columns: repeat(6, 1fr); }
+.prx-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.prx-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.prx-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* Column Spans */
+.prx-col-1 { grid-column: span 1; }
+.prx-col-2 { grid-column: span 2; }
+.prx-col-3 { grid-column: span 3; }
+.prx-col-4 { grid-column: span 4; }
+.prx-col-6 { grid-column: span 6; }
+.prx-col-8 { grid-column: span 8; }
+.prx-col-12 { grid-column: span 12; }
+
+/* Flex Utilities */
+.prx-flex { display: flex; }
+.prx-flex-col { flex-direction: column; }
+.prx-flex-wrap { flex-wrap: wrap; }
+.prx-items-start { align-items: flex-start; }
+.prx-items-center { align-items: center; }
+.prx-items-end { align-items: flex-end; }
+.prx-justify-start { justify-content: flex-start; }
+.prx-justify-center { justify-content: center; }
+.prx-justify-end { justify-content: flex-end; }
+.prx-justify-between { justify-content: space-between; }
+.prx-gap-1 { gap: var(--prx-space-1); }
+.prx-gap-2 { gap: var(--prx-space-2); }
+.prx-gap-3 { gap: var(--prx-space-3); }
+.prx-gap-4 { gap: var(--prx-space-4); }
+.prx-gap-6 { gap: var(--prx-space-6); }
+.prx-gap-8 { gap: var(--prx-space-8); }
+
+/*
+================================================================================
+5. COMPONENT: HEADER - Outlook Style
+================================================================================
+*/
+
+.prx-header {
+    background: #e3e3e3; /*linear-gradient(135deg, var(--prx-primary-500) 0%, var(--prx-primary-600) 100%);*/
+    color: var(--prx-neutral-0);
+    padding: var(--prx-space-3) var(--prx-space-6);
+    position: sticky;
+    top: 0;
+    z-index: var(--prx-z-sticky);
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15);
+}
+
+.prx-header__inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prx-header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-3);
+}
+
+.prx-header__logo {
+    font-size: var(--prx-text-xl);
+    font-weight: var(--prx-font-semibold);
+    color: var(--prx-neutral-0);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+}
+
+.prx-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-1);
+}
+
+.prx-header__link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: var(--prx-space-2) var(--prx-space-3);
+    border-radius: var(--prx-radius-md);
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-medium);
+    transition: all var(--prx-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-2);
+}
+
+.prx-header__link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--prx-neutral-0);
+}
+
+.prx-header__link--active {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--prx-neutral-0);
+}
+
+.prx-header__user {
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-2);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--prx-text-sm);
+}
+
+/*
+================================================================================
+6. COMPONENT: SIDEBAR - Light Navigation Panel
+================================================================================
+*/
+
+.prx-sidebar {
+    width: 260px;
+    background: var(--prx-neutral-0);
+    border-right: 1px solid var(--prx-neutral-250);
+    height: calc(100vh - 52px);
+    position: sticky;
+    top: 52px;
+    overflow-y: auto;
+    padding: var(--prx-space-4) 0;
+}
+
+.prx-sidebar__section {
+    margin-bottom: var(--prx-space-4);
+}
+
+.prx-sidebar__title {
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--prx-primary-500);
+    padding: var(--prx-space-2) var(--prx-space-4);
+    background: var(--prx-neutral-100);
+    border-top: 1px solid var(--prx-neutral-200);
+    border-bottom: 1px solid var(--prx-neutral-200);
+}
+
+.prx-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-3);
+    padding: var(--prx-space-2) var(--prx-space-4);
+    color: var(--prx-neutral-700);
+    text-decoration: none;
+    font-size: var(--prx-text-sm);
+    transition: all var(--prx-transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.prx-sidebar__link:hover {
+    background: var(--prx-hover-bg);
+    color: var(--prx-primary-500);
+}
+
+.prx-sidebar__link--active {
+    background: var(--prx-selected-bg);
+    color: var(--prx-primary-600);
+    border-left-color: var(--prx-primary-500);
+    font-weight: var(--prx-font-medium);
+}
+
+.prx-sidebar__icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--prx-neutral-500);
+}
+
+.prx-sidebar__link:hover .prx-sidebar__icon,
+.prx-sidebar__link--active .prx-sidebar__icon {
+    color: var(--prx-primary-500);
+}
+
+/*
+================================================================================
+7. COMPONENT: CARDS
+================================================================================
+*/
+
+.prx-card {
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-250);
+    border-radius: var(--prx-radius-lg);
+    box-shadow: var(--prx-shadow-sm);
+    padding: var(--prx-space-5);
+    transition: all var(--prx-transition-normal);
+}
+
+.prx-card:hover {
+    box-shadow: var(--prx-shadow-md);
+    border-color: var(--prx-neutral-300);
+}
+
+.prx-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--prx-space-4);
+    padding-bottom: var(--prx-space-4);
+    border-bottom: 1px solid var(--prx-neutral-200);
+}
+
+.prx-card__title {
+    font-size: var(--prx-text-lg);
+    font-weight: var(--prx-font-semibold);
+    color: var(--prx-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: var(--prx-space-2);
+}
+
+.prx-card__title-icon {
+    color: var(--prx-primary-500);
+}
+
+.prx-card__subtitle {
+    font-size: var(--prx-text-sm);
+    color: var(--prx-neutral-500);
+    margin-top: var(--prx-space-1);
+}
+
+.prx-card__body {
+    /* Content area - inherits card padding */
+    padding: var(--prx-space-0, 0);
+}
+
+.prx-card__footer {
+    margin-top: var(--prx-space-4);
+    padding-top: var(--prx-space-4);
+    border-top: 1px solid var(--prx-neutral-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/*
+================================================================================
+8. COMPONENT: KPI WIDGETS
+================================================================================
+*/
+
+.prx-kpi {
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-250);
+    border-radius: var(--prx-radius-lg);
+    padding: var(--prx-space-5);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--prx-transition-normal);
+}
+
+.prx-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--kpi-color, var(--prx-primary-500));
+}
+
+.prx-kpi:hover {
+    box-shadow: var(--prx-shadow-md);
+    transform: translateY(-2px);
+}
+
+.prx-kpi__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--prx-space-3);
+}
+
+.prx-kpi__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--prx-radius-lg);
+    background: var(--kpi-color, var(--prx-primary-500));
+    color: var(--prx-neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--prx-text-lg);
+}
+
+.prx-kpi__label {
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--prx-neutral-500);
+}
+
+.prx-kpi__value {
+    font-size: var(--prx-text-4xl);
+    font-weight: var(--prx-font-bold);
+    color: var(--prx-neutral-900);
+    line-height: 1;
+    margin: var(--prx-space-2) 0;
+}
+
+.prx-kpi__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--prx-space-1);
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    padding: var(--prx-space-1) var(--prx-space-2);
+    border-radius: var(--prx-radius-full);
+}
+
+.prx-kpi__trend--up {
+    background: var(--prx-success-100);
+    color: var(--prx-success-700);
+}
+
+.prx-kpi__trend--down {
+    background: var(--prx-danger-100);
+    color: var(--prx-danger-700);
+}
+
+.prx-kpi__trend--neutral {
+    background: var(--prx-neutral-150);
+    color: var(--prx-neutral-600);
+}
+
+/* KPI Color Variants */
+.prx-kpi--primary { --kpi-color: var(--prx-primary-500); }
+.prx-kpi--secondary { --kpi-color: var(--prx-secondary-400); }
+.prx-kpi--accent { --kpi-color: var(--prx-accent-300); }
+.prx-kpi--success { --kpi-color: var(--prx-success-500); }
+.prx-kpi--warning { --kpi-color: var(--prx-warning-400); }
+.prx-kpi--danger { --kpi-color: var(--prx-danger-500); }
+.prx-kpi--info { --kpi-color: var(--prx-info-500); }
+
+/*
+================================================================================
+9. COMPONENT: BUTTONS
+================================================================================
+*/
+
+.prx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--prx-space-2);
+    padding: var(--prx-space-2) var(--prx-space-4);
+    font-family: var(--prx-font-family);
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-medium);
+    line-height: 1;
+    border-radius: var(--prx-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all var(--prx-transition-fast);
+}
+
+.prx-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary Button */
+.prx-btn--primary {
+    background: var(--prx-primary-500);
+    color: var(--prx-neutral-0);
+    border-color: var(--prx-primary-500);
+}
+
+.prx-btn--primary:hover:not(:disabled) {
+    background: var(--prx-primary-600);
+    border-color: var(--prx-primary-600);
+}
+
+/* Secondary Button */
+.prx-btn--secondary {
+    background: var(--prx-neutral-0);
+    color: var(--prx-primary-500);
+    border-color: var(--prx-primary-500);
+}
+
+.prx-btn--secondary:hover:not(:disabled) {
+    background: var(--prx-primary-50);
+}
+
+/* Ghost Button */
+.prx-btn--ghost {
+    background: transparent;
+    color: var(--prx-neutral-700);
+    border-color: transparent;
+}
+
+.prx-btn--ghost:hover:not(:disabled) {
+    background: var(--prx-hover-bg);
+    color: var(--prx-primary-500);
+}
+
+/* Success Button */
+.prx-btn--success {
+    background: var(--prx-success-500);
+    color: var(--prx-neutral-0);
+    border-color: var(--prx-success-500);
+}
+
+.prx-btn--success:hover:not(:disabled) {
+    background: var(--prx-success-600);
+    border-color: var(--prx-success-600);
+}
+
+/* Danger Button */
+.prx-btn--danger {
+    background: var(--prx-danger-500);
+    color: var(--prx-neutral-0);
+    border-color: var(--prx-danger-500);
+}
+
+.prx-btn--danger:hover:not(:disabled) {
+    background: var(--prx-danger-600);
+    border-color: var(--prx-danger-600);
+}
+
+/* Button Sizes */
+.prx-btn--sm {
+    padding: var(--prx-space-1) var(--prx-space-3);
+    font-size: var(--prx-text-xs);
+}
+
+.prx-btn--lg {
+    padding: var(--prx-space-3) var(--prx-space-6);
+    font-size: var(--prx-text-base);
+}
+
+/*
+================================================================================
+10. COMPONENT: TABLES
+================================================================================
+*/
+
+.prx-table-wrapper {
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-250);
+    border-radius: var(--prx-radius-lg);
+    overflow: hidden;
+}
+
+.prx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--prx-text-sm);
+}
+
+.prx-table th {
+    background: var(--prx-neutral-100);
+    padding: var(--prx-space-3) var(--prx-space-4);
+    text-align: left;
+    font-weight: var(--prx-font-semibold);
+    font-size: var(--prx-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--prx-neutral-600);
+    border-bottom: 1px solid var(--prx-neutral-250);
+}
+
+.prx-table td {
+    padding: var(--prx-space-3) var(--prx-space-4);
+    color: var(--prx-neutral-800);
+    border-bottom: 1px solid var(--prx-neutral-150);
+    vertical-align: middle;
+}
+
+.prx-table tbody tr {
+    transition: background var(--prx-transition-fast);
+}
+
+.prx-table tbody tr:hover {
+    background: var(--prx-hover-bg);
+}
+
+.prx-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.prx-table a {
+    color: var(--prx-primary-500);
+    text-decoration: none;
+    font-weight: var(--prx-font-medium);
+}
+
+.prx-table a:hover {
+    color: var(--prx-primary-600);
+    text-decoration: underline;
+}
+
+/*
+================================================================================
+11. COMPONENT: FORMS
+================================================================================
+*/
+
+.prx-form-group {
+    margin-bottom: var(--prx-space-4);
+}
+
+.prx-form-label {
+    display: block;
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-medium);
+    color: var(--prx-neutral-700);
+    margin-bottom: var(--prx-space-2);
+}
+
+.prx-form-label--required::after {
+    content: ' *';
+    color: var(--prx-danger-500);
+}
+
+.prx-input,
+.prx-select,
+.prx-textarea {
+    width: 100%;
+    padding: var(--prx-space-2) var(--prx-space-3);
+    font-family: var(--prx-font-family);
+    font-size: var(--prx-text-base);
+    color: var(--prx-neutral-800);
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-300);
+    border-radius: var(--prx-radius-md);
+    transition: all var(--prx-transition-fast);
+}
+
+.prx-input:focus,
+.prx-select:focus,
+.prx-textarea:focus {
+    outline: none;
+    border-color: var(--prx-primary-500);
+    box-shadow: 0 0 0 3px var(--prx-focus-ring);
+}
+
+.prx-input::placeholder {
+    color: var(--prx-neutral-400);
+}
+
+.prx-input:disabled {
+    background: var(--prx-neutral-100);
+    cursor: not-allowed;
+}
+
+.prx-form-help {
+    font-size: var(--prx-text-xs);
+    color: var(--prx-neutral-500);
+    margin-top: var(--prx-space-1);
+}
+
+.prx-form-error {
+    font-size: var(--prx-text-xs);
+    color: var(--prx-danger-500);
+    margin-top: var(--prx-space-1);
+}
+
+/*
+================================================================================
+12. COMPONENT: BADGES
+================================================================================
+*/
+
+.prx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--prx-space-1);
+    padding: var(--prx-space-1) var(--prx-space-2);
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    border-radius: var(--prx-radius-full);
+    background: var(--prx-neutral-150);
+    color: var(--prx-neutral-700);
+}
+
+.prx-badge--primary {
+    background: var(--prx-primary-100);
+    color: var(--prx-primary-700);
+}
+
+.prx-badge--secondary {
+    background: var(--prx-secondary-100);
+    color: var(--prx-secondary-600);
+}
+
+.prx-badge--accent {
+    background: var(--prx-accent-100);
+    color: var(--prx-accent-600);
+}
+
+.prx-badge--success {
+    background: var(--prx-success-100);
+    color: var(--prx-success-700);
+}
+
+.prx-badge--warning {
+    background: var(--prx-warning-100);
+    color: var(--prx-warning-700);
+}
+
+.prx-badge--danger {
+    background: var(--prx-danger-100);
+    color: var(--prx-danger-700);
+}
+
+.prx-badge--info {
+    background: var(--prx-info-100);
+    color: var(--prx-info-700);
+}
+
+/*
+================================================================================
+13. COMPONENT: ALERTS
+================================================================================
+*/
+
+.prx-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--prx-space-3);
+    padding: var(--prx-space-4);
+    border-radius: var(--prx-radius-lg);
+    border: 1px solid transparent;
+}
+
+.prx-alert--success {
+    background: var(--prx-success-50);
+    border-color: var(--prx-success-200);
+    color: var(--prx-success-800);
+}
+
+.prx-alert--warning {
+    background: var(--prx-warning-50);
+    border-color: var(--prx-warning-200);
+    color: var(--prx-warning-800);
+}
+
+.prx-alert--danger {
+    background: var(--prx-danger-50);
+    border-color: var(--prx-danger-200);
+    color: var(--prx-danger-800);
+}
+
+.prx-alert--info {
+    background: var(--prx-info-50);
+    border-color: var(--prx-info-200);
+    color: var(--prx-info-800);
+}
+
+/*
+================================================================================
+14. COMPONENT: PAGINATION
+================================================================================
+*/
+
+.prx-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--prx-space-1);
+    padding: var(--prx-space-4) 0;
+}
+
+.prx-pagination__item {
+    padding: var(--prx-space-2) var(--prx-space-3);
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-medium);
+    color: var(--prx-neutral-700);
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-300);
+    border-radius: var(--prx-radius-md);
+    text-decoration: none;
+    transition: all var(--prx-transition-fast);
+}
+
+.prx-pagination__item:hover {
+    background: var(--prx-hover-bg);
+    border-color: var(--prx-primary-300);
+    color: var(--prx-primary-500);
+}
+
+.prx-pagination__item--active {
+    background: var(--prx-primary-500);
+    border-color: var(--prx-primary-500);
+    color: var(--prx-neutral-0);
+}
+
+/*
+================================================================================
+15. COMPONENT: MODAL / DIALOG
+================================================================================
+*/
+
+.prx-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: var(--prx-z-modal-backdrop);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--prx-space-6);
+}
+
+.prx-modal {
+    background: var(--prx-neutral-0);
+    border-radius: var(--prx-radius-xl);
+    box-shadow: var(--prx-shadow-xl);
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: var(--prx-z-modal);
+}
+
+.prx-modal__header {
+    padding: var(--prx-space-5);
+    border-bottom: 1px solid var(--prx-neutral-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prx-modal__title {
+    font-size: var(--prx-text-xl);
+    font-weight: var(--prx-font-semibold);
+    color: var(--prx-neutral-900);
+}
+
+.prx-modal__close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--prx-radius-md);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--prx-neutral-500);
+    transition: all var(--prx-transition-fast);
+}
+
+.prx-modal__close:hover {
+    background: var(--prx-neutral-150);
+    color: var(--prx-neutral-700);
+}
+
+.prx-modal__body {
+    padding: var(--prx-space-5);
+    overflow-y: auto;
+    flex: 1;
+}
+
+.prx-modal__footer {
+    padding: var(--prx-space-4) var(--prx-space-5);
+    border-top: 1px solid var(--prx-neutral-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--prx-space-3);
+}
+
+/*
+================================================================================
+16. COMPONENT: TOOLTIP
+================================================================================
+*/
+
+.prx-tooltip {
+    position: relative;
+}
+
+.prx-tooltip__content {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: var(--prx-neutral-900);
+    color: var(--prx-neutral-0);
+    padding: var(--prx-space-2) var(--prx-space-3);
+    border-radius: var(--prx-radius-md);
+    font-size: var(--prx-text-xs);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--prx-transition-fast);
+    z-index: var(--prx-z-tooltip);
+}
+
+.prx-tooltip:hover .prx-tooltip__content {
+    opacity: 1;
+    visibility: visible;
+}
+
+/*
+================================================================================
+17. COMPONENT: FILTER PANEL
+================================================================================
+*/
+
+.prx-filter-panel {
+    background: var(--prx-neutral-0);
+    border: 1px solid var(--prx-neutral-250);
+    border-radius: var(--prx-radius-lg);
+    padding: 0;
+    overflow: hidden;
+}
+
+.prx-filter-panel__header {
+    background: var(--prx-primary-500);
+    color: var(--prx-neutral-0);
+    padding: var(--prx-space-3) var(--prx-space-4);
+    font-size: var(--prx-text-sm);
+    font-weight: var(--prx-font-semibold);
+}
+
+.prx-filter-panel__section {
+    border-top: 1px solid var(--prx-neutral-200);
+}
+
+.prx-filter-panel__title {
+    background: var(--prx-neutral-100);
+    padding: var(--prx-space-3) var(--prx-space-4);
+    font-size: var(--prx-text-xs);
+    font-weight: var(--prx-font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--prx-neutral-600);
+}
+
+.prx-filter-panel__list {
+    list-style: none;
+    margin: 0;
+    padding: var(--prx-space-2);
+}
+
+.prx-filter-panel__item {
+    margin: 0;
+}
+
+.prx-filter-panel__link {
+    display: block;
+    padding: var(--prx-space-2) var(--prx-space-3);
+    color: var(--prx-neutral-700);
+    text-decoration: none;
+    font-size: var(--prx-text-sm);
+    border-radius: var(--prx-radius-md);
+    transition: all var(--prx-transition-fast);
+}
+
+.prx-filter-panel__link:hover {
+    background: var(--prx-hover-bg);
+    color: var(--prx-primary-500);
+}
+
+.prx-filter-panel__link--active {
+    background: var(--prx-selected-bg);
+    color: var(--prx-primary-600);
+    font-weight: var(--prx-font-medium);
+}
+
+/*
+================================================================================
+18. UTILITY CLASSES
+================================================================================
+*/
+
+/* Text Colors */
+.prx-text-primary { color: var(--prx-primary-500); }
+.prx-text-secondary { color: var(--prx-secondary-400); }
+.prx-text-accent { color: var(--prx-accent-300); }
+.prx-text-success { color: var(--prx-success-500); }
+.prx-text-warning { color: var(--prx-warning-500); }
+.prx-text-danger { color: var(--prx-danger-500); }
+.prx-text-muted { color: var(--prx-neutral-500); }
+
+/* Background Colors */
+.prx-bg-white { background-color: var(--prx-neutral-0); }
+.prx-bg-light { background-color: var(--prx-neutral-100); }
+.prx-bg-primary { background-color: var(--prx-primary-500); }
+.prx-bg-success { background-color: var(--prx-success-500); }
+
+/* Spacing */
+.prx-m-0 { margin: 0; }
+.prx-mb-2 { margin-bottom: var(--prx-space-2); }
+.prx-mb-4 { margin-bottom: var(--prx-space-4); }
+.prx-mb-6 { margin-bottom: var(--prx-space-6); }
+.prx-mt-4 { margin-top: var(--prx-space-4); }
+.prx-p-0 { padding: 0; }
+.prx-p-4 { padding: var(--prx-space-4); }
+.prx-p-6 { padding: var(--prx-space-6); }
+
+/* Display */
+.prx-hidden { display: none; }
+.prx-block { display: block; }
+.prx-inline { display: inline; }
+.prx-inline-block { display: inline-block; }
+
+/* Text Alignment */
+.prx-text-left { text-align: left; }
+.prx-text-center { text-align: center; }
+.prx-text-right { text-align: right; }
+
+/* Borders */
+.prx-border { border: 1px solid var(--prx-neutral-250); }
+.prx-border-top { border-top: 1px solid var(--prx-neutral-250); }
+.prx-border-bottom { border-bottom: 1px solid var(--prx-neutral-250); }
+.prx-rounded { border-radius: var(--prx-radius-md); }
+.prx-rounded-lg { border-radius: var(--prx-radius-lg); }
+
+/* Shadows */
+.prx-shadow { box-shadow: var(--prx-shadow-md); }
+.prx-shadow-lg { box-shadow: var(--prx-shadow-lg); }
+
+/*
+================================================================================
+19. RESPONSIVE DESIGN
+================================================================================
+*/
+
+@media (max-width: 1200px) {
+    .prx-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .prx-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .prx-container {
+        padding: 0 var(--prx-space-4);
+    }
+    
+    .prx-grid-4,
+    .prx-grid-3,
+    .prx-grid-2 { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .prx-sidebar {
+        display: none;
+    }
+    
+    .prx-header__nav {
+        display: none;
+    }
+}
+
+/*
+================================================================================
+20. PRINT STYLES
+================================================================================
+*/
+
+@media print {
+    .prx-header,
+    .prx-sidebar,
+    .prx-btn,
+    .prx-filter-panel {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+        font-size: 12pt;
+    }
+    
+    .prx-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+}

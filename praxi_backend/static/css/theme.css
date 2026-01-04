@@ -1,0 +1,421 @@
+/*
+================================================================================
+PRAXIAPP THEME - MODERN MEDICAL 2.0
+================================================================================
+Version: 2.0.0
+Description: Ultra-modern, calm medical theme inspired by Microsoft 365/Outlook
+Design Philosophy: Light, airy, professional with soft accents
+
+Key Features:
+- Glassmorphism effects
+- Soft shadows
+- Rounded corners
+- Light color palette
+- Calm, professional feel
+================================================================================
+*/
+
+/*
+================================================================================
+THEME OVERRIDES & SEMANTIC MAPPINGS
+================================================================================
+*/
+
+:root {
+    /* Background Hierarchy - Ultra light, airy feel */
+    --bg-base: linear-gradient(145deg, #F8FAFC 0%, #F0F4F8 50%, #E8EEF4 100%);
+    --bg-base-solid: #F5F7FA;
+    --bg-surface: #FFFFFF;
+    --bg-elevated: #FFFFFF;
+    --bg-subtle: #F8FAFC;
+    --bg-muted: #F0F4F8;
+    
+    /* Glass Effect */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-blur: blur(20px);
+    
+    /* Text Hierarchy - Softer contrasts */
+    --text-primary: #1E2433;
+    --text-secondary: #4A5568;
+    --text-tertiary: #6B7789;
+    --text-muted: #98A2B3;
+    --text-inverse: #FFFFFF;
+    
+    /* Border Colors - Subtle, almost invisible */
+    --border-default: #E8EDF4;
+    --border-subtle: #F0F4F8;
+    --border-strong: #DEE2E8;
+    --border-focus: var(--color-primary-500);
+    
+    /* Interactive States */
+    --interactive-hover: rgba(0, 120, 212, 0.04);
+    --interactive-active: rgba(0, 120, 212, 0.08);
+    --interactive-selected: rgba(0, 120, 212, 0.12);
+    
+    /* Status Backgrounds (Very Light) */
+    --bg-success: #F0FDF4;
+    --bg-warning: #FFFBEB;
+    --bg-danger: #FFF1F2;
+    --bg-info: #F0F9FF;
+    
+    /* Status Text */
+    --text-success: #16A34A;
+    --text-warning: #D97706;
+    --text-danger: #E11D48;
+    --text-info: #0284C7;
+    
+    /* Enhanced Shadows - Softer, more diffuse */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 8px 10px rgba(0, 0, 0, 0.02);
+    --shadow-glow: 0 0 20px rgba(0, 120, 212, 0.15);
+    
+    /* Card styling */
+    --card-bg: #FFFFFF;
+    --card-border: #E8EDF4;
+    --card-shadow: var(--shadow-sm);
+    --card-shadow-hover: var(--shadow-md);
+    --card-radius: 16px;
+    --card-padding: 24px;
+}
+
+/*
+================================================================================
+GLOBAL THEME STYLES
+================================================================================
+*/
+
+body {
+    background: var(--bg-base);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+::selection {
+    background: rgba(0, 120, 212, 0.15);
+    color: var(--color-primary-700);
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-neutral-300);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neutral-400);
+    background-clip: content-box;
+}
+
+/*
+================================================================================
+HEADER THEME - Modern Glassmorphism
+================================================================================
+*/
+
+.prx-header {
+    background: #e3e3e3;
+    color: var(--text-inverse);
+    padding: var(--space-3) var(--space-6);
+    box-shadow: 0 4px 20px rgba(0, 120, 212, 0.25);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    backdrop-filter: saturate(180%) blur(10px);
+}
+
+.prx-header__content {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.prx-header__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    letter-spacing: -0.01em;
+}
+
+.prx-header__title-icon {
+    font-size: var(--font-size-xl);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.prx-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.prx-header__link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.prx-header__link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-inverse);
+    transform: translateY(-1px);
+}
+
+.prx-header__link--active {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--text-inverse);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/*
+================================================================================
+MAIN LAYOUT
+================================================================================
+*/
+
+.prx-main {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+.prx-section {
+    margin-bottom: var(--space-8);
+}
+
+.prx-section__header {
+    margin-bottom: var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.prx-section__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    letter-spacing: -0.01em;
+}
+
+.prx-section__title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-400));
+    border-radius: 2px;
+}
+
+.prx-section__subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--text-tertiary);
+    margin-top: var(--space-1);
+}
+
+/*
+================================================================================
+KPI CARDS GRID
+================================================================================
+*/
+
+.prx-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+/*
+================================================================================
+CONTENT GRID
+================================================================================
+*/
+
+.prx-content-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+}
+
+.prx-content-grid--2-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 1400px) {
+    .prx-content-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .prx-content-grid,
+    .prx-content-grid--2-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.prx-span-2 { grid-column: span 2; }
+.prx-span-3 { grid-column: span 3; }
+.prx-span-full { grid-column: 1 / -1; }
+
+@media (max-width: 1400px) {
+    .prx-span-3 { grid-column: span 2; }
+}
+
+@media (max-width: 900px) {
+    .prx-span-2,
+    .prx-span-3,
+    .prx-span-full { grid-column: span 1; }
+}
+
+/*
+================================================================================
+CHART CONTAINERS
+================================================================================
+*/
+
+.prx-chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.prx-chart-container--sm { height: 200px; }
+.prx-chart-container--md { height: 280px; }
+.prx-chart-container--lg { height: 350px; }
+.prx-chart-container--xl { height: 450px; }
+
+/*
+================================================================================
+UTILITY CLASSES
+================================================================================
+*/
+
+.prx-text-center { text-align: center; }
+.prx-text-right { text-align: right; }
+.prx-text-left { text-align: left; }
+
+.prx-hidden { display: none; }
+.prx-visible { display: block; }
+
+.prx-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.prx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/*
+================================================================================
+ANIMATIONS
+================================================================================
+*/
+
+@keyframes prx-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes prx-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes prx-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.prx-animate-fade-in {
+    animation: prx-fade-in var(--duration-normal) var(--easing-out);
+}
+
+.prx-animate-slide-up {
+    animation: prx-slide-up var(--duration-normal) var(--easing-out);
+}
+
+.prx-animate-pulse {
+    animation: prx-pulse 2s var(--easing-in-out) infinite;
+}
+
+/*
+================================================================================
+FOCUS STYLES (Accessibility)
+================================================================================
+*/
+
+:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+}
+
+.prx-focus-ring:focus {
+    box-shadow: var(--input-focus-ring);
+    border-color: var(--color-primary-500);
+}
+
+/*
+================================================================================
+PRINT STYLES
+================================================================================
+*/
+
+@media print {
+    .prx-header,
+    .prx-header__nav {
+        display: none;
+    }
+    
+    .prx-main {
+        padding: 0;
+        max-width: 100%;
+    }
+    
+    .prx-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--color-neutral-300);
+    }
+}

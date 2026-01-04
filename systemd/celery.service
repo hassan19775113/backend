@@ -1,0 +1,40 @@
+[Unit]
+Description=PraxiApp Celery Worker
+Documentation=https://docs.celeryq.dev/
+After=network.target postgresql.service redis.service
+Requires=redis.service
+
+[Service]
+Type=forking
+User=praxiapp
+Group=praxiapp
+WorkingDirectory=/opt/praxiapp/backend
+Environment="PATH=/opt/praxiapp/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod"
+EnvironmentFile=/opt/praxiapp/backend/.env
+
+ExecStart=/opt/praxiapp/venv/bin/celery -A praxi_backend multi start worker \
+    --pidfile=/run/celery/%n.pid \
+    --logfile=/var/log/praxiapp/celery-%n.log \
+    --loglevel=INFO \
+    --concurrency=4
+
+ExecStop=/opt/praxiapp/venv/bin/celery -A praxi_backend multi stopwait worker \
+    --pidfile=/run/celery/%n.pid
+
+ExecReload=/opt/praxiapp/venv/bin/celery -A praxi_backend multi restart worker \
+    --pidfile=/run/celery/%n.pid \
+    --logfile=/var/log/praxiapp/celery-%n.log \
+    --loglevel=INFO \
+    --concurrency=4
+
+Restart=on-failure
+RestartSec=10s
+RuntimeDirectory=celery
+
+# Security Hardening
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

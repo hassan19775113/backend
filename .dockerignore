@@ -1,0 +1,89 @@
+# ==============================================================================
+# .dockerignore - PraxiApp Backend
+# ==============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files (NEVER include in image)
+.env
+.env.*
+!.env.example
+
+# Development database
+*.sqlite3
+db.sqlite3
+dev.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Static/Media (handled by volumes)
+staticfiles/
+media/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+docker/
+
+# Systemd
+systemd/
+
+# Scripts (not needed in container)
+scripts/
+deploy.sh
+deploy.ps1
+*.ps1
+
+# Misc
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db

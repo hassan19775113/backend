@@ -1,0 +1,745 @@
+/*
+================================================================================
+CSS für: operations.html (Operations-Dashboard)
+================================================================================
+Version: 3.0.0
+Design: Calm Medical UI - Outlook-Inspired
+Seite: OP-Flow, Pipeline, Heatmap, Engpässe, Statistiken
+
+Farbschema:
+- Primär: #0078D4 (Outlook Blue)
+- Sekundär: #4FB3BF (Soft Teal)
+- Akzent: #7BC6B0 (Mint Green)
+- Hintergrund: #F5F7FA
+- Rahmen: #E1E4E8
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Page Header
+   ============================================================================ */
+
+.page-operations .prx-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-operations .prx-section__title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.page-operations .prx-section__subtitle {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 8px 0 0 0;
+}
+
+/* ============================================================================
+   Abschnitt: Period Selector
+   ============================================================================ */
+
+.page-operations .selector {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #4FB3BF;
+    color: #1F2937;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.page-operations .selector:hover {
+    background: #3D9AA6;
+}
+
+.page-operations .selector option {
+    color: #1F2937;
+    background: #FFFFFF;
+}
+
+/* ============================================================================
+   Abschnitt: KPI Grid
+   ============================================================================ */
+
+.page-operations .prx-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.page-operations .prx-kpi {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.page-operations .prx-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.page-operations .prx-kpi:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+/* KPI Varianten */
+.page-operations .prx-kpi--primary::before { background: #0078D4; }
+.page-operations .prx-kpi--success::before { background: #22C55E; }
+.page-operations .prx-kpi--accent::before { background: #7BC6B0; }
+.page-operations .prx-kpi--danger::before { background: #EF4444; }
+.page-operations .prx-kpi--warning::before { background: #F4A259; }
+
+.page-operations .prx-kpi__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    margin-bottom: 8px;
+}
+
+.page-operations .prx-kpi__value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #1F2937;
+    line-height: 1;
+}
+
+.page-operations .prx-kpi__unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #9CA3AF;
+    margin-left: 2px;
+}
+
+/* ============================================================================
+   Abschnitt: Flow Pipeline
+   ============================================================================ */
+
+.page-operations .flow-pipeline {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.page-operations .flow-stage {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.page-operations .flow-stage:hover {
+    background: #FAFBFC;
+}
+
+/* Pfeil zwischen Stages */
+.page-operations .flow-stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 12px solid transparent;
+    border-left-color: #E1E4E8;
+    z-index: 1;
+}
+
+/* Farbige Top-Border pro Stage */
+.page-operations .flow-stage--prep {
+    border-top: 4px solid #0EA5E9;
+}
+
+.page-operations .flow-stage--operation {
+    border-top: 4px solid #8B5CF6;
+}
+
+.page-operations .flow-stage--recovery {
+    border-top: 4px solid #7BC6B0;
+}
+
+.page-operations .flow-stage--completed {
+    border-top: 4px solid #22C55E;
+}
+
+.page-operations .flow-stage__label {
+    font-size: 12px;
+    color: #6B7280;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.page-operations .flow-stage__count {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+.page-operations .flow-stage__time {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .page-operations .flow-pipeline {
+        flex-direction: column;
+    }
+    
+    .page-operations .flow-stage:not(:last-child)::after {
+        display: none;
+    }
+    
+    .page-operations .flow-stage {
+        border-top: none !important;
+        border-left-width: 4px;
+        border-left-style: solid;
+    }
+    
+    .page-operations .flow-stage--prep { border-left-color: #0EA5E9; }
+    .page-operations .flow-stage--operation { border-left-color: #8B5CF6; }
+    .page-operations .flow-stage--recovery { border-left-color: #7BC6B0; }
+    .page-operations .flow-stage--completed { border-left-color: #22C55E; }
+}
+
+/* ============================================================================
+   Abschnitt: Flow Time Items (Durchschnittszeiten)
+   ============================================================================ */
+
+.page-operations .flow-times {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-operations .flow-time-item {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-operations .flow-time-item__icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F5F7FA;
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+.page-operations .flow-time-item__content {
+    flex: 1;
+}
+
+.page-operations .flow-time-item__label {
+    font-size: 12px;
+    color: #6B7280;
+    margin-bottom: 4px;
+}
+
+.page-operations .flow-time-item__value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.page-operations .flow-time-item__unit {
+    font-size: 12px;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+/* ============================================================================
+   Abschnitt: Cards
+   ============================================================================ */
+
+.page-operations .prx-card {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.page-operations .prx-card__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #F0F2F5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-operations .prx-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.page-operations .prx-card__body {
+    padding: 20px;
+}
+
+/* ============================================================================
+   Abschnitt: Content Grid
+   ============================================================================ */
+
+.page-operations .prx-content-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.page-operations .prx-content-grid--2-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.page-operations .prx-content-grid--3-cols {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1024px) {
+    .page-operations .prx-content-grid--2-cols,
+    .page-operations .prx-content-grid--3-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   Abschnitt: Heatmap Table
+   ============================================================================ */
+
+.page-operations .heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.page-operations .heatmap-table th {
+    padding: 12px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    text-align: center;
+    background: #F5F7FA;
+    border-bottom: 1px solid #E1E4E8;
+}
+
+.page-operations .heatmap-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-operations .heatmap-table td.row-label {
+    text-align: left;
+    font-weight: 500;
+    color: #374151;
+    background: #FAFBFC;
+}
+
+.page-operations .heatmap-cell {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Heatmap Intensity-Stufen */
+.page-operations .heatmap-cell--level-0 {
+    background: #F5F7FA;
+    color: #9CA3AF;
+}
+
+.page-operations .heatmap-cell--level-1 {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.page-operations .heatmap-cell--level-2 {
+    background: #93C5FD;
+    color: #1E40AF;
+}
+
+.page-operations .heatmap-cell--level-3 {
+    background: #3B82F6;
+    color: #FFFFFF;
+}
+
+.page-operations .heatmap-cell--level-4 {
+    background: #1D4ED8;
+    color: #FFFFFF;
+}
+
+.page-operations .heatmap-cell--level-5 {
+    background: #1E3A8A;
+    color: #FFFFFF;
+}
+
+/* ============================================================================
+   Abschnitt: Bottleneck Badges
+   ============================================================================ */
+
+.page-operations .bottleneck-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.page-operations .bottleneck-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #FAFBFC;
+    border-radius: 10px;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.page-operations .bottleneck-item:hover {
+    background: #F0F2F5;
+}
+
+.page-operations .bottleneck-item--critical {
+    border-left-color: #EF4444;
+    background: #FEF2F2;
+}
+
+.page-operations .bottleneck-item--warning {
+    border-left-color: #F4A259;
+    background: #FFFBEB;
+}
+
+.page-operations .bottleneck-item--info {
+    border-left-color: #0EA5E9;
+    background: #F0F9FF;
+}
+
+.page-operations .bottleneck-item__icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.page-operations .bottleneck-item--critical .bottleneck-item__icon {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.page-operations .bottleneck-item--warning .bottleneck-item__icon {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.page-operations .bottleneck-item--info .bottleneck-item__icon {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.page-operations .bottleneck-item__content {
+    flex: 1;
+}
+
+.page-operations .bottleneck-item__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 2px;
+}
+
+.page-operations .bottleneck-item__desc {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.page-operations .bottleneck-item__value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+/* ============================================================================
+   Abschnitt: Charts
+   ============================================================================ */
+
+.page-operations .prx-chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.page-operations .prx-chart-container--md {
+    height: 280px;
+}
+
+.page-operations .prx-chart-container--lg {
+    height: 360px;
+}
+
+/* ============================================================================
+   Abschnitt: Tables (Ops-Liste)
+   ============================================================================ */
+
+.page-operations .prx-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.page-operations .prx-table th {
+    background: #F5F7FA;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    text-align: left;
+    border-bottom: 1px solid #E1E4E8;
+}
+
+.page-operations .prx-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-operations .prx-table tbody tr:hover td {
+    background: #F5F7FA;
+}
+
+.page-operations .prx-table a {
+    color: #0078D4;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.page-operations .prx-table a:hover {
+    color: #005A9E;
+    text-decoration: underline;
+}
+
+/* ============================================================================
+   Abschnitt: Status Badges
+   ============================================================================ */
+
+.page-operations .prx-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.page-operations .prx-badge--success {
+    background: #F0FDF4;
+    color: #15803D;
+}
+
+.page-operations .prx-badge--warning {
+    background: #FFFBEB;
+    color: #B45309;
+}
+
+.page-operations .prx-badge--danger {
+    background: #FEF2F2;
+    color: #DC2626;
+}
+
+.page-operations .prx-badge--info {
+    background: #F0F9FF;
+    color: #0369A1;
+}
+
+.page-operations .prx-badge--purple {
+    background: #F5F3FF;
+    color: #7C3AED;
+}
+
+/* ============================================================================
+   Abschnitt: Utilization Bar
+   ============================================================================ */
+
+.page-operations .utilization-bar {
+    height: 8px;
+    background: #E8ECF0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.page-operations .utilization-bar__fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.page-operations .utilization-bar--high .utilization-bar__fill {
+    background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
+}
+
+.page-operations .utilization-bar--medium .utilization-bar__fill {
+    background: linear-gradient(90deg, #F4A259 0%, #FCD34D 100%);
+}
+
+.page-operations .utilization-bar--low .utilization-bar__fill {
+    background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
+/* ============================================================================
+   Abschnitt: Buttons
+   ============================================================================ */
+
+.page-operations .prx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.page-operations .prx-btn--primary {
+    background: #0078D4;
+    color: #FFFFFF;
+}
+
+.page-operations .prx-btn--primary:hover {
+    background: #005A9E;
+}
+
+.page-operations .prx-btn--outline {
+    background: #FFFFFF;
+    color: #0078D4;
+    border: 1px solid #0078D4;
+}
+
+.page-operations .prx-btn--outline:hover {
+    background: #F0F7FF;
+}
+
+/* ============================================================================
+   Abschnitt: Empty State
+   ============================================================================ */
+
+.page-operations .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #9CA3AF;
+}
+
+.page-operations .empty-state__icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.page-operations .empty-state__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6B7280;
+    margin-bottom: 8px;
+}
+
+.page-operations .empty-state__description {
+    font-size: 14px;
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .page-operations .prx-section__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-operations .prx-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-operations .flow-times {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-operations .heatmap-table {
+        font-size: 11px;
+    }
+    
+    .page-operations .heatmap-cell {
+        width: 32px;
+        height: 32px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-operations .prx-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-operations .bottleneck-item {
+        flex-wrap: wrap;
+    }
+    
+    .page-operations .bottleneck-item__value {
+        width: 100%;
+        text-align: right;
+        margin-top: 8px;
+    }
+}

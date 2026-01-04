@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{#
+This template lives in BASE_DIR/templates so it overrides Django's built-in
+admin/base_site.html for BOTH /admin/ and the custom /praxiadmin/ AdminSite.
+
+Goal: Force Fluent/Outlook-like light styling via praxiapp-admin.css.
+#}
+
+{% block extrahead %}
+    {{ block.super }}
+
+    {# Force light scheme even if the browser/OS prefers dark #}
+    <meta name="color-scheme" content="light only">
+    <style>
+        :root,
+        html,
+        html[data-theme="dark"],
+        html[data-theme="auto"],
+        [data-theme="dark"],
+        [data-theme="auto"] {
+            color-scheme: light only !important;
+            --body-bg: #FFFFFF !important;
+            --body-fg: #2E2E2E !important;
+            --header-bg: #0F6CBD !important;
+            --header-color: #FFFFFF !important;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root, html { color-scheme: light only !important; }
+        }
+    </style>
+
+    {# PraxiApp Admin Design System (Outlook/Fluent palette overrides live inside) #}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/praxiapp-admin.css' %}?v=3.2">
+
+    <script>
+        // Force light theme on page load (Django 5+ supports theme toggling)
+        (function() {
+            document.documentElement.dataset.theme = 'light';
+            document.documentElement.style.colorScheme = 'light only';
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        })();
+    </script>
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {{ site_header|default:_('Django administration') }}
+    </a>
+</div>
+{% if site_subtitle %}
+    <p style="color: rgba(255,255,255,0.85); font-size: 12px; margin: 4px 0 0 0; padding: 0; font-weight: 400;">
+        {{ site_subtitle }}
+    </p>
+{% endif %}
+{% if site_version %}
+    <p style="color: rgba(255,255,255,0.6); font-size: 10px; margin: 2px 0 0 0; padding: 0; font-weight: 300;">
+        {{ site_version }}
+    </p>
+{% endif %}
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+    © 2025 PraxiApp - Praxis & OP Management System |
+    <a href="#" style="color: #0F6CBD; text-decoration: none;">Support</a> |
+    <a href="#" style="color: #0F6CBD; text-decoration: none;">Dokumentation</a>
+</div>
+{% endblock %}

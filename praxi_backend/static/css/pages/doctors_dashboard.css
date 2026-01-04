@@ -1,0 +1,280 @@
+/*
+================================================================================
+Styles für: doctors.html (Ärzte Dashboard)
+================================================================================
+Nur seitenbezogene Styles – keine Duplikate aus base.css
+Voraussetzung: base.css muss zuerst geladen werden
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Period/Doctor Selector
+   ============================================================================ */
+
+.period-selector {
+    padding: var(--spacing-2) var(--spacing-4);
+    padding-right: var(--spacing-10);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    background: var(--color-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232E2E2E' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right var(--spacing-3) center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+}
+
+.period-selector option {
+    color: var(--color-text);
+    background: var(--color-surface);
+}
+
+/* ============================================================================
+   Abschnitt: Doctor Profile Card
+   ============================================================================ */
+
+.doctor-profile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--spacing-6);
+    align-items: center;
+    padding: var(--spacing-5);
+}
+
+.doctor-profile__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.doctor-profile__name {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin: 0;
+}
+
+.doctor-profile__meta {
+    display: flex;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.doctor-profile__status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-2);
+}
+
+/* ============================================================================
+   Abschnitt: Schedule Grid (Arbeitszeiten)
+   ============================================================================ */
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-2);
+}
+
+.schedule-day {
+    text-align: center;
+    padding: var(--spacing-3);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    transition: background var(--transition-fast);
+}
+
+.schedule-day:hover {
+    background: var(--color-hover);
+}
+
+.schedule-day--off {
+    opacity: 0.5;
+}
+
+.schedule-day__name {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-1);
+}
+
+.schedule-day__hours {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+.schedule-day--off .schedule-day__hours {
+    color: var(--color-text-muted);
+}
+
+/* ============================================================================
+   Abschnitt: Upcoming Appointments List
+   ============================================================================ */
+
+.upcoming-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.upcoming-item:hover {
+    background: var(--color-hover-subtle);
+}
+
+.upcoming-item__time {
+    min-width: 60px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+.upcoming-item__patient {
+    flex: 1;
+}
+
+.upcoming-item__name {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+}
+
+.upcoming-item__type {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+/* ============================================================================
+   Abschnitt: Doctor Comparison Table
+   ============================================================================ */
+
+.doctor-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.doctor-row__info {
+    display: flex;
+    flex-direction: column;
+}
+
+.doctor-row__name {
+    font-weight: var(--font-weight-medium);
+}
+
+.doctor-row__specialty {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.utilization-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.utilization-cell__bar {
+    width: 80px;
+}
+
+.utilization-cell__value {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* ============================================================================
+   Abschnitt: Performance Metrics
+   ============================================================================ */
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.performance-metric {
+    text-align: center;
+    padding: var(--spacing-4);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+}
+
+.performance-metric__value {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.performance-metric__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.performance-metric__trend {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--spacing-2);
+}
+
+.performance-metric__trend--up {
+    color: var(--color-success);
+}
+
+.performance-metric__trend--down {
+    color: var(--color-danger);
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Anpassungen
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+    .schedule-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .doctor-profile {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: var(--spacing-4);
+    }
+    
+    .doctor-profile__meta {
+        justify-content: center;
+    }
+    
+    .doctor-profile__status {
+        align-items: center;
+    }
+    
+    .schedule-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .performance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

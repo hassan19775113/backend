@@ -1,0 +1,151 @@
+# ==============================================================================
+# PraxiApp Backend - Development Docker Compose
+# ==============================================================================
+# Start:   docker-compose -f docker-compose.dev.yml up -d
+# Stop:    docker-compose -f docker-compose.dev.yml down
+# Logs:    docker-compose -f docker-compose.dev.yml logs -f
+# Shell:   docker-compose -f docker-compose.dev.yml exec web bash
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  # ============================================================================
+  # Django Development Server
+  # ============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: praxiapp-web-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - static_dev:/app/staticfiles
+      - media_dev:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_dev
+      - DEBUG=True
+      - SYS_DB_NAME=praxiapp_system
+      - SYS_DB_USER=postgres
+      - SYS_DB_PASSWORD=devpassword
+      - SYS_DB_HOST=db
+      - SYS_DB_PORT=5432
+      - MED_DB_NAME=praxiapp_medical
+      - MED_DB_USER=postgres
+      - MED_DB_PASSWORD=devpassword
+      - MED_DB_HOST=db
+      - MED_DB_PORT=5432
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "
+        python manage.py migrate --database=default &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    networks:
+      - praxiapp-dev
+
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: praxiapp-db-dev
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_MULTIPLE_DATABASES: praxiapp_system,praxiapp_medical
+    volumes:
+      - postgres_dev:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - praxiapp-dev
+
+  # ============================================================================
+  # Redis Cache & Message Broker
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: praxiapp-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - praxiapp-dev
+
+  # ============================================================================
+  # Celery Worker
+  # ============================================================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: praxiapp-celery-worker-dev
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_dev
+      - SYS_DB_HOST=db
+      - MED_DB_HOST=db
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: celery -A praxi_backend worker --loglevel=info --concurrency=2
+    networks:
+      - praxiapp-dev
+
+  # ============================================================================
+  # Celery Beat Scheduler
+  # ============================================================================
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: praxiapp-celery-beat-dev
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=praxi_backend.settings_dev
+      - SYS_DB_HOST=db
+      - MED_DB_HOST=db
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: celery -A praxi_backend beat --loglevel=info
+    networks:
+      - praxiapp-dev
+
+volumes:
+  postgres_dev:
+  redis_dev:
+  static_dev:
+  media_dev:
+
+networks:
+  praxiapp-dev:
+    driver: bridge

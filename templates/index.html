@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PraxiApp Backend (DEV)</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; margin: 24px; line-height: 1.45; }
+    .card { max-width: 980px; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 18px; background: #fff; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    p { margin: 8px 0; color: #374151; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+    .box { border: 1px solid #eef2f7; border-radius: 10px; padding: 12px; background: #fafafa; }
+    .box h2 { font-size: 14px; margin: 0 0 8px; }
+    ul { margin: 0; padding-left: 18px; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background: #f3f4f6; padding: 0 6px; border-radius: 6px; }
+    .hint { font-size: 13px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>PraxiApp Backend (Development)</h1>
+    <p>Du siehst gerade den DEV-Index. Viele Seiten sind geschützt und erfordern Login (Session oder JWT).</p>
+    <p class="hint">
+      Tipp: Für „alle Seiten“ brauchst du i.d.R. einen <strong>Staff/Superuser</strong> (für Dashboard/Admin)
+      und für API-Endpunkte zusätzlich eine <strong>Rolle</strong> (RBAC, z.B. <code>admin</code>).
+    </p>
+
+    <div class="grid">
+      <div class="box">
+        <h2>Admins & Dashboards</h2>
+        <ul>
+          <li><a href="/admin/">/admin/</a> (Django Admin)</li>
+          <li><a href="/praxiadmin/">/praxiadmin/</a> (PraxiApp Admin)</li>
+          <li><a href="/praxiadmin/dashboard/">/praxiadmin/dashboard/</a> (Haupt-Dashboard)</li>
+          <li><a href="/praxiadmin/dashboard/scheduling/">/praxiadmin/dashboard/scheduling/</a></li>
+          <li><a href="/praxiadmin/dashboard/patients/">/praxiadmin/dashboard/patients/</a></li>
+          <li><a href="/praxiadmin/dashboard/doctors/">/praxiadmin/dashboard/doctors/</a></li>
+          <li><a href="/praxiadmin/dashboard/operations/">/praxiadmin/dashboard/operations/</a></li>
+        </ul>
+      </div>
+
+      <div class="box">
+        <h2>API (GET/POST)</h2>
+        <ul>
+          <li><a href="/api/health/">/api/health/</a> (öffentlich)</li>
+          <li><a href="/api/auth/login/">/api/auth/login/</a> (JWT Login, POST)</li>
+          <li><a href="/api/auth/me/">/api/auth/me/</a> (auth erforderlich)</li>
+          <li><a href="/api/appointments/">/api/appointments/</a></li>
+          <li><a href="/api/operations/">/api/operations/</a></li>
+          <li><a href="/api/op-dashboard/">/api/op-dashboard/</a></li>
+          <li><a href="/api/op-timeline/">/api/op-timeline/</a></li>
+          <li><a href="/api/patients/">/api/patients/</a></li>
+        </ul>
+        <p class="hint">In DEV ist die Browsable API aktiv, aber Standard-Permission ist <code>IsAuthenticated</code>.</p>
+      </div>
+
+      <div class="box">
+        <h2>Was du wahrscheinlich als Nächstes willst</h2>
+        <ul>
+          <li>Als Admin einloggen, dann Dashboard öffnen.</li>
+          <li>Optional: Seed-Daten laden (damit Tabellen/Charts nicht leer sind).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

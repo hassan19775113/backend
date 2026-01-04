@@ -1,0 +1,42 @@
+[Unit]
+Description=PraxiApp Gunicorn Daemon
+Documentation=https://docs.gunicorn.org/
+After=network.target postgresql.service redis.service
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=praxiapp
+Group=praxiapp
+RuntimeDirectory=gunicorn
+WorkingDirectory=/opt/praxiapp/backend
+Environment="PATH=/opt/praxiapp/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod"
+EnvironmentFile=/opt/praxiapp/backend/.env
+
+ExecStart=/opt/praxiapp/venv/bin/gunicorn praxi_backend.wsgi:application \
+    --bind unix:/run/gunicorn/praxiapp.sock \
+    --workers 4 \
+    --threads 2 \
+    --timeout 120 \
+    --access-logfile /var/log/praxiapp/gunicorn-access.log \
+    --error-logfile /var/log/praxiapp/gunicorn-error.log \
+    --capture-output \
+    --enable-stdio-inheritance \
+    --pid /run/gunicorn/praxiapp.pid
+
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+
+Restart=on-failure
+RestartSec=5s
+
+# Security Hardening
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/praxiapp /opt/praxiapp/backend/staticfiles /opt/praxiapp/backend/media
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,535 @@
+/**
+ * PraxiApp Design Tokens
+ * Microsoft Fluent UI Style - Medical Web Product
+ * 
+ * A professional, trustworthy, and modern design system
+ * optimized for medical/healthcare applications.
+ * 
+ * Version: 1.0.0
+ * Last Updated: 2024-12-29
+ */
+
+:root {
+  /* ============================================
+   * 1. COLOR PALETTE
+   * ============================================ */
+
+  /* --- Primary Colors --- */
+  --color-primary: #0F6CBD;
+  --color-primary-hover: #115EA3;
+  --color-primary-pressed: #0E4A80;
+  --color-primary-light: #E8F3FC;
+  --color-primary-light-hover: #D4E9F8;
+
+  /* --- Neutral Palette --- */
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-10: #F8F8F8;
+  --color-neutral-20: #F3F2F1;
+  --color-neutral-30: #EDEBE9;
+  --color-neutral-40: #E1DFDD;
+  --color-neutral-50: #C8C6C4;
+  --color-neutral-60: #A19F9D;
+  --color-neutral-70: #605E5C;
+  --color-neutral-80: #3B3A39;
+  --color-neutral-90: #323130;
+  --color-neutral-100: #201F1E;
+
+  /* --- Accent Colors --- */
+  --color-accent-teal: #00B7C3;
+  --color-accent-teal-light: #E0F7F9;
+  --color-accent-teal-dark: #009CA6;
+
+  --color-accent-green: #107C10;
+  --color-accent-green-light: #DFF6DD;
+  --color-accent-green-dark: #0B5A0B;
+
+  --color-accent-red: #D13438;
+  --color-accent-red-light: #FDE7E9;
+  --color-accent-red-dark: #A4262C;
+
+  --color-accent-yellow: #FCE100;
+  --color-accent-yellow-light: #FFF9CC;
+  --color-accent-yellow-dark: #C4A900;
+
+  --color-accent-orange: #FF8C00;
+  --color-accent-orange-light: #FFF4E5;
+
+  /* --- Semantic Colors --- */
+  --color-success: #107C10;
+  --color-success-background: #DFF6DD;
+  --color-success-border: #54B054;
+
+  --color-warning: #FCE100;
+  --color-warning-background: #FFF9CC;
+  --color-warning-border: #D4A900;
+
+  --color-error: #D13438;
+  --color-error-background: #FDE7E9;
+  --color-error-border: #E74C4C;
+
+  --color-info: #0F6CBD;
+  --color-info-background: #E8F3FC;
+  --color-info-border: #5BA6D6;
+
+  /* --- Surface & Background Colors --- */
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F3F2F1;
+  --color-surface-hover: #F8F8F8;
+  --color-surface-pressed: #EDEBE9;
+
+  --color-background: #FFFFFF;
+  --color-background-alt: #F8F8F8;
+  --color-background-canvas: #F3F2F1;
+
+  /* --- Border & Divider Colors --- */
+  --color-border: #E1DFDD;
+  --color-border-strong: #C8C6C4;
+  --color-border-subtle: #EDEBE9;
+  --color-divider: #E1DFDD;
+
+  /* --- Text Colors --- */
+  --color-text-primary: #323130;
+  --color-text-secondary: #605E5C;
+  --color-text-tertiary: #A19F9D;
+  --color-text-disabled: #C8C6C4;
+  --color-text-inverse: #FFFFFF;
+  --color-text-link: #0F6CBD;
+  --color-text-link-hover: #115EA3;
+
+  /* --- Interactive State Colors --- */
+  --color-focus-outline: #0F6CBD;
+  --color-focus-shadow: rgba(15, 108, 189, 0.25);
+  --color-disabled-background: #F3F2F1;
+  --color-disabled-text: #A19F9D;
+
+  /* --- Medical-Specific Colors --- */
+  --color-medical-urgent: #D13438;
+  --color-medical-attention: #FF8C00;
+  --color-medical-normal: #107C10;
+  --color-medical-scheduled: #0F6CBD;
+  --color-medical-completed: #00B7C3;
+
+  /* ============================================
+   * 2. TYPOGRAPHY
+   * ============================================ */
+
+  /* --- Font Families --- */
+  --font-family-primary: "Segoe UI", "Inter", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: "Cascadia Code", "Fira Code", "Consolas", monospace;
+
+  /* --- Font Weights --- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* --- Font Sizes --- */
+  --font-size-xs: 10px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+  --font-size-5xl: 40px;
+
+  /* --- Line Heights --- */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.5;
+  --line-height-loose: 1.75;
+
+  /* --- Heading 1 --- */
+  --heading-1-size: 28px;
+  --heading-1-weight: 600;
+  --heading-1-line-height: 1.2;
+  --heading-1-letter-spacing: -0.02em;
+
+  /* --- Heading 2 --- */
+  --heading-2-size: 24px;
+  --heading-2-weight: 600;
+  --heading-2-line-height: 1.25;
+  --heading-2-letter-spacing: -0.01em;
+
+  /* --- Heading 3 --- */
+  --heading-3-size: 20px;
+  --heading-3-weight: 600;
+  --heading-3-line-height: 1.3;
+  --heading-3-letter-spacing: 0;
+
+  /* --- Heading 4 --- */
+  --heading-4-size: 16px;
+  --heading-4-weight: 600;
+  --heading-4-line-height: 1.35;
+  --heading-4-letter-spacing: 0;
+
+  /* --- Subtitle --- */
+  --subtitle-size: 16px;
+  --subtitle-weight: 500;
+  --subtitle-line-height: 1.4;
+  --subtitle-letter-spacing: 0;
+
+  /* --- Body --- */
+  --body-size: 14px;
+  --body-weight: 400;
+  --body-line-height: 1.5;
+  --body-letter-spacing: 0;
+
+  /* --- Body Secondary --- */
+  --body-secondary-size: 14px;
+  --body-secondary-weight: 400;
+  --body-secondary-line-height: 1.5;
+  --body-secondary-color: var(--color-text-secondary);
+
+  /* --- Body Strong --- */
+  --body-strong-size: 14px;
+  --body-strong-weight: 600;
+  --body-strong-line-height: 1.5;
+
+  /* --- Caption --- */
+  --caption-size: 12px;
+  --caption-weight: 400;
+  --caption-line-height: 1.4;
+  --caption-letter-spacing: 0;
+
+  /* --- Caption Strong --- */
+  --caption-strong-size: 12px;
+  --caption-strong-weight: 600;
+  --caption-strong-line-height: 1.4;
+
+  /* --- Overline --- */
+  --overline-size: 10px;
+  --overline-weight: 600;
+  --overline-line-height: 1.3;
+  --overline-letter-spacing: 0.08em;
+  --overline-transform: uppercase;
+
+  /* ============================================
+   * 3. SPACING
+   * ============================================ */
+
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  /* --- Semantic Spacing --- */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* --- Component-Specific Spacing --- */
+  --spacing-input-padding-x: 12px;
+  --spacing-input-padding-y: 8px;
+  --spacing-button-padding-x: 16px;
+  --spacing-button-padding-y: 8px;
+  --spacing-card-padding: 16px;
+  --spacing-modal-padding: 24px;
+  --spacing-section-padding: 24px;
+
+  /* --- Gap Tokens --- */
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+  --gap-xl: 24px;
+
+  /* ============================================
+   * 4. BORDER RADIUS
+   * ============================================ */
+
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* --- Component-Specific Radius --- */
+  --radius-button: 4px;
+  --radius-input: 4px;
+  --radius-card: 6px;
+  --radius-modal: 8px;
+  --radius-tooltip: 4px;
+  --radius-badge: 4px;
+  --radius-avatar: 9999px;
+  --radius-chip: 9999px;
+
+  /* ============================================
+   * 5. SHADOWS
+   * ============================================ */
+
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 16px 32px rgba(0, 0, 0, 0.14);
+
+  /* --- Fluent UI Elevation Shadows --- */
+  --shadow-elevation-2: 0 1.6px 3.6px rgba(0, 0, 0, 0.132), 0 0.3px 0.9px rgba(0, 0, 0, 0.108);
+  --shadow-elevation-4: 0 3.2px 7.2px rgba(0, 0, 0, 0.132), 0 0.6px 1.8px rgba(0, 0, 0, 0.108);
+  --shadow-elevation-8: 0 6.4px 14.4px rgba(0, 0, 0, 0.132), 0 1.2px 3.6px rgba(0, 0, 0, 0.108);
+  --shadow-elevation-16: 0 12.8px 28.8px rgba(0, 0, 0, 0.132), 0 2.4px 7.2px rgba(0, 0, 0, 0.108);
+  --shadow-elevation-64: 0 25.6px 57.6px rgba(0, 0, 0, 0.22), 0 4.8px 14.4px rgba(0, 0, 0, 0.18);
+
+  /* --- Component Shadows --- */
+  --shadow-card: var(--shadow-elevation-2);
+  --shadow-card-hover: var(--shadow-elevation-4);
+  --shadow-dropdown: var(--shadow-elevation-8);
+  --shadow-modal: var(--shadow-elevation-64);
+  --shadow-tooltip: var(--shadow-elevation-4);
+
+  /* --- Focus Shadow --- */
+  --shadow-focus: 0 0 0 2px var(--color-focus-shadow);
+
+  /* ============================================
+   * 6. TRANSITIONS & ANIMATIONS
+   * ============================================ */
+
+  /* --- Duration --- */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 400ms;
+
+  /* --- Easing --- */
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* --- Transition Presets --- */
+  --transition-fast: all 100ms var(--easing-standard);
+  --transition-normal: all 200ms var(--easing-standard);
+  --transition-slow: all 300ms var(--easing-standard);
+  --transition-colors: color 150ms var(--easing-standard), background-color 150ms var(--easing-standard), border-color 150ms var(--easing-standard);
+  --transition-shadow: box-shadow 200ms var(--easing-standard);
+  --transition-transform: transform 200ms var(--easing-standard);
+
+  /* ============================================
+   * 7. Z-INDEX LAYERS
+   * ============================================ */
+
+  --z-index-base: 0;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1100;
+  --z-index-fixed: 1200;
+  --z-index-modal-backdrop: 1300;
+  --z-index-modal: 1400;
+  --z-index-popover: 1500;
+  --z-index-tooltip: 1600;
+  --z-index-toast: 1700;
+
+  /* ============================================
+   * 8. BREAKPOINTS
+   * ============================================ */
+
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ============================================
+   * 9. SIZING
+   * ============================================ */
+
+  /* --- Icon Sizes --- */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+  --icon-size-xl: 32px;
+  --icon-size-2xl: 48px;
+
+  /* --- Avatar Sizes --- */
+  --avatar-size-xs: 24px;
+  --avatar-size-sm: 32px;
+  --avatar-size-md: 40px;
+  --avatar-size-lg: 56px;
+  --avatar-size-xl: 72px;
+
+  /* --- Button Heights --- */
+  --button-height-sm: 28px;
+  --button-height-md: 36px;
+  --button-height-lg: 44px;
+
+  /* --- Input Heights --- */
+  --input-height-sm: 28px;
+  --input-height-md: 36px;
+  --input-height-lg: 44px;
+
+  /* --- Container Widths --- */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+
+  /* ============================================
+   * 10. BORDERS
+   * ============================================ */
+
+  --border-width-none: 0;
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 4px;
+
+  --border-style: solid;
+
+  --border-default: var(--border-width-thin) var(--border-style) var(--color-border);
+  --border-strong: var(--border-width-thin) var(--border-style) var(--color-border-strong);
+  --border-subtle: var(--border-width-thin) var(--border-style) var(--color-border-subtle);
+  --border-focus: var(--border-width-medium) var(--border-style) var(--color-focus-outline);
+}
+
+/* ============================================
+ * TYPOGRAPHY UTILITY CLASSES
+ * ============================================ */
+
+.text-heading-1 {
+  font-family: var(--font-family-primary);
+  font-size: var(--heading-1-size);
+  font-weight: var(--heading-1-weight);
+  line-height: var(--heading-1-line-height);
+  letter-spacing: var(--heading-1-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-heading-2 {
+  font-family: var(--font-family-primary);
+  font-size: var(--heading-2-size);
+  font-weight: var(--heading-2-weight);
+  line-height: var(--heading-2-line-height);
+  letter-spacing: var(--heading-2-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-heading-3 {
+  font-family: var(--font-family-primary);
+  font-size: var(--heading-3-size);
+  font-weight: var(--heading-3-weight);
+  line-height: var(--heading-3-line-height);
+  letter-spacing: var(--heading-3-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-heading-4 {
+  font-family: var(--font-family-primary);
+  font-size: var(--heading-4-size);
+  font-weight: var(--heading-4-weight);
+  line-height: var(--heading-4-line-height);
+  letter-spacing: var(--heading-4-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-subtitle {
+  font-family: var(--font-family-primary);
+  font-size: var(--subtitle-size);
+  font-weight: var(--subtitle-weight);
+  line-height: var(--subtitle-line-height);
+  letter-spacing: var(--subtitle-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-body {
+  font-family: var(--font-family-primary);
+  font-size: var(--body-size);
+  font-weight: var(--body-weight);
+  line-height: var(--body-line-height);
+  letter-spacing: var(--body-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.text-body-secondary {
+  font-family: var(--font-family-primary);
+  font-size: var(--body-secondary-size);
+  font-weight: var(--body-secondary-weight);
+  line-height: var(--body-secondary-line-height);
+  color: var(--color-text-secondary);
+}
+
+.text-body-strong {
+  font-family: var(--font-family-primary);
+  font-size: var(--body-strong-size);
+  font-weight: var(--body-strong-weight);
+  line-height: var(--body-strong-line-height);
+  color: var(--color-text-primary);
+}
+
+.text-caption {
+  font-family: var(--font-family-primary);
+  font-size: var(--caption-size);
+  font-weight: var(--caption-weight);
+  line-height: var(--caption-line-height);
+  letter-spacing: var(--caption-letter-spacing);
+  color: var(--color-text-secondary);
+}
+
+.text-caption-strong {
+  font-family: var(--font-family-primary);
+  font-size: var(--caption-strong-size);
+  font-weight: var(--caption-strong-weight);
+  line-height: var(--caption-strong-line-height);
+  color: var(--color-text-secondary);
+}
+
+.text-overline {
+  font-family: var(--font-family-primary);
+  font-size: var(--overline-size);
+  font-weight: var(--overline-weight);
+  line-height: var(--overline-line-height);
+  letter-spacing: var(--overline-letter-spacing);
+  text-transform: var(--overline-transform);
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+ * BASE RESET WITH TOKENS
+ * ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family-primary);
+  font-size: var(--body-size);
+  line-height: var(--body-line-height);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Focus Visible Styles */
+:focus-visible {
+  outline: 2px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}

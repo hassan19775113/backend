@@ -1,0 +1,407 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Patienten-Dashboard{% endblock %}
+{% block header_title %}PraxiApp - Patienten{% endblock %}
+{% block nav_active_patients %}prx-header__link--active{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/pages/haupt_dashboard.css' %}">
+{% endblock %}
+
+{% block page_header %}
+<section class="prx-section">
+    <div class="prx-section__header">
+        <div>
+            <h1 class="prx-section__title">
+                <span>👥</span> Patienten-Dashboard
+            </h1>
+            <p class="prx-section__subtitle">
+                Detailansicht für Patientendaten, Vitale und Termine
+            </p>
+        </div>
+        <div class="flex gap-2 items-center">
+            <select
+                class="patient-selector"
+                id="patientSelect"
+                data-current-patient-id="{{ selected_patient_id|default:'' }}"
+                style="background: var(--color-primary-500); color: white;"
+            >
+                <option value="">Alle Patienten</option>
+                {% for p in patients %}
+                <option value="{{ p.patient_id }}" {% if p.patient_id == selected_patient_id %}selected{% endif %}>
+                    {{ p.display_name }}
+                </option>
+                {% endfor %}
+            </select>
+            <a href="{% url 'dashboard:index' %}" class="prx-btn prx-btn--outline">
+                ← Zurück
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+{% if patient %}
+<!-- Patient Profile -->
+<section class="prx-section">
+    <div class="prx-card">
+        <div class="profile-card-content">
+            <div class="prx-avatar prx-avatar--xl" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); color: white; font-size: 2rem;">
+                {{ patient.initials }}
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold">{{ patient.full_name }}</h2>
+                <div class="flex gap-4 flex-wrap text-secondary text-sm" style="margin-top: var(--space-2);">
+                    <span>🎂 {{ patient.birth_date|slice:":10" }} ({{ patient.age }} Jahre)</span>
+                    <span>{% if patient.gender == "M" %}♂️ Männlich{% elif patient.gender == "W" %}♀️ Weiblich{% else %}⚧ Divers{% endif %}</span>
+                    <span>📋 Pat-Nr: {{ patient.patient_id }}</span>
+                </div>
+                {% if allergies %}
+                <div class="flex gap-2 flex-wrap" style="margin-top: var(--space-3);">
+                    {% for allergy in allergies %}
+                    <span class="prx-badge prx-badge--danger">⚠️ {{ allergy }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="flex flex-col gap-2 items-end">
+                <span class="prx-badge prx-badge--{% if patient.status == 'active' %}success{% else %}warning{% endif %}">
+                    {{ patient.status_label|default:"Aktiv" }}
+                </span>
+                {% if patient.insurance_type %}
+                <span class="prx-badge">{{ patient.insurance_type }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- KPIs -->
+<section class="prx-kpi-grid" style="margin-bottom: var(--space-6);">
+    <div class="prx-kpi prx-kpi--primary">
+        <div class="prx-kpi__label">Termine Gesamt</div>
+        <div class="prx-kpi__value">{{ kpis.total_appointments|default:"0" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--success">
+        <div class="prx-kpi__label">Letzter Besuch</div>
+        <div class="prx-kpi__value" style="font-size: var(--font-size-lg);">{{ kpis.last_visit|default:"—" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--accent">
+        <div class="prx-kpi__label">Nächster Termin</div>
+        <div class="prx-kpi__value" style="font-size: var(--font-size-lg);">{{ kpis.next_appointment|default:"—" }}</div>
+    </div>
+    <div class="prx-kpi prx-kpi--{% if kpis.no_show_rate > 15 %}danger{% elif kpis.no_show_rate > 5 %}warning{% else %}success{% endif %}">
+        <div class="prx-kpi__label">No-Show Rate</div>
+        <div class="prx-kpi__value">{{ kpis.no_show_rate|default:"0" }}<span class="prx-kpi__unit">%</span></div>
+    </div>
+</section>
+
+<!-- Main Content Grid -->
+<div class="prx-content-grid--2-cols prx-content-grid">
+    <!-- Vitals -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">❤️</span>
+                Vitalzeichen
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            {% if vitals %}
+            <div class="vital-grid">
+                {% if vitals.blood_pressure %}
+                <div class="vital-item">
+                    <div class="vital-icon">🩸</div>
+                    <div class="vital-value">{{ vitals.blood_pressure }}</div>
+                    <div class="vital-label">Blutdruck</div>
+                </div>
+                {% endif %}
+                {% if vitals.heart_rate %}
+                <div class="vital-item">
+                    <div class="vital-icon">💓</div>
+                    <div class="vital-value">{{ vitals.heart_rate }}</div>
+                    <div class="vital-label">Puls</div>
+                </div>
+                {% endif %}
+                {% if vitals.temperature %}
+                <div class="vital-item">
+                    <div class="vital-icon">🌡️</div>
+                    <div class="vital-value">{{ vitals.temperature }}°C</div>
+                    <div class="vital-label">Temperatur</div>
+                </div>
+                {% endif %}
+                {% if vitals.weight %}
+                <div class="vital-item">
+                    <div class="vital-icon">⚖️</div>
+                    <div class="vital-value">{{ vitals.weight }}kg</div>
+                    <div class="vital-label">Gewicht</div>
+                </div>
+                {% endif %}
+                {% if vitals.height %}
+                <div class="vital-item">
+                    <div class="vital-icon">📏</div>
+                    <div class="vital-value">{{ vitals.height }}cm</div>
+                    <div class="vital-label">Größe</div>
+                </div>
+                {% endif %}
+                {% if vitals.bmi %}
+                <div class="vital-item">
+                    <div class="vital-icon">📊</div>
+                    <div class="vital-value">{{ vitals.bmi }}</div>
+                    <div class="vital-label">BMI</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-muted text-sm prx-text-center">Keine Vitaldaten vorhanden</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Risk Score -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">⚠️</span>
+                Risiko-Score
+            </h3>
+        </div>
+        <div class="prx-card__body prx-text-center">
+            <div
+                class="risk-circle prx-js-bg"
+                data-bg="{{ risk.level_color|default:'var(--color-neutral-400)' }}"
+                style="background: var(--color-neutral-400);"
+            >
+                <span class="risk-score-value">{{ risk.score|default:"—" }}</span>
+                <span class="risk-score-label">{{ risk.level_label|default:"N/A" }}</span>
+            </div>
+            {% if risk.factors %}
+            <div style="text-align: left;">
+                {% for factor in risk.factors %}
+                <div class="flex justify-between items-center" style="padding: var(--space-2) 0; border-bottom: 1px solid var(--border-subtle);">
+                    <span class="text-sm">{{ factor.name }}</span>
+                    <span class="prx-badge prx-badge--{% if factor.severity == 'high' %}danger{% elif factor.severity == 'medium' %}warning{% else %}success{% endif %}">
+                        +{{ factor.points }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Lab Values -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🔬</span>
+                Laborwerte
+            </h3>
+            <span class="text-xs text-muted">{{ labs.latest_date|default:"—" }}</span>
+        </div>
+        <div class="prx-card__body">
+            {% if labs.values %}
+            <div class="flex gap-4 mb-4">
+                <div class="flex items-center gap-1">
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-success-500);"></span>
+                    <span class="text-sm">{{ labs.summary.green }} Normal</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-warning-500);"></span>
+                    <span class="text-sm">{{ labs.summary.yellow }} Auffällig</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-danger-500);"></span>
+                    <span class="text-sm">{{ labs.summary.red }} Kritisch</span>
+                </div>
+            </div>
+            <div class="lab-grid">
+                {% for key, lab in labs.values.items %}
+                <div class="lab-item {{ lab.status }}">
+                    <span
+                        class="prx-js-bg"
+                        data-bg="{% if lab.status == 'green' %}var(--color-success-500){% elif lab.status == 'yellow' %}var(--color-warning-500){% else %}var(--color-danger-500){% endif %}"
+                        style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-neutral-400);"
+                    ></span>
+                    <div>
+                        <div class="text-sm font-medium">{{ lab.name }}</div>
+                        <div class="text-xs text-muted">{{ lab.value }} {{ lab.unit }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-sm prx-text-center">Keine Laborwerte vorhanden</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Appointments Timeline -->
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">📅</span>
+                Termine
+            </h3>
+        </div>
+        <div class="prx-card__body" style="max-height: 350px; overflow-y: auto;">
+            {% if charts.appointments.timeline %}
+            <div class="timeline">
+                {% for appt in charts.appointments.timeline|slice:":10" %}
+                <div class="timeline-item {% if appt.is_future %}future{% endif %} {% if appt.status == 'cancelled' %}cancelled{% endif %}">
+                    <div class="text-xs text-muted">{{ appt.date|slice:":10" }} {{ appt.date|slice:"11:16" }}</div>
+                    <div
+                        class="font-semibold prx-js-color"
+                        data-color="{{ appt.type_color|default:'var(--color-neutral-700)' }}"
+                        style="color: var(--color-neutral-700);"
+                    >
+                        {{ appt.type }}
+                    </div>
+                    <div class="text-sm text-secondary">{{ appt.doctor_name }} · {{ appt.status_label }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-sm prx-text-center">Keine Termine vorhanden</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="prx-content-grid--2-cols prx-content-grid" style="margin-top: var(--space-6);">
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📈 Blutdruck-Verlauf</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="bloodPressureChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="prx-card">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">📊 Termin-Historie</h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-chart-container prx-chart-container--md">
+                <canvas id="appointmentHistoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- No Patient Selected -->
+<div class="prx-card">
+    <div class="prx-empty">
+        <div class="prx-empty__icon">👥</div>
+        <h3 class="prx-empty__title">Kein Patient ausgewählt</h3>
+        <p class="prx-empty__description">
+            Wählen Sie einen Patienten aus der Dropdown-Liste oben, um dessen Dashboard anzuzeigen.
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block inline_scripts %}
+<script type="application/json" id="prx-patient-charts-data">{{ charts_json|default:"{}"|safe }}</script>
+
+<script>
+    (function () {
+        const readJson = (id, fallback) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            try {
+                return JSON.parse(el.textContent || '');
+            } catch (e) {
+                return fallback;
+            }
+        };
+
+        const chartsData = readJson('prx-patient-charts-data', {});
+
+        // Navigation control (avoid inline onchange)
+        const patientSelect = document.getElementById('patientSelect');
+        if (patientSelect) {
+            patientSelect.addEventListener('change', function () {
+                const params = new URLSearchParams(window.location.search);
+                if (patientSelect.value) {
+                    params.set('patient_id', patientSelect.value);
+                } else {
+                    params.delete('patient_id');
+                }
+                const qs = params.toString();
+                window.location.search = qs ? `?${qs}` : '';
+            });
+        }
+
+        // Apply data-driven styles (keep style="..." free of Django syntax)
+        for (const el of document.querySelectorAll('.prx-js-bg')) {
+            const bg = el.dataset.bg;
+            if (bg) el.style.background = bg;
+        }
+        for (const el of document.querySelectorAll('.prx-js-color')) {
+            const color = el.dataset.color;
+            if (color) el.style.color = color;
+        }
+    
+        // Blood Pressure Chart
+        const bpCanvas = document.getElementById('bloodPressureChart');
+        if (bpCanvas && chartsData.vitals && chartsData.vitals.blood_pressure) {
+            const bpData = chartsData.vitals.blood_pressure;
+            bpData.datasets.forEach((ds, i) => {
+                ds.borderColor = i === 0 ? PRX_COLORS.danger : PRX_COLORS.primary;
+                ds.backgroundColor = i === 0 ? PRX_COLORS.paletteLight[4] : PRX_COLORS.paletteLight[0];
+                ds.fill = false;
+            });
+
+            new Chart(bpCanvas, {
+                type: 'line',
+                data: bpData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } },
+                    scales: {
+                        y: { min: 50, max: 180, grid: { color: PRX_COLORS.neutralLight } },
+                        x: { grid: { display: false } },
+                    },
+                },
+            });
+        }
+    
+        // Appointment History Chart
+        const historyCanvas = document.getElementById('appointmentHistoryChart');
+        if (historyCanvas && chartsData.appointments && chartsData.appointments.history) {
+            const apptData = chartsData.appointments.history;
+            apptData.datasets.forEach((ds, i) => {
+                ds.backgroundColor = PRX_COLORS.palette[i];
+            });
+
+            new Chart(historyCanvas, {
+                type: 'bar',
+                data: apptData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: PRX_COLORS.neutralLight },
+                        },
+                        x: { stacked: true, grid: { display: false } },
+                    },
+                },
+            });
+        }
+    })();
+</script>
+{% endblock %}

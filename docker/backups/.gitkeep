@@ -1,0 +1,2 @@
+# Backup-Verzeichnis für PostgreSQL-Dumps
+# Dateien werden hier von pg_dump abgelegt

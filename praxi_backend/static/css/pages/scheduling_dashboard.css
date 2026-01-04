@@ -1,0 +1,260 @@
+/*
+================================================================================
+Styles für: scheduling.html (Terminplanung Dashboard)
+================================================================================
+Nur seitenbezogene Styles – keine Duplikate aus base.css
+Voraussetzung: base.css muss zuerst geladen werden
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Efficiency Score (Hero Metric)
+   ============================================================================ */
+
+.efficiency-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-6);
+    text-align: center;
+}
+
+.efficiency-score__value {
+    font-size: 4rem;
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+.efficiency-score__value--excellent {
+    color: var(--color-success);
+}
+
+.efficiency-score__value--good {
+    color: var(--color-warning);
+}
+
+.efficiency-score__value--poor {
+    color: var(--color-danger);
+}
+
+.efficiency-score__label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-2);
+}
+
+/* ============================================================================
+   Abschnitt: Booking Funnel
+   ============================================================================ */
+
+.booking-funnel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.funnel-stage {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.funnel-stage__label {
+    width: 100px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    flex-shrink: 0;
+}
+
+.funnel-stage__bar {
+    flex: 1;
+    height: 32px;
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+}
+
+.funnel-stage__fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-3);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-lg);
+}
+
+.funnel-stage__fill--booked {
+    background: var(--color-primary);
+}
+
+.funnel-stage__fill--confirmed {
+    background: var(--color-secondary);
+}
+
+.funnel-stage__fill--completed {
+    background: var(--color-success);
+}
+
+.funnel-stage__fill--cancelled {
+    background: var(--color-text-muted);
+}
+
+/* ============================================================================
+   Abschnitt: Lead Time Stats
+   ============================================================================ */
+
+.lead-time-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-4);
+    text-align: center;
+}
+
+.lead-time-stat {
+    padding: var(--spacing-4);
+    background: var(--color-background);
+    border-radius: var(--radius-md);
+}
+
+.lead-time-stat__value {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+.lead-time-stat__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+/* ============================================================================
+   Abschnitt: Capacity Utilization List
+   ============================================================================ */
+
+.capacity-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.capacity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.capacity-item:last-child {
+    border-bottom: none;
+}
+
+.capacity-item__info {
+    flex: 1;
+}
+
+.capacity-item__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.capacity-item__stats {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.capacity-item__bar {
+    width: 120px;
+}
+
+.capacity-item__value {
+    min-width: 50px;
+    text-align: right;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================================================
+   Abschnitt: Peak Load Heatmap
+   ============================================================================ */
+
+.peak-heatmap {
+    overflow-x: auto;
+}
+
+.peak-heatmap__legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-4);
+}
+
+.peak-heatmap__legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.peak-heatmap__legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-sm);
+}
+
+.peak-heatmap__legend-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.peak-info {
+    text-align: center;
+    margin-top: var(--spacing-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.peak-info strong {
+    color: var(--color-text);
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Anpassungen
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .efficiency-score__value {
+        font-size: 3rem;
+    }
+    
+    .lead-time-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .funnel-stage {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .funnel-stage__label {
+        width: 100%;
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .capacity-item {
+        flex-wrap: wrap;
+    }
+    
+    .capacity-item__bar {
+        width: 100%;
+        order: 3;
+        margin-top: var(--spacing-2);
+    }
+}

@@ -1,0 +1,524 @@
+/*
+================================================================================
+CSS für: base_dashboard.html (Basis-Template)
+================================================================================
+Version: 3.0.0
+Design: Calm Medical UI - Outlook-Inspired
+Seite: Header, Navigation, Layout-Struktur
+
+Farbschema:
+- Primär: #0078D4 (Outlook Blue)
+- Sekundär: #4FB3BF (Soft Teal)
+- Akzent: #7BC6B0 (Mint Green)
+- Hintergrund: #F5F7FA
+- Rahmen: #E1E4E8
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Global Variables
+   ============================================================================ */
+
+:root {
+    --prx-color-primary: #0078D4;
+    --prx-color-primary-hover: #005A9E;
+    --prx-color-secondary: #4FB3BF;
+    --prx-color-accent: #7BC6B0;
+    --prx-color-success: #22C55E;
+    --prx-color-warning: #F4A259;
+    --prx-color-danger: #EF4444;
+    --prx-color-info: #0EA5E9;
+    
+    --prx-bg-page: #F5F7FA;
+    --prx-bg-card: #FFFFFF;
+    --prx-bg-hover: #FAFBFC;
+    
+    --prx-text-primary: #1F2937;
+    --prx-text-secondary: #6B7280;
+    --prx-text-muted: #9CA3AF;
+    
+    --prx-border-color: #E1E4E8;
+    --prx-border-light: #F0F2F5;
+    
+    --prx-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --prx-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    
+    --prx-radius-sm: 6px;
+    --prx-radius-md: 10px;
+    --prx-radius-lg: 12px;
+    
+    --prx-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================================================
+   Abschnitt: Base Reset
+   ============================================================================ */
+
+.prx-dashboard-body {
+    font-family: var(--prx-font-family);
+    background: var(--prx-bg-page);
+    color: var(--prx-text-primary);
+    margin: 0;
+     padding-left:10px;
+  padding-right: 10px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================================
+   Abschnitt: Header
+   ============================================================================ */
+
+.prx-header {
+    grid-area: header;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-fixed);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-height);
+    padding: 0 var(--spacing-6);
+    background: #e3e3e3;
+    color: #1a1818;
+    box-shadow: var(--shadow-sm);
+}
+
+.prx-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    gap: var(--spacing-6);
+}
+
+.prx-header__title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+}
+
+.prx-header__title-icon {
+    font-size: var(--font-size-xl);
+}
+
+.prx-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.prx-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: #1a1818;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.prx-header__link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgb(0, 99, 177);
+    text-decoration: none;
+}
+
+.prx-header__link--active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #1a1818;
+}
+
+
+.prx-header__inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.prx-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.prx-header__logo {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+
+/* ============================================================================
+   Abschnitt: Navigation
+   ============================================================================ */
+
+.prx-nav {
+    display: flex;
+    gap: 6px;
+}
+
+.prx-nav__link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.prx-nav__link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+}
+
+.prx-nav__link--active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+}
+
+.prx-nav__icon {
+    font-size: 16px;
+}
+
+/* ============================================================================
+   Abschnitt: User Menu
+   ============================================================================ */
+
+.prx-user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.prx-user-menu__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.prx-user-menu__info {
+    display: flex;
+    flex-direction: column;
+}
+
+.prx-user-menu__name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.prx-user-menu__role {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.prx-user-menu__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.prx-user-menu__btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #FFFFFF;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.prx-user-menu__btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================================
+   Abschnitt: Main Content Area
+   ============================================================================ */
+
+.prx-main {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* ============================================================================
+   Abschnitt: Section Container
+   ============================================================================ */
+
+.prx-section {
+    margin-bottom: 32px;
+}
+
+.prx-section__header {
+     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.prx-section__title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--prx-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.prx-section__subtitle {
+    font-size: 14px;
+    color: var(--prx-text-secondary);
+    margin: 8px 0 0 0;
+}
+
+/* ============================================================================
+   Abschnitt: Breadcrumbs
+   ============================================================================ */
+
+.prx-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--prx-text-secondary);
+    margin-bottom: 16px;
+}
+
+.prx-breadcrumbs a {
+    color: var(--prx-color-primary);
+    text-decoration: none;
+}
+
+.prx-breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.prx-breadcrumbs__separator {
+    color: var(--prx-text-muted);
+}
+
+/* ============================================================================
+   Abschnitt: Quick Actions Bar
+   ============================================================================ */
+
+.prx-quick-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.prx-quick-actions__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.prx-quick-actions__btn--primary {
+    background: var(--prx-color-primary);
+    color: #FFFFFF;
+}
+
+.prx-quick-actions__btn--primary:hover {
+    background: var(--prx-color-primary-hover);
+}
+
+.prx-quick-actions__btn--secondary {
+    background: var(--prx-bg-card);
+    color: var(--prx-text-primary);
+    border: 1px solid var(--prx-border-color);
+}
+
+.prx-quick-actions__btn--secondary:hover {
+    background: var(--prx-bg-hover);
+}
+
+/* ============================================================================
+   Abschnitt: Toast Notifications
+   ============================================================================ */
+
+.prx-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--prx-bg-card);
+    border: 1px solid var(--prx-border-color);
+    border-radius: var(--prx-radius-lg);
+    padding: 16px 20px;
+    box-shadow: var(--prx-shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.prx-toast--success {
+    border-left: 4px solid var(--prx-color-success);
+}
+
+.prx-toast--error {
+    border-left: 4px solid var(--prx-color-danger);
+}
+
+.prx-toast--warning {
+    border-left: 4px solid var(--prx-color-warning);
+}
+
+.prx-toast__icon {
+    font-size: 20px;
+}
+
+.prx-toast__message {
+    font-size: 14px;
+    color: var(--prx-text-primary);
+}
+
+.prx-toast__close {
+    background: none;
+    border: none;
+    color: var(--prx-text-muted);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 16px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================================================
+   Abschnitt: Loading Spinner
+   ============================================================================ */
+
+.prx-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--prx-border-color);
+    border-top-color: var(--prx-color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================================================
+   Abschnitt: Footer
+   ============================================================================ */
+
+.prx-footer {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--prx-text-muted);
+    border-top: 1px solid var(--prx-border-color);
+}
+
+.prx-footer a {
+    color: var(--prx-color-primary);
+    text-decoration: none;
+}
+
+.prx-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Header
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+    .prx-header__inner {
+        flex-wrap: wrap;
+    }
+    
+    .prx-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+@media (max-width: 768px) {
+    .prx-header {
+        padding: 12px 16px;
+    }
+    
+    .prx-nav__link {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .prx-nav__link span:not(.prx-nav__icon) {
+        display: none;
+    }
+    
+    .prx-user-menu__info {
+        display: none;
+    }
+    
+    .prx-main {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .prx-nav {
+        gap: 4px;
+    }
+    
+    .prx-nav__link {
+        padding: 8px;
+    }
+}

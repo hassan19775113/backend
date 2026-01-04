@@ -1,0 +1,382 @@
+/*
+================================================================================
+Styles für: operations.html (Operations Dashboard)
+================================================================================
+Nur seitenbezogene Styles – keine Duplikate aus base.css
+Voraussetzung: base.css muss zuerst geladen werden
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Period Selector
+   ============================================================================ */
+
+.ops-period-selector {
+    padding: var(--spacing-2) var(--spacing-4);
+    padding-right: var(--spacing-10);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-inverse);
+    background: var(--color-accent);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right var(--spacing-3) center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+}
+
+.ops-period-selector option {
+    color: var(--color-text);
+    background: var(--color-surface);
+}
+
+/* ============================================================================
+   Abschnitt: Patient Flow Pipeline
+   ============================================================================ */
+
+.flow-pipeline {
+    display: flex;
+    gap: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.flow-stage {
+    flex: 1;
+    padding: var(--spacing-5);
+    text-align: center;
+    position: relative;
+    transition: background var(--transition-fast);
+}
+
+.flow-stage:hover {
+    background: var(--color-hover-subtle);
+}
+
+.flow-stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 12px solid transparent;
+    border-left-color: var(--color-border);
+    z-index: 1;
+}
+
+.flow-stage--waiting {
+    border-top: 4px solid var(--color-warning);
+}
+
+.flow-stage--prep {
+    border-top: 4px solid var(--color-info);
+}
+
+.flow-stage--operation {
+    border-top: 4px solid #8B5CF6;
+}
+
+.flow-stage--recovery {
+    border-top: 4px solid var(--color-accent);
+}
+
+.flow-stage--completed {
+    border-top: 4px solid var(--color-success);
+}
+
+.flow-stage__count {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.flow-stage__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-1);
+}
+
+.flow-stage__time {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-2);
+}
+
+/* ============================================================================
+   Abschnitt: Flow Times Grid
+   ============================================================================ */
+
+.flow-times-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+}
+
+.flow-time-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.flow-time-card--wait {
+    background: var(--color-warning-light);
+}
+
+.flow-time-card--prep {
+    background: var(--color-info-light);
+}
+
+.flow-time-card--treatment {
+    background: var(--color-success-light);
+}
+
+.flow-time-card--post {
+    background: var(--color-primary-light);
+}
+
+.flow-time-card__value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+}
+
+.flow-time-card--wait .flow-time-card__value {
+    color: var(--color-warning-dark);
+}
+
+.flow-time-card--prep .flow-time-card__value {
+    color: var(--color-info-dark);
+}
+
+.flow-time-card--treatment .flow-time-card__value {
+    color: var(--color-success-dark);
+}
+
+.flow-time-card--post .flow-time-card__value {
+    color: var(--color-primary-dark);
+}
+
+.flow-time-card__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-1);
+}
+
+.flow-total {
+    text-align: center;
+    margin-top: var(--spacing-4);
+    padding: var(--spacing-3);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================================================
+   Abschnitt: Bottleneck Analysis
+   ============================================================================ */
+
+.bottleneck-indicator {
+    text-align: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.bottleneck-badge {
+    display: inline-block;
+    padding: var(--spacing-3) var(--spacing-6);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+}
+
+.bottleneck-badge--low {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+}
+
+.bottleneck-badge--medium {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+}
+
+.bottleneck-badge--high {
+    background: var(--color-danger-light);
+    color: var(--color-danger-dark);
+}
+
+.bottleneck-factors {
+    margin-top: var(--spacing-4);
+}
+
+.bottleneck-factors__title {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-2);
+}
+
+.bottleneck-factor {
+    margin-bottom: var(--spacing-3);
+}
+
+.bottleneck-factor__header {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-1);
+}
+
+.bottleneck-factor__name {
+    color: var(--color-text);
+}
+
+.bottleneck-factor__score {
+    font-weight: var(--font-weight-semibold);
+}
+
+.high-util-resources {
+    margin-top: var(--spacing-4);
+}
+
+.high-util-resources__title {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-2);
+}
+
+.high-util-resources__list {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+/* ============================================================================
+   Abschnitt: Room Heatmap
+   ============================================================================ */
+
+.room-heatmap {
+    overflow-x: auto;
+}
+
+.room-heatmap__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.room-heatmap__color {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-full);
+}
+
+.room-heatmap__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.heatmap-cell-ops {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-inverse);
+}
+
+/* ============================================================================
+   Abschnitt: Resource Utilization Table
+   ============================================================================ */
+
+.resource-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.resource-row__color {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.resource-row__name {
+    font-weight: var(--font-weight-medium);
+}
+
+.resource-utilization {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.resource-utilization__bar {
+    width: 100px;
+}
+
+.resource-utilization__value {
+    font-weight: var(--font-weight-semibold);
+    min-width: 45px;
+}
+
+/* ============================================================================
+   Abschnitt: Top Services Table
+   ============================================================================ */
+
+.service-code {
+    font-family: var(--font-mono);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Anpassungen
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+    .flow-pipeline {
+        flex-wrap: wrap;
+    }
+    
+    .flow-stage {
+        flex: 1 1 calc(50% - 1px);
+    }
+    
+    .flow-stage:not(:last-child)::after {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .flow-pipeline {
+        flex-direction: column;
+    }
+    
+    .flow-stage {
+        border-top: none !important;
+        border-left: 4px solid;
+    }
+    
+    .flow-stage--waiting { border-left-color: var(--color-warning); }
+    .flow-stage--prep { border-left-color: var(--color-info); }
+    .flow-stage--operation { border-left-color: #8B5CF6; }
+    .flow-stage--recovery { border-left-color: var(--color-accent); }
+    .flow-stage--completed { border-left-color: var(--color-success); }
+    
+    .flow-times-grid {
+        grid-template-columns: 1fr;
+    }
+}

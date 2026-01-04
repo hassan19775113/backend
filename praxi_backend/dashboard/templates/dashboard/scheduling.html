@@ -1,0 +1,505 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Terminplanung KPIs{% endblock %}
+{% block header_title %}PraxiApp - Terminplanung{% endblock %}
+{% block nav_active_scheduling %}prx-header__link--active{% endblock %}
+ <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+     <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/pages/haupt_dashboard.css' %}">
+{% endblock %}
+
+{% block page_header %}
+<section class="prx-section">
+    <div class="prx-section__header">
+        <div>
+            <h1 class="prx-section__title">
+                <span>📅</span> Terminplanung KPIs
+            </h1>
+            <p class="prx-section__subtitle">
+                Effizienz, Auslastung und Buchungsmetriken
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'dashboard:index' %}" class="prx-btn prx-btn--outline">
+                ← Haupt-Dashboard
+            </a>
+            <button class="prx-btn prx-btn--primary" onclick="location.reload()">
+                🔄 Aktualisieren
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block kpi_section %}
+<!-- Efficiency Score -->
+<div class="flex gap-6 mb-6" style="flex-wrap: wrap;">
+    <div class="prx-card" style="flex: 0 0 200px; text-align: center;">
+        <div style="font-size: 4rem; font-weight: 700; color: {% if kpis.efficiency_score >= 80 %}var(--color-success-500){% elif kpis.efficiency_score >= 60 %}var(--color-warning-500){% else %}var(--color-danger-500){% endif %};">
+            {{ kpis.efficiency_score }}
+        </div>
+        <div class="text-sm font-semibold text-secondary">Effizienz-Score</div>
+        <div class="prx-badge prx-badge--{% if kpis.efficiency_score >= 80 %}success{% elif kpis.efficiency_score >= 60 %}warning{% else %}danger{% endif %}" style="margin-top: var(--space-2);">
+            {% if kpis.efficiency_score >= 80 %}Exzellent{% elif kpis.efficiency_score >= 60 %}Gut{% else %}Verbesserungspotenzial{% endif %}
+        </div>
+    </div>
+    
+    <div style="flex: 1; min-width: 300px;">
+        <div class="prx-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+            <!-- Completion Rate -->
+            <div class="prx-kpi prx-kpi--success">
+                <div class="prx-kpi__label">Completion Rate</div>
+                <div class="prx-kpi__value">{{ kpis.completion_rate.rate }}<span class="prx-kpi__unit">%</span></div>
+                <div class="prx-kpi__description">{{ kpis.completion_rate.completed }} / {{ kpis.completion_rate.total }} Termine</div>
+            </div>
+            
+            <!-- Cancellation Rate -->
+            <div class="prx-kpi prx-kpi--{% if kpis.cancellation.cancellation_rate > 20 %}danger{% elif kpis.cancellation.cancellation_rate > 10 %}warning{% else %}success{% endif %}">
+                <div class="prx-kpi__label">Stornoquote</div>
+                <div class="prx-kpi__value">{{ kpis.cancellation.cancellation_rate }}<span class="prx-kpi__unit">%</span></div>
+                <div class="prx-kpi__description">{{ kpis.cancellation.cancelled_count }} Stornierungen</div>
+            </div>
+            
+            <!-- No-Show Rate -->
+            <div class="prx-kpi prx-kpi--{% if kpis.no_show_rate.rate > 15 %}danger{% elif kpis.no_show_rate.rate > 8 %}warning{% else %}success{% endif %}">
+                <div class="prx-kpi__label">No-Show Rate</div>
+                <div class="prx-kpi__value">{{ kpis.no_show_rate.rate }}<span class="prx-kpi__unit">%</span></div>
+                <div class="prx-kpi__description">{{ kpis.no_show_rate.no_show }} von {{ kpis.no_show_rate.total }}</div>
+            </div>
+            
+            <!-- Average Lead Time -->
+            <div class="prx-kpi prx-kpi--info">
+                <div class="prx-kpi__label">Ø Vorlaufzeit</div>
+                <div class="prx-kpi__value">{{ kpis.lead_time.avg_days }}<span class="prx-kpi__unit">Tage</span></div>
+                <div class="prx-kpi__description">Min: {{ kpis.lead_time.min_days }}d / Max: {{ kpis.lead_time.max_days }}d</div>
+            </div>
+            
+            <!-- Avg Duration -->
+            <div class="prx-kpi prx-kpi--primary">
+                <div class="prx-kpi__label">Ø Termindauer</div>
+                <div class="prx-kpi__value">{{ kpis.avg_duration }}<span class="prx-kpi__unit">min</span></div>
+            </div>
+            
+            <!-- New Patients -->
+            <div class="prx-kpi prx-kpi--accent">
+                <div class="prx-kpi__label">Neupatient-Quote</div>
+                <div class="prx-kpi__value">{{ kpis.new_patient.rate }}<span class="prx-kpi__unit">%</span></div>
+                <div class="prx-kpi__description">{{ kpis.new_patient.new_patient_count }} neue Patienten</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Booking Funnel Section -->
+<section class="prx-section">
+    <div class="prx-card__header" style="margin-bottom: var(--space-4);">
+        <h2 class="prx-card__title">
+            <span class="prx-card__title-icon">📊</span>
+            Buchungs-Funnel
+        </h2>
+    </div>
+    
+    <div class="prx-content-grid--2-cols prx-content-grid">
+        <!-- Funnel Visualization -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">Terminverlauf</h3>
+            </div>
+            <div class="prx-card__body" id="funnelContainer" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+        
+        <!-- Trend Chart -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">📈 Entwicklung</h3>
+            </div>
+            <div class="prx-card__body">
+                <div class="prx-chart-container prx-chart-container--md">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Stats Section -->
+<section class="prx-section">
+    <div class="prx-content-grid--2-cols prx-content-grid">
+        <!-- Booking Stats -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">📋 Buchungsstatistik</h3>
+            </div>
+            <div class="prx-card__body">
+                <div class="flex gap-4" style="flex-wrap: wrap; text-align: center;">
+                    <div class="prx-stat" style="flex: 1; min-width: 80px;">
+                        <span class="prx-stat__label">Gebucht</span>
+                        <span class="prx-stat__value prx-stat__value--primary">{{ kpis.new_patient.total_appointments }}</span>
+                    </div>
+                    <div class="prx-stat" style="flex: 1; min-width: 80px;">
+                        <span class="prx-stat__label">Bestätigt</span>
+                        <span class="prx-stat__value prx-stat__value--success">{{ kpis.completion_rate.completed }}</span>
+                    </div>
+                    <div class="prx-stat" style="flex: 1; min-width: 80px;">
+                        <span class="prx-stat__label">Storniert</span>
+                        <span class="prx-stat__value prx-stat__value--danger">{{ kpis.cancellation.cancelled_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lead Time Distribution -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">⏱️ Vorlaufzeit-Verteilung</h3>
+            </div>
+            <div class="prx-card__body">
+                <div class="prx-chart-container prx-chart-container--md">
+                    <canvas id="leadTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Capacity Utilization Section -->
+<section class="prx-section">
+    <h2 class="prx-section__title" style="margin-bottom: var(--space-4);">
+        <span>👥</span> Kapazitätsauslastung
+    </h2>
+    
+    <div class="prx-content-grid--2-cols prx-content-grid">
+        <!-- Doctor Utilization -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">
+                    <span class="prx-card__title-icon">👨‍⚕️</span>
+                    Behandler-Auslastung
+                </h3>
+            </div>
+            <div class="prx-card__body">
+                {% for doc in kpis.doctor_utilization %}
+                <div class="prx-list-item" style="border: none; padding: var(--space-3) 0;">
+                    <div class="prx-avatar prx-avatar--md" style="background: {{ doc.color }}; color: white;">
+                        {{ doc.name|slice:":2"|upper }}
+                    </div>
+                    <div class="prx-list-item__content">
+                        <div class="prx-list-item__title">{{ doc.name }}</div>
+                        <div class="prx-list-item__subtitle">{{ doc.appointments }} Termine • {{ doc.booked_mins|floatformat:0 }} min</div>
+                    </div>
+                    <div style="flex: 1; max-width: 150px;">
+                        <div class="prx-progress">
+                            <div class="prx-progress__bar" style="width: {{ doc.utilization }}%; background: {{ doc.color }};"></div>
+                        </div>
+                    </div>
+                    <span class="font-semibold text-sm" style="color: {{ doc.color }}; min-width: 45px; text-align: right;">{{ doc.utilization }}%</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-sm prx-text-center">Keine Ärzte konfiguriert</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Room Utilization -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">
+                    <span class="prx-card__title-icon">🚪</span>
+                    Raum-Auslastung
+                </h3>
+            </div>
+            <div class="prx-card__body">
+                {% for room in kpis.room_utilization %}
+                <div class="prx-list-item" style="border: none; padding: var(--space-3) 0;">
+                    <div class="prx-avatar prx-avatar--md" style="background: {{ room.color }}; color: white;">🚪</div>
+                    <div class="prx-list-item__content">
+                        <div class="prx-list-item__title">{{ room.name }}</div>
+                        <div class="prx-list-item__subtitle">{{ room.appointments }} Buchungen • {{ room.booked_mins|floatformat:0 }} min</div>
+                    </div>
+                    <div style="flex: 1; max-width: 150px;">
+                        <div class="prx-progress">
+                            <div class="prx-progress__bar" style="width: {{ room.utilization }}%; background: {{ room.color }};"></div>
+                        </div>
+                    </div>
+                    <span class="font-semibold text-sm" style="color: {{ room.color }}; min-width: 45px; text-align: right;">{{ room.utilization }}%</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-sm prx-text-center">Keine Räume konfiguriert</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Peak Load Section -->
+<section class="prx-section">
+    <h2 class="prx-section__title" style="margin-bottom: var(--space-4);">
+        <span>🔥</span> Peak-Load Analyse
+    </h2>
+    
+    <div class="prx-content-grid--2-cols prx-content-grid">
+        <!-- Hourly Load -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">🕐 Termine pro Stunde</h3>
+            </div>
+            <div class="prx-card__body">
+                <div class="prx-chart-container prx-chart-container--sm">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weekday Load -->
+        <div class="prx-card">
+            <div class="prx-card__header">
+                <h3 class="prx-card__title">📅 Termine pro Wochentag</h3>
+            </div>
+            <div class="prx-card__body">
+                <div class="prx-chart-container prx-chart-container--sm">
+                    <canvas id="weekdayChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Heatmap -->
+    <div class="prx-card" style="margin-top: var(--space-6);">
+        <div class="prx-card__header">
+            <h3 class="prx-card__title">
+                <span class="prx-card__title-icon">🗓️</span>
+                Auslastungs-Heatmap (Stunde × Wochentag)
+            </h3>
+        </div>
+        <div class="prx-card__body">
+            <div class="prx-table-wrapper" style="border: none;">
+                <table class="prx-table prx-table--compact" id="heatmapTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th>07</th><th>08</th><th>09</th><th>10</th><th>11</th><th>12</th>
+                            <th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th>
+                        </tr>
+                    </thead>
+                    <tbody id="heatmapBody"></tbody>
+                </table>
+            </div>
+            
+            <!-- Legend -->
+            <div class="flex gap-4 justify-center" style="margin-top: var(--space-4);">
+                <div class="flex items-center gap-1">
+                    <div style="width: 16px; height: 16px; border-radius: var(--radius-sm); background: var(--color-neutral-200);"></div>
+                    <span class="text-xs text-muted">Keine</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div style="width: 16px; height: 16px; border-radius: var(--radius-sm); background: rgba(47, 111, 171, 0.3);"></div>
+                    <span class="text-xs text-muted">Niedrig</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div style="width: 16px; height: 16px; border-radius: var(--radius-sm); background: rgba(47, 111, 171, 0.6);"></div>
+                    <span class="text-xs text-muted">Mittel</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div style="width: 16px; height: 16px; border-radius: var(--radius-sm); background: rgba(47, 111, 171, 0.9);"></div>
+                    <span class="text-xs text-muted">Hoch</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div style="width: 16px; height: 16px; border-radius: var(--radius-sm); background: var(--color-danger-500);"></div>
+                    <span class="text-xs text-muted">Peak</span>
+                </div>
+            </div>
+            
+            <p class="prx-text-center text-secondary text-sm" style="margin-top: var(--space-4);">
+                🔥 Peak: <strong>{{ kpis.peak_load.peak_day }} um {{ kpis.peak_load.peak_hour }}:00 Uhr</strong> 
+                ({{ kpis.peak_load.peak_count }} Termine)
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Last Updated -->
+<div class="prx-text-center text-muted text-sm" style="margin-top: var(--space-6);">
+    Zuletzt aktualisiert: {{ kpis.generated_at|slice:":19"|default:"Jetzt" }}
+</div>
+{% endblock %}
+
+{% block inline_scripts %}
+<script>
+    const chartsData = {{ charts_json|safe }};
+    const heatmapMatrix = {{ heatmap_matrix|safe }};
+    const funnelData = {{ funnel_data|safe }};
+    
+    // Apply design system colors
+    if (chartsData.completion_rate_trend) {
+        chartsData.completion_rate_trend.datasets.forEach((ds, i) => {
+            ds.borderColor = PRX_COLORS.palette[i];
+            ds.backgroundColor = PRX_COLORS.paletteLight[i];
+            ds.fill = true;
+        });
+    }
+    
+    if (chartsData.lead_time_distribution) {
+        chartsData.lead_time_distribution.datasets[0].backgroundColor = PRX_COLORS.primary;
+    }
+    
+    if (chartsData.hourly_load) {
+        chartsData.hourly_load.datasets[0].backgroundColor = PRX_COLORS.primary;
+    }
+    
+    if (chartsData.weekday_load) {
+        chartsData.weekday_load.datasets[0].backgroundColor = PRX_COLORS.palette;
+    }
+    
+    // Trend Chart
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: chartsData.completion_rate_trend,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: v => v + '%' },
+                    grid: { color: PRX_COLORS.neutralLight }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    
+    // Lead Time Chart
+    new Chart(document.getElementById('leadTimeChart'), {
+        type: 'bar',
+        data: chartsData.lead_time_distribution,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: PRX_COLORS.neutralLight } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    
+    // Hourly Chart
+    new Chart(document.getElementById('hourlyChart'), {
+        type: 'bar',
+        data: chartsData.hourly_load,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: PRX_COLORS.neutralLight } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    
+    // Weekday Chart
+    new Chart(document.getElementById('weekdayChart'), {
+        type: 'bar',
+        data: chartsData.weekday_load,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: PRX_COLORS.neutralLight } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    
+    // Funnel
+    const funnelContainer = document.getElementById('funnelContainer');
+    const maxFunnel = funnelData.total || 1;
+    const funnelColors = [PRX_COLORS.primary, PRX_COLORS.secondary, PRX_COLORS.success, PRX_COLORS.neutralMedium];
+    
+    funnelData.funnel.forEach((stage, idx) => {
+        const width = Math.max(30, (stage.count / maxFunnel) * 100);
+        const rate = idx > 0 
+            ? Math.round((stage.count / funnelData.funnel[idx-1].count) * 100) 
+            : 100;
+        const color = funnelColors[idx] || PRX_COLORS.neutralMedium;
+        
+        funnelContainer.innerHTML += `
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <span class="text-sm font-medium" style="width: 100px;">${stage.stage}</span>
+                <div style="flex: 1; height: 32px; background: var(--color-neutral-100); border-radius: var(--radius-lg); overflow: hidden; position: relative;">
+                    <div style="width: ${width}%; height: 100%; background: ${color}; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-3); color: white; font-size: var(--font-size-sm); font-weight: 600;">
+                        <span>${stage.count}</span>
+                        <span>${rate}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Heatmap
+    const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    const heatmapBody = document.getElementById('heatmapBody');
+    const maxVal = Math.max(...heatmapMatrix.flat()) || 1;
+    
+    days.forEach((day, dayIdx) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="font-semibold">${day}</td>`;
+        
+        for (let hour = 7; hour <= 19; hour++) {
+            const count = heatmapMatrix[dayIdx][hour] || 0;
+            const intensity = count / maxVal;
+            
+            let color;
+            if (count === 0) {
+                color = 'var(--color-neutral-200)';
+            } else if (intensity >= 0.9) {
+                color = 'var(--color-danger-500)';
+            } else if (intensity >= 0.6) {
+                color = 'rgba(47, 111, 171, 0.9)';
+            } else if (intensity >= 0.3) {
+                color = 'rgba(47, 111, 171, 0.6)';
+            } else {
+                color = 'rgba(47, 111, 171, 0.3)';
+            }
+            
+            row.innerHTML += `
+                <td class="prx-text-center">
+                    <div style="
+                        width: 28px;
+                        height: 28px;
+                        border-radius: var(--radius-md);
+                        background: ${color};
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: var(--font-size-xs);
+                        font-weight: 500;
+                        color: ${count > 0 ? 'white' : 'var(--text-muted)'};
+                    " title="${day} ${hour}:00 - ${count} Termine">
+                        ${count > 0 ? count : ''}
+                    </div>
+                </td>
+            `;
+        }
+        
+        heatmapBody.appendChild(row);
+    });
+</script>
+{% endblock %}

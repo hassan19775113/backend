@@ -1,0 +1,901 @@
+/* ============================================================================
+   PraxiApp - Premium Medical Admin Branding
+   Version: 2.0.0 - Modern Light Theme (Outlook-Inspired)
+   ============================================================================
+   
+   FORCE LIGHT MODE - Override Django's dark mode detection
+   
+   Farbschema (Microsoft 365 / Outlook inspired):
+   --primary: #0078D4 (Outlook Blue)
+   --primary-dark: #106EBE
+   --accent-green: #22C55E (Fresh Green)
+   --warning-amber: #F59E0B
+   --danger-rose: #F43F5E
+   --background: #F5F7FA (Light Gray)
+   
+   ============================================================================ */
+
+/* ============================================================================
+   FORCE LIGHT MODE - Override system dark mode preference
+   ============================================================================ */
+:root,
+html,
+html[data-theme="dark"],
+html[data-theme="auto"] {
+    color-scheme: light !important;
+    
+    /* Override all dark mode variables with light values */
+    --primary: #0078D4 !important;
+    --primary-fg: #FFFFFF !important;
+    
+    --body-fg: #1E2433 !important;
+    --body-bg: #F5F7FA !important;
+    --body-quiet-color: #6B7789 !important;
+    --body-medium-color: #4A5568 !important;
+    --body-loud-color: #1E2433 !important;
+    
+    --breadcrumbs-link-fg: #0078D4 !important;
+    --breadcrumbs-bg: #FFFFFF !important;
+    
+    --link-fg: #0078D4 !important;
+    --link-hover-color: #106EBE !important;
+    --link-selected-fg: #005A9E !important;
+    
+    --hairline-color: #E8EDF4 !important;
+    --border-color: #DEE2E8 !important;
+    
+    --error-fg: #E11D48 !important;
+    --message-success-bg: #F0FDF4 !important;
+    --message-warning-bg: #FFFBEB !important;
+    --message-error-bg: #FFF1F2 !important;
+    
+    --darkened-bg: #F0F4F8 !important;
+    --selected-bg: #E1EFFF !important;
+    --selected-row: #E1EFFF !important;
+    
+    --close-button-bg: #DEE2E8 !important;
+    --close-button-hover-bg: #C4CBD6 !important;
+}
+
+/* Disable dark mode media query completely */
+@media (prefers-color-scheme: dark) {
+    :root,
+    html,
+    html[data-theme="dark"],
+    html[data-theme="auto"] {
+        color-scheme: light !important;
+        --body-bg: #F5F7FA !important;
+        --body-fg: #1E2433 !important;
+        --darkened-bg: #F0F4F8 !important;
+        --selected-bg: #E1EFFF !important;
+        --border-color: #DEE2E8 !important;
+        --hairline-color: #E8EDF4 !important;
+    }
+}
+
+/* ============================================================================
+   CSS Custom Properties (Variablen) - Modern Light Theme
+   ============================================================================ */
+:root {
+    /* Primärfarben - Outlook Blue */
+    --primary: #0078D4;
+    --primary-dark: #106EBE;
+    --primary-light: #5AA3F9;
+    
+    /* Akzentfarben */
+    --accent-green: #22C55E;
+    --accent-green-dark: #16A34A;
+    --warning-amber: #F59E0B;
+    --danger-rose: #F43F5E;
+    --danger-rose-dark: #E11D48;
+    
+    /* Hintergrundfarben */
+    --background-light: #F5F7FA;
+    --background-white: #FFFFFF;
+    --background-hover: rgba(0, 120, 212, 0.04);
+    
+    /* Textfarben */
+    --text-primary: #1E2433;
+    --text-secondary: #4A5568;
+    --text-muted: #98A2B3;
+    
+    /* Rahmen & Schatten */
+    --border-color: #DEE2E8;
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    
+    /* Transitions */
+    --transition-fast: all 0.15s ease;
+    --transition-normal: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.3s ease;
+}
+
+
+/* ============================================================================
+   Body & Container - FORCE LIGHT MODE
+   ============================================================================ */
+body,
+html[data-theme="dark"] body,
+html[data-theme="auto"] body {
+    background-color: var(--background-light) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    color: var(--text-primary) !important;
+    line-height: 1.6 !important;
+    font-size: 14px !important;
+}
+
+#container,
+html[data-theme="dark"] #container {
+    background-color: var(--background-light) !important;
+    min-height: 100vh !important;
+}
+
+#content,
+html[data-theme="dark"] #content {
+    background-color: var(--background-white) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 28px !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin: 24px !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+
+/* ============================================================================
+   Header & Branding - Modern Gradient
+   ============================================================================ */
+#header,
+html[data-theme="dark"] #header {
+    background: linear-gradient(135deg, #0078D4 0%, #106EBE 100%) !important;
+    color: white !important;
+    padding: 16px 28px !important;
+    box-shadow: 0 4px 20px rgba(0, 120, 212, 0.25) !important;
+    border-bottom: none !important;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+#branding {
+    float: left !important;
+    color: white !important;
+}
+
+#site-name {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#site-name a,
+#site-name a:link,
+#site-name a:visited,
+html[data-theme="dark"] #site-name a {
+    color: white !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    letter-spacing: -0.01em !important;
+}
+
+#site-name a:hover {
+    opacity: 0.95 !important;
+}
+
+
+/* ============================================================================
+   User Tools (Header rechts)
+   ============================================================================ */
+#user-tools {
+    float: right !important;
+    margin: 0 !important;
+    padding: 10px 0 !important;
+    text-align: right !important;
+    color: white !important;
+    font-size: 13px !important;
+}
+
+#user-tools a,
+#user-tools a:link,
+#user-tools a:visited {
+    color: white !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    padding: 8px 16px !important;
+    border-radius: var(--radius-sm) !important;
+    transition: var(--transition-fast) !important;
+    margin-left: 6px !important;
+}
+
+#user-tools a:hover {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    text-decoration: none !important;
+}
+
+
+/* ============================================================================
+   Breadcrumbs - Light Theme
+   ============================================================================ */
+div.breadcrumbs,
+html[data-theme="dark"] div.breadcrumbs {
+    background-color: #FFFFFF !important;
+    color: #4A5568 !important;
+    padding: 14px 28px !important;
+    margin: 0 24px !important;
+    margin-top: 24px !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    border-bottom: 1px solid #E8EDF4 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+div.breadcrumbs a,
+html[data-theme="dark"] div.breadcrumbs a {
+    color: #0078D4 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: var(--transition-fast) !important;
+}
+
+div.breadcrumbs a:hover {
+    color: #106EBE !important;
+}
+
+
+/* ============================================================================
+   Sidebar (Nav) - Light Theme
+   ============================================================================ */
+#nav-sidebar,
+html[data-theme="dark"] #nav-sidebar {
+    background: #FFFFFF !important;
+    border-right: 1px solid #E8EDF4 !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+#nav-sidebar .module-caption,
+html[data-theme="dark"] #nav-sidebar .module-caption {
+    background: linear-gradient(135deg, #F5F7FA, #EBEEF2) !important;
+    color: #0078D4 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #E8EDF4 !important;
+}
+
+#nav-sidebar a,
+html[data-theme="dark"] #nav-sidebar a {
+    color: #4A5568 !important;
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    margin: 2px 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+#nav-sidebar a:hover,
+html[data-theme="dark"] #nav-sidebar a:hover {
+    background: rgba(0, 120, 212, 0.08) !important;
+    color: #0078D4 !important;
+}
+
+#nav-sidebar .current,
+html[data-theme="dark"] #nav-sidebar .current {
+    background: rgba(0, 120, 212, 0.12) !important;
+    color: #0078D4 !important;
+    font-weight: 600 !important;
+}
+
+/* Sidebar toggle button */
+#nav-toggle,
+html[data-theme="dark"] #nav-toggle {
+    background: #F5F7FA !important;
+    border: 1px solid #E8EDF4 !important;
+    color: #4A5568 !important;
+}
+
+
+/* ============================================================================
+   Module (Dashboard-Boxen) - Light Theme
+   ============================================================================ */
+.module,
+html[data-theme="dark"] .module {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E8EDF4 !important;
+    border-radius: var(--radius-lg) !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: var(--transition-normal) !important;
+}
+
+.module:hover {
+    box-shadow: var(--shadow-md) !important;
+}
+
+.module h2,
+.module caption,
+html[data-theme="dark"] .module h2,
+html[data-theme="dark"] .module caption {
+    background: linear-gradient(135deg, #0078D4, #5AA3F9) !important;
+    color: white !important;
+    padding: 14px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    border: none !important;
+    letter-spacing: 0.01em !important;
+}
+
+.module h2 a,
+html[data-theme="dark"] .module h2 a {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+
+/* ============================================================================
+   Tables - Light Theme
+   ============================================================================ */
+table,
+html[data-theme="dark"] table {
+    background-color: #FFFFFF !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 13px !important;
+}
+
+thead th,
+html[data-theme="dark"] thead th {
+    background: linear-gradient(180deg, #FAFBFC 0%, #F5F6F8 100%) !important;
+    color: #4A5568 !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #E8EDF4 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+}
+
+thead th a,
+html[data-theme="dark"] thead th a {
+    color: #4A5568 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+thead th a:hover {
+    color: #0078D4 !important;
+}
+
+tbody tr,
+html[data-theme="dark"] tbody tr {
+    border-bottom: 1px solid #F0F4F8 !important;
+    transition: var(--transition-fast) !important;
+    background-color: #FFFFFF !important;
+}
+
+tbody tr:hover,
+html[data-theme="dark"] tbody tr:hover {
+    background-color: var(--background-hover) !important;
+    box-shadow: inset 3px 0 0 var(--primary) !important;
+}
+
+tbody tr:nth-child(even),
+html[data-theme="dark"] tbody tr:nth-child(even) {
+    background-color: #FAFBFC !important;
+}
+
+tbody tr:nth-child(even):hover,
+html[data-theme="dark"] tbody tr:nth-child(even):hover {
+    background-color: rgba(0, 120, 212, 0.04) !important;
+}
+
+tbody td,
+html[data-theme="dark"] tbody td {
+    padding: 14px 16px !important;
+    color: #1E2433 !important;
+    vertical-align: middle !important;
+}
+
+tbody td a,
+html[data-theme="dark"] tbody td a {
+    color: #0078D4 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: var(--transition-fast) !important;
+}
+
+tbody td a:hover {
+    color: #106EBE !important;
+}
+
+
+/* ============================================================================
+   Buttons - Modern Gradient Style
+   ============================================================================ */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+html[data-theme="dark"] .button,
+html[data-theme="dark"] input[type="submit"] {
+    background: linear-gradient(135deg, #0078D4 0%, #106EBE 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.25) !important;
+    text-transform: none !important;
+    letter-spacing: 0.01em !important;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.submit-row input:hover,
+a.button:hover {
+    background: linear-gradient(135deg, #106EBE 0%, #005A9E 100%) !important;
+    box-shadow: 0 4px 12px rgba(0, 120, 212, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+.button:active,
+input[type="submit"]:active,
+input[type="button"]:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* Default Button (Speichern) */
+.default,
+input[type="submit"].default {
+    background: linear-gradient(to bottom, var(--accent-green), var(--accent-green-dark)) !important;
+}
+
+.default:hover,
+input[type="submit"].default:hover {
+    background: var(--accent-green-dark) !important;
+}
+
+/* Delete Button */
+.deletelink,
+.deletelink-box a {
+    background: linear-gradient(to bottom, var(--critical-red), var(--critical-red-dark)) !important;
+}
+
+.deletelink:hover,
+.deletelink-box a:hover {
+    background: var(--critical-red-dark) !important;
+}
+
+
+/* ============================================================================
+   Form Fields - Light Theme
+   ============================================================================ */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select,
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+    border: 1px solid #DEE2E8 !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    color: #1E2433 !important;
+    background-color: #FFFFFF !important;
+    transition: var(--transition-fast) !important;
+    font-family: inherit !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+    border-color: #0078D4 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1) !important;
+    background-color: #FFFFFF !important;
+}
+
+
+/* ============================================================================
+   Fieldsets - Light Theme
+   ============================================================================ */
+fieldset.module,
+html[data-theme="dark"] fieldset.module {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E8EDF4 !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    margin-bottom: 24px !important;
+}
+
+fieldset h2,
+html[data-theme="dark"] fieldset h2 {
+    background: none !important;
+    color: #1E2433 !important;
+    padding: 12px 0 !important;
+    border-bottom: 2px solid #0078D4 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin-bottom: 20px !important;
+}
+
+
+/* ============================================================================
+   Filter Sidebar (Right side) - Light Theme
+   ============================================================================ */
+#changelist-filter,
+html[data-theme="dark"] #changelist-filter {
+    background: #FFFFFF !important;
+    border: 1px solid #E8EDF4 !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+#changelist-filter h2,
+html[data-theme="dark"] #changelist-filter h2 {
+    background: linear-gradient(135deg, #0078D4, #5AA3F9) !important;
+    color: white !important;
+    padding: 14px 18px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 12px 12px 0 0 !important;
+    margin: 0 !important;
+}
+
+#changelist-filter h3,
+html[data-theme="dark"] #changelist-filter h3 {
+    background: linear-gradient(135deg, #F5F7FA, #EBEEF2) !important;
+    color: #4A5568 !important;
+    padding: 12px 18px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    margin: 0 !important;
+    border-top: 1px solid #E8EDF4 !important;
+}
+
+#changelist-filter ul,
+html[data-theme="dark"] #changelist-filter ul {
+    padding: 8px 12px !important;
+    margin: 0 !important;
+}
+
+#changelist-filter li,
+html[data-theme="dark"] #changelist-filter li {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#changelist-filter a,
+html[data-theme="dark"] #changelist-filter a {
+    color: #4A5568 !important;
+    padding: 8px 12px !important;
+    display: block !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease !important;
+}
+
+#changelist-filter a:hover,
+html[data-theme="dark"] #changelist-filter a:hover {
+    background: rgba(0, 120, 212, 0.08) !important;
+    color: #0078D4 !important;
+}
+
+#changelist-filter .selected a,
+html[data-theme="dark"] #changelist-filter .selected a {
+    background: rgba(0, 120, 212, 0.12) !important;
+    color: #0078D4 !important;
+    font-weight: 600 !important;
+}
+
+
+/* ============================================================================
+   Status Badges (Wiederverwendbar) - Modern Style
+   ============================================================================ */
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+}
+
+.status-success {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+.status-warning {
+    background-color: var(--warning-yellow);
+    color: var(--text-primary);
+}
+
+.status-critical,
+.status-error {
+    background-color: var(--critical-red);
+    color: white;
+}
+
+.status-info {
+    background-color: var(--primary);
+    color: white;
+}
+
+.status-neutral {
+    background-color: var(--text-muted);
+    color: white;
+}
+
+
+/* ============================================================================
+   Messages
+   ============================================================================ */
+.messagelist {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 24px 0 !important;
+}
+
+.messagelist li {
+    padding: 16px 24px !important;
+    margin-bottom: 12px !important;
+    border-radius: var(--radius-md) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.messagelist .success {
+    background-color: #D4EDDA !important;
+    color: #155724 !important;
+    border-left: 5px solid var(--accent-green) !important;
+}
+
+.messagelist .warning {
+    background-color: #FFF3CD !important;
+    color: #856404 !important;
+    border-left: 5px solid var(--warning-yellow) !important;
+}
+
+.messagelist .error {
+    background-color: #F8D7DA !important;
+    color: #721C24 !important;
+    border-left: 5px solid var(--critical-red) !important;
+}
+
+.messagelist .info {
+    background-color: #D1ECF1 !important;
+    color: #0C5460 !important;
+    border-left: 5px solid var(--primary) !important;
+}
+
+
+/* ============================================================================
+   Pagination
+   ============================================================================ */
+.paginator {
+    text-align: center !important;
+    padding: 20px 0 !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+.paginator a,
+.paginator a:link,
+.paginator a:visited {
+    background-color: var(--background-white) !important;
+    color: var(--primary) !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 8px 14px !important;
+    margin: 0 4px !important;
+    border-radius: var(--radius-sm) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: var(--transition-fast) !important;
+}
+
+.paginator a:hover {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.paginator .this-page {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: 2px solid var(--primary) !important;
+    padding: 8px 14px !important;
+    margin: 0 4px !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+}
+
+
+/* ============================================================================
+   Inline Forms
+   ============================================================================ */
+.inline-group {
+    background-color: var(--background-light) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 20px !important;
+    margin-bottom: 24px !important;
+}
+
+.inline-related {
+    background-color: var(--background-white) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 16px !important;
+    margin-bottom: 14px !important;
+}
+
+
+/* ============================================================================
+   Submit Row
+   ============================================================================ */
+.submit-row {
+    background-color: var(--background-light) !important;
+    padding: 20px 24px !important;
+    border-top: 3px solid var(--border-color) !important;
+    margin-top: 24px !important;
+    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+}
+
+
+/* ============================================================================
+   Footer
+   ============================================================================ */
+#footer {
+    background-color: var(--background-white) !important;
+    color: var(--text-secondary) !important;
+    padding: 20px 28px !important;
+    text-align: center !important;
+    border-top: 2px solid var(--border-color) !important;
+    margin-top: 48px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+
+/* ============================================================================
+   Actions (Batch Operations)
+   ============================================================================ */
+.actions {
+    background-color: var(--background-light) !important;
+    padding: 16px 20px !important;
+    border-radius: var(--radius-md) !important;
+    margin-bottom: 20px !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.actions select {
+    margin-right: 10px !important;
+    padding: 8px 12px !important;
+}
+
+.actions button,
+.actions .button {
+    background: var(--primary) !important;
+    padding: 8px 18px !important;
+}
+
+
+/* ============================================================================
+   Sortable Table Headers
+   ============================================================================ */
+th.sortable {
+    cursor: pointer !important;
+}
+
+th.sortable a {
+    position: relative;
+    padding-right: 24px !important;
+}
+
+th.sorted.ascending a::after {
+    content: "▲";
+    position: absolute;
+    right: 8px;
+    color: var(--primary);
+    font-size: 10px;
+}
+
+th.sorted.descending a::after {
+    content: "▼";
+    position: absolute;
+    right: 8px;
+    color: var(--primary);
+    font-size: 10px;
+}
+
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+@media (max-width: 768px) {
+    #header {
+        padding: 14px 20px !important;
+    }
+
+    #site-name a {
+        font-size: 22px !important;
+    }
+
+    #content {
+        margin: 16px !important;
+        padding: 20px !important;
+    }
+
+    .module {
+        margin-bottom: 20px !important;
+    }
+
+    table {
+        font-size: 12px !important;
+    }
+
+    thead th,
+    tbody td {
+        padding: 10px !important;
+    }
+}# 1. Gehe ins Backend-Verzeichnis
+cd C:\DEV_2026\PraxiApp\postgres\praxi_backend
+
+# 2. Aktiviere Virtual Environment
+.venv\Scripts\Activate
+
+# 3. Sammle Static Files
+python manage.py collectstatic --noinput
+
+# 4. Starte Server
+python manage.py runserver# 1. Gehe ins Backend-Verzeichnis
+cd C:\DEV_2026\PraxiApp\postgres\praxi_backend
+
+# 2. Aktiviere Virtual Environment
+.venv\Scripts\Activate
+
+# 3. Sammle Static Files
+python manage.py collectstatic --noinput
+
+# 4. Starte Server
+python manage.py runserver

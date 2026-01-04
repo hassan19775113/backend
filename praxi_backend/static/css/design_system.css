@@ -1,0 +1,577 @@
+/*
+================================================================================
+PRAXIAPP DESIGN SYSTEM
+================================================================================
+Version: 1.0.0
+Description: Calm Technology Medical Design System
+Principles: Functional Minimalism, Modern Medical UI, High Readability
+
+This file defines the core design tokens, rules, and architectural patterns
+for the PraxiApp medical information system.
+
+================================================================================
+DESIGN PRINCIPLES
+================================================================================
+
+1. CALM TECHNOLOGY
+   - Quiet, non-intrusive interfaces
+   - Information appears when needed
+   - Minimal cognitive load
+   - Peaceful color palette
+
+2. FUNCTIONAL MINIMALISM
+   - Every element serves a purpose
+   - No decorative clutter
+   - Clear visual hierarchy
+   - Generous whitespace
+
+3. MODERN MEDICAL UI
+   - Professional, trustworthy appearance
+   - High contrast for readability
+   - Accessible color choices
+   - Clear data visualization
+
+4. INTERACTION DESIGN
+   - Subtle, calm transitions
+   - Predictable behavior
+   - Immediate feedback
+   - No jarring animations
+
+================================================================================
+DESIGN TOKENS
+================================================================================
+*/
+
+:root {
+    /*
+    ============================================================================
+    COLOR SYSTEM - MODERN MEDICAL (Outlook-Inspired)
+    ============================================================================
+    Calm, professional, light palette with soft accents.
+    Designed for extended use in medical environments.
+    */
+    
+    /* Primary Colors - Soft Azure Blue (Microsoft-inspired) */
+    --color-primary-50: #F0F7FF;
+    --color-primary-100: #E1EFFF;
+    --color-primary-200: #C3DFFF;
+    --color-primary-300: #96C8FF;
+    --color-primary-400: #5AA3F9;
+    --color-primary-500: #0078D4;  /* Main Primary - Outlook Blue */
+    --color-primary-600: #106EBE;
+    --color-primary-700: #005A9E;
+    --color-primary-800: #004578;
+    --color-primary-900: #002B4D;
+    
+    /* Secondary Colors - Soft Sage Green (Calming Medical) */
+    --color-secondary-50: #F4FAF6;
+    --color-secondary-100: #E8F5EC;
+    --color-secondary-200: #D1EBD9;
+    --color-secondary-300: #A8D5B8;  /* Main Secondary */
+    --color-secondary-400: #7FC496;
+    --color-secondary-500: #5CB176;
+    --color-secondary-600: #459B5E;
+    --color-secondary-700: #357A4A;
+    --color-secondary-800: #255936;
+    --color-secondary-900: #153822;
+    
+    /* Neutral Colors - Warm Gray (Softer, less harsh) */
+    --color-neutral-0: #FFFFFF;
+    --color-neutral-50: #FAFBFC;
+    --color-neutral-100: #F5F6F8;
+    --color-neutral-200: #EBEEF2;
+    --color-neutral-300: #DEE2E8;
+    --color-neutral-400: #C4CBD6;
+    --color-neutral-500: #98A2B3;
+    --color-neutral-600: #6B7789;
+    --color-neutral-700: #4A5568;
+    --color-neutral-800: #323B4B;
+    --color-neutral-900: #1E2433;
+    
+    /* Accent Colors - Lavender (Soft, modern) */
+    --color-accent-50: #F5F3FF;
+    --color-accent-100: #EDE9FE;
+    --color-accent-200: #DDD6FE;
+    --color-accent-300: #C4B5FD;
+    --color-accent-400: #A78BFA;  /* Main Accent */
+    --color-accent-500: #8B5CF6;
+    --color-accent-600: #7C3AED;
+    --color-accent-700: #6D28D9;
+    --color-accent-800: #5B21B6;
+    --color-accent-900: #4C1D95;
+    
+    /* Semantic Colors - Status (Softer, calmer tones) */
+    --color-success-50: #F0FDF4;
+    --color-success-100: #DCFCE7;
+    --color-success-200: #BBF7D0;
+    --color-success-300: #86EFAC;
+    --color-success-400: #4ADE80;
+    --color-success-500: #22C55E;  /* Main Success - Fresh Green */
+    --color-success-600: #16A34A;
+    --color-success-700: #15803D;
+    --color-success-800: #166534;
+    --color-success-900: #14532D;
+    
+    --color-warning-50: #FFFBEB;
+    --color-warning-100: #FEF3C7;
+    --color-warning-200: #FDE68A;
+    --color-warning-300: #FCD34D;
+    --color-warning-400: #FBBF24;
+    --color-warning-500: #F59E0B;  /* Main Warning - Warm Amber */
+    --color-warning-600: #D97706;
+    --color-warning-700: #B45309;
+    --color-warning-800: #92400E;
+    --color-warning-900: #78350F;
+    
+    --color-danger-50: #FFF1F2;
+    --color-danger-100: #FFE4E6;
+    --color-danger-200: #FECDD3;
+    --color-danger-300: #FDA4AF;
+    --color-danger-400: #FB7185;
+    --color-danger-500: #F43F5E;  /* Main Danger - Soft Rose */
+    --color-danger-600: #E11D48;
+    --color-danger-700: #BE123C;
+    --color-danger-800: #9F1239;
+    --color-danger-900: #881337;
+    
+    --color-info-50: #F0F9FF;
+    --color-info-100: #E0F2FE;
+    --color-info-200: #BAE6FD;
+    --color-info-300: #7DD3FC;
+    --color-info-400: #38BDF8;
+    --color-info-500: #0EA5E9;  /* Main Info - Sky Blue */
+    --color-info-600: #0284C7;
+    --color-info-700: #0369A1;
+    --color-info-800: #075985;
+    --color-info-900: #0C4A6E;
+    
+    /*
+    ============================================================================
+    TYPOGRAPHY SYSTEM
+    ============================================================================
+    */
+    
+    /* Font Families */
+    --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    
+    /* Font Sizes - Based on 16px root */
+    --font-size-xs: 0.75rem;      /* 12px */
+    --font-size-sm: 0.875rem;     /* 14px */
+    --font-size-base: 1rem;       /* 16px */
+    --font-size-md: 1.125rem;     /* 18px */
+    --font-size-lg: 1.25rem;      /* 20px */
+    --font-size-xl: 1.5rem;       /* 24px */
+    --font-size-2xl: 1.875rem;    /* 30px */
+    --font-size-3xl: 2.25rem;     /* 36px */
+    --font-size-4xl: 3rem;        /* 48px */
+    
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* Letter Spacing */
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.025em;
+    --letter-spacing-wider: 0.05em;
+    
+    /*
+    ============================================================================
+    SPACING SYSTEM (4px Base Unit)
+    ============================================================================
+    */
+    
+    --space-0: 0;
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+    --space-10: 2.5rem;   /* 40px */
+    --space-12: 3rem;     /* 48px */
+    --space-16: 4rem;     /* 64px */
+    --space-20: 5rem;     /* 80px */
+    --space-24: 6rem;     /* 96px */
+    
+    /*
+    ============================================================================
+    BORDER SYSTEM
+    ============================================================================
+    */
+    
+    /* Border Radius */
+    --radius-none: 0;
+    --radius-sm: 0.25rem;    /* 4px */
+    --radius-md: 0.5rem;     /* 8px */
+    --radius-lg: 0.75rem;    /* 12px */
+    --radius-xl: 1rem;       /* 16px */
+    --radius-2xl: 1.5rem;    /* 24px */
+    --radius-full: 9999px;
+    
+    /* Border Widths */
+    --border-width-0: 0;
+    --border-width-1: 1px;
+    --border-width-2: 2px;
+    --border-width-4: 4px;
+    
+    /*
+    ============================================================================
+    SHADOW SYSTEM (Minimal, Subtle)
+    ============================================================================
+    */
+    
+    --shadow-none: none;
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 10px 10px rgba(0, 0, 0, 0.04);
+    
+    /* Colored Shadows for Cards */
+    --shadow-primary: 0 4px 14px rgba(47, 111, 171, 0.15);
+    --shadow-success: 0 4px 14px rgba(16, 185, 129, 0.15);
+    --shadow-warning: 0 4px 14px rgba(244, 162, 89, 0.15);
+    --shadow-danger: 0 4px 14px rgba(217, 83, 79, 0.15);
+    
+    /*
+    ============================================================================
+    TRANSITION SYSTEM (Calm, Subtle)
+    ============================================================================
+    */
+    
+    --duration-instant: 0ms;
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    
+    --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-in: cubic-bezier(0.4, 0, 1, 1);
+    --easing-out: cubic-bezier(0, 0, 0.2, 1);
+    --easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --transition-colors: color var(--duration-fast) var(--easing-default),
+                         background-color var(--duration-fast) var(--easing-default),
+                         border-color var(--duration-fast) var(--easing-default);
+    --transition-transform: transform var(--duration-normal) var(--easing-default);
+    --transition-shadow: box-shadow var(--duration-normal) var(--easing-default);
+    --transition-all: all var(--duration-normal) var(--easing-default);
+    
+    /*
+    ============================================================================
+    Z-INDEX SYSTEM
+    ============================================================================
+    */
+    
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal-backdrop: 400;
+    --z-modal: 500;
+    --z-popover: 600;
+    --z-tooltip: 700;
+    --z-notification: 800;
+    
+    /*
+    ============================================================================
+    LAYOUT SYSTEM
+    ============================================================================
+    */
+    
+    /* Container Widths */
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1280px;
+    --container-2xl: 1536px;
+    --container-max: 1800px;
+    
+    /* Grid */
+    --grid-columns: 12;
+    --grid-gap: var(--space-6);
+    
+    /* Sidebar */
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 72px;
+    
+    /* Header */
+    --header-height: 64px;
+    
+    /*
+    ============================================================================
+    COMPONENT TOKENS
+    ============================================================================
+    */
+    
+    /* Buttons */
+    --btn-padding-x: var(--space-4);
+    --btn-padding-y: var(--space-2);
+    --btn-padding-x-sm: var(--space-3);
+    --btn-padding-y-sm: var(--space-1);
+    --btn-padding-x-lg: var(--space-6);
+    --btn-padding-y-lg: var(--space-3);
+    --btn-radius: var(--radius-md);
+    --btn-font-weight: var(--font-weight-medium);
+    
+    /* Cards */
+    --card-padding: var(--space-6);
+    --card-radius: var(--radius-lg);
+    --card-shadow: var(--shadow-sm);
+    --card-border: var(--border-width-1) solid var(--color-neutral-200);
+    
+    /* Inputs */
+    --input-padding-x: var(--space-3);
+    --input-padding-y: var(--space-2);
+    --input-radius: var(--radius-md);
+    --input-border: var(--border-width-1) solid var(--color-neutral-300);
+    --input-focus-ring: 0 0 0 3px rgba(47, 111, 171, 0.15);
+    
+    /* Tables */
+    --table-cell-padding-x: var(--space-4);
+    --table-cell-padding-y: var(--space-3);
+    --table-header-bg: var(--color-neutral-50);
+    --table-border: var(--border-width-1) solid var(--color-neutral-200);
+    --table-row-hover: var(--color-neutral-50);
+    
+    /* KPI Cards */
+    --kpi-padding: var(--space-5);
+    --kpi-radius: var(--radius-lg);
+    --kpi-value-size: var(--font-size-2xl);
+    --kpi-label-size: var(--font-size-sm);
+    --kpi-accent-width: 4px;
+}
+
+/*
+================================================================================
+BASE RESET & DEFAULTS
+================================================================================
+*/
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-800);
+    background-color: var(--color-neutral-100);
+}
+
+/*
+================================================================================
+TYPOGRAPHY CLASSES
+================================================================================
+*/
+
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-base { font-size: var(--font-size-base); }
+.text-md { font-size: var(--font-size-md); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
+.text-3xl { font-size: var(--font-size-3xl); }
+.text-4xl { font-size: var(--font-size-4xl); }
+
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+
+.text-primary { color: var(--color-primary-500); }
+.text-secondary { color: var(--color-secondary-300); }
+.text-muted { color: var(--color-neutral-500); }
+.text-success { color: var(--color-success-500); }
+.text-warning { color: var(--color-warning-500); }
+.text-danger { color: var(--color-danger-500); }
+
+/*
+================================================================================
+SPACING UTILITIES
+================================================================================
+*/
+
+.m-0 { margin: var(--space-0); }
+.m-1 { margin: var(--space-1); }
+.m-2 { margin: var(--space-2); }
+.m-3 { margin: var(--space-3); }
+.m-4 { margin: var(--space-4); }
+.m-6 { margin: var(--space-6); }
+.m-8 { margin: var(--space-8); }
+
+.p-0 { padding: var(--space-0); }
+.p-1 { padding: var(--space-1); }
+.p-2 { padding: var(--space-2); }
+.p-3 { padding: var(--space-3); }
+.p-4 { padding: var(--space-4); }
+.p-6 { padding: var(--space-6); }
+.p-8 { padding: var(--space-8); }
+
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+/*
+================================================================================
+GRID SYSTEM
+================================================================================
+*/
+
+.container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+}
+
+.grid {
+    display: grid;
+    gap: var(--grid-gap);
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-cols-6 { grid-template-columns: repeat(6, 1fr); }
+.grid-cols-12 { grid-template-columns: repeat(12, 1fr); }
+
+.col-span-1 { grid-column: span 1; }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+.col-span-6 { grid-column: span 6; }
+.col-span-12 { grid-column: span 12; }
+.col-span-full { grid-column: 1 / -1; }
+
+@media (max-width: 1400px) {
+    .lg\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .lg\:col-span-full { grid-column: 1 / -1; }
+}
+
+@media (max-width: 1024px) {
+    .md\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+    .md\:col-span-full { grid-column: 1 / -1; }
+}
+
+@media (max-width: 768px) {
+    .sm\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+}
+
+/*
+================================================================================
+FLEX UTILITIES
+================================================================================
+*/
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+
+/*
+================================================================================
+MODERN EFFECTS
+================================================================================
+*/
+
+/* Glass morphism effect */
+.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Subtle gradient backgrounds */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, var(--color-secondary-400) 0%, var(--color-secondary-500) 100%);
+}
+
+.bg-gradient-light {
+    background: linear-gradient(145deg, #F8FAFC 0%, #F0F4F8 50%, #E8EEF4 100%);
+}
+
+/* Soft shadows */
+.shadow-soft {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 30px rgba(0, 120, 212, 0.12);
+}
+
+/* Rounded corners */
+.rounded-lg { border-radius: 12px; }
+.rounded-xl { border-radius: 16px; }
+.rounded-2xl { border-radius: 20px; }
+.rounded-full { border-radius: 9999px; }
+
+/* Transitions */
+.transition-all {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-transform {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects */
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+/* Dividers */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+    margin: var(--space-4) 0;
+}
+
+.divider-vertical {
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, var(--border-default), transparent);
+    margin: 0 var(--space-4);
+}
+.flex-shrink-0 { flex-shrink: 0; }

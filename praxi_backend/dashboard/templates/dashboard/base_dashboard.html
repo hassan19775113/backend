@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <title>{% block title %}Dashboard{% endblock %} | PraxiApp</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PraxiApp Design System - Fluent Modern Base -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=3.2">
+    
+    <!-- Page-Specific Styles (loaded in child templates) -->
+    {% block page_css %}{% endblock %}
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="prx-header">
+        <div class="prx-header__content">
+            <div class="prx-header__title">
+                <span class="prx-header__title-icon" aria-hidden>
+                    <!-- Hospital icon (simple Fluent-like SVG) -->
+                    <span class="fluent-icon" aria-hidden>
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                            <path d="M3 11h18v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9zM7 7h10v4H7V7zM12 2l4 3h-3v2h-2V5H8l4-3z"/>
+                        </svg>
+                    </span>
+                </span>
+                <span>{% block header_title %}PraxiApp - Haupt-Dashboard{% endblock %}</span>
+            </div>
+            
+            <nav class="prx-header__nav" role="navigation" aria-label="Hauptnavi">
+                <a href="{% url 'dashboard:index' %}" class="prx-header__link {% block nav_active_main %}{% endblock %}">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- Chart icon -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h2v18H3V3zm5 6h2v12H8V9zm5-4h2v16h-2V5zm5 8h2v8h-2v-8z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Haupt-Dashboard</span>
+                </a>
+                <a href="{% url 'dashboard:scheduling' %}" class="prx-header__link {% block nav_active_scheduling %}{% endblock %}">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- Calendar icon -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10h5v5H7v-5zm0 7h5v2H7v-2zM3 5h2V3h2v2h8V3h2v2h2a1 1 0 0 1 1 1v3H2V6a1 1 0 0 1 1-1z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Terminplanung</span>
+                </a>
+                <a href="{% url 'dashboard:patients' %}" class="prx-header__link {% block nav_active_patients %}{% endblock %}">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- People icon -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zM7 11c1.7 0 3-1.3 3-3S8.7 5 7 5 4 6.3 4 8s1.3 3 3 3zm0 2c-2.3 0-7 1.2-7 3.5V20h14v-3.5C14 14.2 9.3 13 7 13zm9 0c-.3 0-.7 0-1 .1 1.1.9 1.8 2 1.8 3.4V20h6v-3.5C22 14.2 17.3 13 16 13z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Patienten</span>
+                </a>
+                <a href="{% url 'dashboard:doctors' %}" class="prx-header__link {% block nav_active_doctors %}{% endblock %}">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- Doctor/clinician icon -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-6 8v-1c0-2.8 3.6-4 6-4s6 1.2 6 4v1H6z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Ärzte</span>
+                </a>
+                <a href="{% url 'dashboard:operations' %}" class="prx-header__link {% block nav_active_operations %}{% endblock %}">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- Operation / scalpel icon (simple) -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l6-6 9-9 2 2-9 9-6 6H2zM20 4l0.7-0.7 1.4 1.4L21.4 5.4 20 4z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Operationen</span>
+                </a>
+
+                <span class="prx-header__sep" aria-hidden>|</span>
+
+                <a href="/admin/" class="prx-header__link">
+                    <span class="fluent-icon" aria-hidden>
+                        <!-- Gear / admin -->
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 12.9c.04-.3.06-.6.06-.9s-.02-.6-.06-.9l2.1-1.6c.19-.15.24-.42.12-.64l-2-3.5c-.12-.22-.38-.3-.6-.22l-2.5 1a7.7 7.7 0 0 0-1.56-.9l-.38-2.7A.5.5 0 0 0 13.4 2h-4.8a.5.5 0 0 0-.5.42l-.38 2.7c-.55.22-1.06.5-1.56.9l-2.5-1a.5.5 0 0 0-.6.22l-2 3.5a.5.5 0 0 0 .12.64L4.6 11.1c-.04.3-.06.6-.06.9s.02.6.06.9l-2.1 1.6a.5.5 0 0 0-.12.64l2 3.5c.12.22.38.3.6.22l2.5-1c.5.4 1.01.72 1.56.94l.38 2.7c.05.24.25.43.5.43h4.8c.25 0 .45-.19.5-.43l.38-2.7c.55-.22 1.06-.53 1.56-.94l2.5 1c.23.09.48 0 .6-.22l2-3.5a.5.5 0 0 0-.12-.64L19.4 12.9zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+                    </span>
+                    <span class="prx-nav-label">Admin</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="prx-main">
+        {% block page_header %}{% endblock %}
+        {% block kpi_section %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% block footer %}{% endblock %}
+    
+    {% block extra_scripts %}{% endblock %}
+    
+    <!-- Chart.js Defaults (kept, you already have PRX_COLORS inlined per page) -->
+    <script>
+      // Small enhancement: read CSS fluent primary color into JS PRX_COLORS (if present)
+      (function(){
+        try {
+          const style = getComputedStyle(document.documentElement);
+          const cssPrimary = style.getPropertyValue('--fluent-blue-500').trim() || null;
+          if (cssPrimary && typeof PRX_COLORS !== 'undefined') {
+            PRX_COLORS.primary = PRX_COLORS.primary || cssPrimary;
+            // You can map more if needed
+          }
+        } catch (e) { /* ignore */ }
+      })();
+
+      // Animate progress bars set by template (adds .animated and applies widths)
+      setTimeout(() => {
+        document.querySelectorAll('.prx-progress').forEach(p => p.classList.add('animated'));
+        document.querySelectorAll('.prx-progress__bar').forEach(bar => {
+          const w = Number(bar.dataset.width || bar.getAttribute('data-width') || 0);
+          bar.style.width = Math.max(0, Math.min(100, w)) + '%';
+          const bg = bar.dataset.bg || bar.getAttribute('data-bg');
+          if (bg) bar.style.background = bg;
+        });
+      }, 120);
+    </script>
+
+    {% block inline_scripts %}{% endblock %}
+</body>
+</html>

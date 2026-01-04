@@ -1,0 +1,31 @@
+[Unit]
+Description=PraxiApp Celery Beat Scheduler
+Documentation=https://docs.celeryq.dev/
+After=network.target postgresql.service redis.service celery.service
+Requires=redis.service
+
+[Service]
+Type=simple
+User=praxiapp
+Group=praxiapp
+WorkingDirectory=/opt/praxiapp/backend
+Environment="PATH=/opt/praxiapp/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=praxi_backend.settings_prod"
+EnvironmentFile=/opt/praxiapp/backend/.env
+
+ExecStart=/opt/praxiapp/venv/bin/celery -A praxi_backend beat \
+    --pidfile=/run/celery/beat.pid \
+    --logfile=/var/log/praxiapp/celery-beat.log \
+    --loglevel=INFO \
+    --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+Restart=on-failure
+RestartSec=10s
+RuntimeDirectory=celery
+
+# Security Hardening
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

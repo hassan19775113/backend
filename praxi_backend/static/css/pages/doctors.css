@@ -1,0 +1,518 @@
+/*
+================================================================================
+CSS für: doctors.html (Ärzte-Dashboard)
+================================================================================
+Version: 3.0.0
+Design: Calm Medical UI - Outlook-Inspired
+Seite: Ärzteprofil, Performance, Termine, Auslastung
+
+Farbschema:
+- Primär: #0078D4 (Outlook Blue)
+- Sekundär: #4FB3BF (Soft Teal)
+- Akzent: #7BC6B0 (Mint Green)
+- Hintergrund: #F5F7FA
+- Rahmen: #E1E4E8
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Page Header
+   ============================================================================ */
+
+.page-doctors .prx-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-doctors .prx-section__title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.page-doctors .prx-section__subtitle {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 8px 0 0 0;
+}
+
+/* ============================================================================
+   Abschnitt: Selector Dropdowns
+   ============================================================================ */
+
+.page-doctors .selector {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #4FB3BF;
+    color: #1F2937;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.page-doctors .selector:hover {
+    background: #3D9AA6;
+}
+
+.page-doctors .selector option {
+    color: #1F2937;
+    background: #FFFFFF;
+}
+
+/* ============================================================================
+   Abschnitt: KPI Grid (Aggregated Stats)
+   ============================================================================ */
+
+.page-doctors .prx-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.page-doctors .prx-kpi {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.page-doctors .prx-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.page-doctors .prx-kpi:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+/* KPI Varianten */
+.page-doctors .prx-kpi--primary::before { background: #0078D4; }
+.page-doctors .prx-kpi--success::before { background: #22C55E; }
+.page-doctors .prx-kpi--accent::before { background: #7BC6B0; }
+.page-doctors .prx-kpi--info::before { background: #0EA5E9; }
+.page-doctors .prx-kpi--warning::before { background: #F4A259; }
+
+.page-doctors .prx-kpi__header {
+    margin-bottom: 10px;
+}
+
+.page-doctors .prx-kpi__icon {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #F5F7FA;
+    border-radius: 10px;
+}
+
+.page-doctors .prx-kpi__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    margin-bottom: 4px;
+}
+
+.page-doctors .prx-kpi__value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #1F2937;
+    line-height: 1;
+}
+
+.page-doctors .prx-kpi__unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #9CA3AF;
+    margin-left: 2px;
+}
+
+.page-doctors .prx-kpi__description {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-top: 8px;
+}
+
+/* ============================================================================
+   Abschnitt: Doctor Profile Card
+   ============================================================================ */
+
+.page-doctors .doctor-card-content {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+}
+
+.page-doctors .prx-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 700;
+}
+
+.page-doctors .prx-avatar--xl {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.page-doctors .doctor-info h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 8px 0;
+}
+
+.page-doctors .doctor-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.page-doctors .doctor-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-doctors .doctor-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+    .page-doctors .doctor-card-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .page-doctors .prx-avatar--xl {
+        margin: 0 auto;
+    }
+    
+    .page-doctors .doctor-meta {
+        justify-content: center;
+    }
+    
+    .page-doctors .doctor-actions {
+        align-items: center;
+        margin-top: 16px;
+    }
+}
+
+/* ============================================================================
+   Abschnitt: Schedule Grid
+   ============================================================================ */
+
+.page-doctors .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.page-doctors .schedule-day {
+    text-align: center;
+    padding: 16px 12px;
+    background: #F5F7FA;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.page-doctors .schedule-day:hover {
+    background: #E8ECF0;
+}
+
+.page-doctors .schedule-day.off {
+    opacity: 0.5;
+    background: #FAFBFC;
+}
+
+.page-doctors .schedule-day-name {
+    font-size: 11px;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.page-doctors .schedule-day-hours {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.page-doctors .schedule-day.off .schedule-day-hours {
+    color: #9CA3AF;
+}
+
+/* ============================================================================
+   Abschnitt: Cards
+   ============================================================================ */
+
+.page-doctors .prx-card {
+    background: #FFFFFF;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.page-doctors .prx-card__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-doctors .prx-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.page-doctors .prx-card__body {
+    padding: 20px;
+}
+
+/* ============================================================================
+   Abschnitt: Charts
+   ============================================================================ */
+
+.page-doctors .prx-content-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.page-doctors .prx-content-grid--2-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 1024px) {
+    .page-doctors .prx-content-grid--2-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.page-doctors .prx-chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.page-doctors .prx-chart-container--md {
+    height: 280px;
+}
+
+/* ============================================================================
+   Abschnitt: Performance Bars
+   ============================================================================ */
+
+.page-doctors .performance-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.page-doctors .performance-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-doctors .performance-item:last-child {
+    border-bottom: none;
+}
+
+.page-doctors .performance-label {
+    width: 120px;
+    font-size: 13px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.page-doctors .performance-bar {
+    flex: 1;
+    height: 8px;
+    background: #E8ECF0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.page-doctors .performance-bar__fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.page-doctors .performance-bar__fill--primary {
+    background: linear-gradient(90deg, #0078D4 0%, #5AA3F9 100%);
+}
+
+.page-doctors .performance-bar__fill--success {
+    background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
+}
+
+.page-doctors .performance-value {
+    width: 50px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+/* ============================================================================
+   Abschnitt: Tables
+   ============================================================================ */
+
+.page-doctors .prx-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.page-doctors .prx-table th {
+    background: #F5F7FA;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6B7280;
+    text-align: left;
+    border-bottom: 1px solid #E1E4E8;
+}
+
+.page-doctors .prx-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #F0F2F5;
+}
+
+.page-doctors .prx-table tbody tr:hover td {
+    background: #F5F7FA;
+}
+
+.page-doctors .prx-table a {
+    color: #0078D4;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.page-doctors .prx-table a:hover {
+    color: #005A9E;
+    text-decoration: underline;
+}
+
+/* ============================================================================
+   Abschnitt: Badges
+   ============================================================================ */
+
+.page-doctors .prx-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.page-doctors .prx-badge--success {
+    background: #F0FDF4;
+    color: #15803D;
+}
+
+.page-doctors .prx-badge--warning {
+    background: #FFFBEB;
+    color: #B45309;
+}
+
+/* ============================================================================
+   Abschnitt: Buttons
+   ============================================================================ */
+
+.page-doctors .prx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.page-doctors .prx-btn--outline {
+    background: #FFFFFF;
+    color: #0078D4;
+    border: 1px solid #0078D4;
+}
+
+.page-doctors .prx-btn--outline:hover {
+    background: #F0F7FF;
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .page-doctors .prx-section__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-doctors .prx-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-doctors .schedule-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .page-doctors .prx-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-doctors .schedule-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,374 @@
+/*
+================================================================================
+Styles für: patients.html (Patienten Dashboard)
+================================================================================
+Nur seitenbezogene Styles – keine Duplikate aus base.css
+Voraussetzung: base.css muss zuerst geladen werden
+================================================================================
+*/
+
+/* ============================================================================
+   Abschnitt: Patient Selector
+   ============================================================================ */
+
+.patient-selector {
+    padding: var(--spacing-2) var(--spacing-4);
+    padding-right: var(--spacing-10);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right var(--spacing-3) center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+}
+
+.patient-selector option {
+    color: var(--color-text);
+    background: var(--color-surface);
+}
+
+/* ============================================================================
+   Abschnitt: Patient Profile Card
+   ============================================================================ */
+
+.patient-profile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--spacing-6);
+    align-items: center;
+    padding: var(--spacing-5);
+}
+
+.patient-profile__avatar {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+}
+
+.patient-profile__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.patient-profile__name {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin: 0;
+}
+
+.patient-profile__meta {
+    display: flex;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.patient-profile__meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.patient-profile__allergies {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-2);
+}
+
+.patient-profile__status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-2);
+}
+
+/* ============================================================================
+   Abschnitt: Vitals Grid
+   ============================================================================ */
+
+.vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: var(--spacing-3);
+}
+
+.vital-card {
+    text-align: center;
+    padding: var(--spacing-4);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+}
+
+.vital-card__icon {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-2);
+}
+
+.vital-card__value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.vital-card__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+
+/* ============================================================================
+   Abschnitt: Lab Results Grid
+   ============================================================================ */
+
+.lab-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--spacing-2);
+}
+
+.lab-result {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--color-background);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--color-text-muted);
+}
+
+.lab-result--normal {
+    border-left-color: var(--color-success);
+}
+
+.lab-result--warning {
+    border-left-color: var(--color-warning);
+}
+
+.lab-result--critical {
+    border-left-color: var(--color-danger);
+}
+
+.lab-result__indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.lab-result__indicator--normal {
+    background: var(--color-success);
+}
+
+.lab-result__indicator--warning {
+    background: var(--color-warning);
+}
+
+.lab-result__indicator--critical {
+    background: var(--color-danger);
+}
+
+.lab-result__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.lab-result__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+}
+
+.lab-result__value {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.lab-summary {
+    display: flex;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.lab-summary__item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================================================
+   Abschnitt: Appointment Timeline
+   ============================================================================ */
+
+.appointment-timeline {
+    position: relative;
+    padding-left: var(--spacing-8);
+}
+
+.appointment-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.timeline-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--spacing-8) + 4px);
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    border: 2px solid var(--color-surface);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.timeline-item--future::before {
+    background: var(--color-success);
+    box-shadow: 0 0 0 2px var(--color-success);
+}
+
+.timeline-item--cancelled::before {
+    background: var(--color-text-muted);
+    box-shadow: 0 0 0 2px var(--color-text-muted);
+}
+
+.timeline-item__date {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.timeline-item__type {
+    font-weight: var(--font-weight-semibold);
+}
+
+.timeline-item__details {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* ============================================================================
+   Abschnitt: Risk Score Circle
+   ============================================================================ */
+
+.risk-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.risk-score__circle {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-full);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-inverse);
+    margin-bottom: var(--spacing-4);
+}
+
+.risk-score__circle--low {
+    background: var(--color-success);
+}
+
+.risk-score__circle--medium {
+    background: var(--color-warning);
+}
+
+.risk-score__circle--high {
+    background: var(--color-danger);
+}
+
+.risk-score__value {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+.risk-score__label {
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-1);
+}
+
+.risk-factors {
+    width: 100%;
+    text-align: left;
+}
+
+.risk-factor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.risk-factor:last-child {
+    border-bottom: none;
+}
+
+.risk-factor__name {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}
+
+/* ============================================================================
+   Abschnitt: Responsive Anpassungen
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .patient-profile {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: var(--spacing-4);
+    }
+    
+    .patient-profile__avatar {
+        margin: 0 auto;
+    }
+    
+    .patient-profile__meta {
+        justify-content: center;
+    }
+    
+    .patient-profile__status {
+        align-items: center;
+    }
+    
+    .vitals-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .lab-results-grid {
+        grid-template-columns: 1fr;
+    }
+}

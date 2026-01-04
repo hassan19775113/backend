@@ -1,0 +1,288 @@
+/* PraxiApp — Fluent Modern Theme (modern, reduced, icon-friendly)
+   Place as css/base/praxiapp-theme-fluent-modern.css or replace existing base file.
+*/
+
+/* --------------------------
+   Tokens (Fluent-inspired)
+   -------------------------- */
+:root{
+  --font-sans: "Segoe UI", "Inter", system-ui, -apple-system, "Roboto", "Helvetica Neue", Arial, sans-serif;
+
+  /* Fluent primary palette */
+  --fluent-blue-600: #0063B1;
+  --fluent-blue-500: #0078D4;
+  --fluent-blue-400: #2B88D8;
+  --fluent-teal-500: #008272;
+  --fluent-purple-500: #5c2a9d;
+  --fluent-amber-500: #d98600;
+  --fluent-red-600: #d13438;
+
+  /* Neutrals */
+  --bg-1: #F5F7FA;
+  --surface: #FFFFFF;
+  --surface-2: rgba(255,255,255,0.85);
+  --muted: #6B7280;
+  --text: #111827;
+  --muted-2: #9CA3AF;
+  --border: rgba(16,24,40,0.06);
+
+  /* Elevation */
+  --elev-1: 0 6px 20px rgba(16,24,40,0.06);
+  --elev-2: 0 12px 30px rgba(16,24,40,0.08);
+
+  /* Radii & spacing */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+
+  /* Type */
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* Focus & transitions */
+  --focus-ring: 3px solid rgba(0,120,212,0.14);
+  --trans: 220ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* --------------------------
+   Base
+   -------------------------- */
+* { box-sizing: border-box; }
+html,body { height:100%; }
+body{
+  font-family: var(--font-sans);
+  background: linear-gradient(180deg, var(--bg-1), #ffffff);
+  color: var(--text);
+  padding-left:10px;
+  padding-right: 10px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Links */
+a { color: var(--fluent-blue-500); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --------------------------
+   Header
+   -------------------------- */
+.prx-header {
+    grid-area: header;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-fixed);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-height);
+    padding: 0 var(--spacing-6);
+    background: #e3e3e3;
+    color: #1a1818;
+    box-shadow: var(--shadow-sm);
+}
+
+.prx-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    gap: var(--spacing-6);
+}
+
+.prx-header__title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+}
+
+.prx-header__title-icon {
+    font-size: var(--font-size-xl);
+}
+
+.prx-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.prx-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: #1a1818;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.prx-header__link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgb(0, 99, 177);
+    text-decoration: none;
+}
+
+.prx-header__link--active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #1a1818;
+}
+
+/* --------------------------
+   Cards & KPIs
+   -------------------------- */
+.prx-card {
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--elev-1);
+  overflow: hidden;
+  transition: transform var(--trans), box-shadow var(--trans);
+}
+.prx-card--hover:hover { transform: translateY(-6px); box-shadow: var(--elev-2); }
+
+/* KPI grid */
+.prx-kpi-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* KPI card */
+.prx-kpi {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--surface), rgba(255,255,255,0.98));
+  border-radius: 12px;
+  min-height:120px;
+  position: relative;
+  transition: var(--trans);
+  text-decoration: none;
+  color: inherit;
+}
+.prx-kpi:hover { transform: translateY(-4px); box-shadow: var(--elev-1); }
+
+/* KPI accent bar (left) */
+.prx-kpi::before {
+  content:'';
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:6px;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  background: linear-gradient(180deg, var(--fluent-blue-500), var(--fluent-blue-400));
+}
+
+/* KPI content */
+.prx-kpi__header { display:flex; align-items:center; gap:12px; }
+.prx-kpi__icon {
+  width:44px; height:44px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background: linear-gradient(180deg, rgba(3,102,214,0.06), rgba(3,102,214,0.03));
+  color: var(--fluent-blue-600);
+  flex-shrink:0;
+  font-size: 20px;
+}
+
+/* If you set data-icon-color on the icon container, it will override background */
+.prx-kpi__icon[data-bg] { background: var(--surface); }
+.prx-kpi__label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.prx-kpi__value { font-size: 28px; font-weight:700; color: var(--text); }
+
+/* Trend pill */
+.prx-kpi__trend {
+  margin-top:auto;
+  display:inline-flex; gap:8px; align-items:center;
+  padding:6px 10px; border-radius:999px; font-weight:600; font-size:12px;
+  background: rgba(16,24,40,0.03);
+  color: var(--muted);
+}
+.prx-kpi__trend--up { color: var(--fluent-teal-500); background: rgba(0,130,114,0.06); }
+.prx-kpi__trend--down { color: var(--fluent-red-600); background: rgba(209,52,56,0.06); }
+
+/* disabled KPI */
+.prx-kpi[aria-disabled="true"] { opacity:0.9; filter:grayscale(0.03); pointer-events:none; }
+
+/* --------------------------
+   Icon helper (use inline SVG or sprite)
+   -------------------------- */
+/* Usage: put <span class="fluent-icon"><svg ...></svg></span>
+   You can also set data-color or data-bg on .fluent-icon to change colors */
+.fluent-icon { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; }
+.fluent-icon svg { width:20px; height:20px; fill:currentColor; color:var(--fluent-blue-600); }
+
+/* Example color overrides via attribute:
+   <span class="fluent-icon" data-color="#5c2a9d" style="color:var(--fluent-purple-500)"><svg>...</svg></span>
+*/
+
+/* --------------------------
+   Status Badges (round, stacked)
+   -------------------------- */
+.prx-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background: linear-gradient(180deg, #fff, rgba(255,255,255,0.97)); border:1px solid var(--border); box-shadow: var(--elev-1); }
+.prx-badge .count { font-weight:700; color: var(--text); }
+
+/* --------------------------
+   Progress bars (animated)
+   -------------------------- */
+.prx-progress {
+  width:100%; height:12px; border-radius:999px; background: rgba(16,24,40,0.04); overflow:hidden;
+  border:1px solid rgba(16,24,40,0.02);
+}
+.prx-progress__bar {
+  height:100%; width:0%; background: linear-gradient(90deg, var(--fluent-blue-500), var(--fluent-teal-500));
+  transition: width 800ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* Add .animated class to container after JS sets data-width to enable transition */
+.prx-progress.animated .prx-progress__bar { transition: width 900ms cubic-bezier(.2,.9,.2,1); }
+
+/* --------------------------
+   Charts & heatmap
+   -------------------------- */
+.prx-chart-container { height: 260px; border-radius:12px; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.9)); border:1px solid var(--border); }
+.prx-chart-container canvas { width:100% !important; height:100% !important; display:block; }
+
+/* Heatmap cell hover */
+#heatmapBody td div[title]:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(3,102,214,0.12); transition: var(--trans); }
+
+/* --------------------------
+   Tables
+   -------------------------- */
+.prx-table { width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; }
+.prx-table thead th { padding:12px 16px; text-align:left; font-size:12px; color:var(--muted); background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.85)); position:sticky; top:0; }
+.prx-table tbody td { padding:12px 16px; border-bottom:1px solid rgba(16,24,40,0.04); }
+
+/* --------------------------
+   Utilities
+   -------------------------- */
+.text-muted { color: var(--muted); }
+.prx-text-center { text-align: center; }
+.prx-hidden { display:none !important; }
+
+/* --------------------------
+   Focus & accessibility
+   -------------------------- */
+:focus { outline: none; }
+[tabindex]:focus { box-shadow: var(--focus-ring); border-radius:8px; }
+
+/* Responsive tweaks */
+@media (max-width:920px){
+  .prx-kpi-grid { grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); }
+  .prx-chart-container { height: 220px; }
+}
