@@ -296,8 +296,8 @@ Das Projekt enthält **92+ Test-Klassen** in verschiedenen Bereichen:
 - CRUD Tests
 - RBAC Tests
 
-**Medical:**
-— (Legacy-App entfernt)
+**Legacy-App (entfernt):**
+- `medical` (historisch, nicht mehr Bestandteil der Codebase)
 
 **Dashboard:**
 - View Tests
@@ -354,11 +354,11 @@ Das Projekt enthält **92+ Test-Klassen** in verschiedenen Bereichen:
 
 ### Stärken ✅
 
-1. ✅ **Saubere Architektur:** Dual-DB-Design, klare Trennung
+1. ✅ **Saubere Architektur:** Single-DB-Design (`default`), klare App-Trennung
 2. ✅ **Sicherheit:** RBAC gut umgesetzt, Audit Logging vorhanden
 3. ✅ **Dokumentation:** Ausgezeichnet dokumentiert
 4. ✅ **Testing:** Umfangreiche Test-Suite
-5. ✅ **Deployment:** Production-ready Docker-Setup
+5. ✅ **Deployment:** Production-ready Setup (Gunicorn/WhiteNoise, systemd-Services)
 6. ✅ **Code-Qualität:** Konsistente Patterns, gute Struktur
 7. ✅ **Scheduling-Engine:** Sehr durchdacht und erweiterbar
 

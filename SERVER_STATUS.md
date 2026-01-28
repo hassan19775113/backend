@@ -46,5 +46,5 @@ Der Server läuft im Hintergrund. Logs werden in der Konsole ausgegeben, wo der 
 
 ---
 
-**Hinweis:** Der Server läuft im Development-Modus mit SQLite-Datenbank.
+**Hinweis:** Der Server läuft im Development-Modus mit PostgreSQL (Single-DB: `default`).
 

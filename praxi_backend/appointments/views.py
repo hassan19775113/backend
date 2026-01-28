@@ -1,4 +1,5 @@
 import calendar
+import logging
 from datetime import date, datetime, time, timedelta
 
 from django.db.models import Q
@@ -7,11 +8,9 @@ from django.utils.dateparse import parse_date
 
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from praxi_backend.core.utils import log_patient_action
 
@@ -74,10 +73,10 @@ from .permissions import (
 )
 from .serializers import (
 	DoctorListSerializer,
-		ResourceCalendarColumnSerializer,
-		PatientFlowCreateUpdateSerializer,
-		PatientFlowSerializer,
-		PatientFlowStatusUpdateSerializer,
+	ResourceCalendarColumnSerializer,
+	PatientFlowCreateUpdateSerializer,
+	PatientFlowSerializer,
+	PatientFlowStatusUpdateSerializer,
 	AppointmentCreateUpdateSerializer,
 	AppointmentSerializer,
 	AppointmentTypeSerializer,
@@ -94,10 +93,13 @@ from .serializers import (
 	OPStatsRoomSerializer,
 	OPStatsSurgeonSerializer,
 	OPStatsTypeSerializer,
-		RoomTimelineSerializer,
+	RoomTimelineSerializer,
 	PracticeHoursSerializer,
 	ResourceSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_stats_range(request):
@@ -2788,7 +2790,7 @@ class AvailabilityView(generics.GenericAPIView):
 			]
 		except Exception as e:
 			# If patient lookup fails, return empty list
-			print(f'[AvailabilityView] Error loading patients: {e}')
+			logger.exception('AvailabilityView: error loading patients')
 			patients_data = []
 		
 		return Response({
