@@ -71,8 +71,9 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-# Celery enabled in prod by default
-CELERY_TASK_ALWAYS_EAGER = False
+# Celery enabled in prod by default (disabled for Vercel serverless)
+# For Vercel: Use Vercel Cron Jobs or external worker services
+CELERY_TASK_ALWAYS_EAGER = os.getenv("CELERY_ENABLED", "False").strip().lower() == "true"
 
 # Cache (Redis if configured; otherwise fall back to local memory)
 if os.getenv("REDIS_HOST"):

@@ -1,0 +1,25 @@
+# Django Core
+Django>=5.0,<6.0
+djangorestframework>=3.15,<4.0
+djangorestframework-simplejwt>=5.3,<6.0
+
+# Database - PostgreSQL driver for Vercel
+psycopg[binary]>=3.1,<4.0
+
+# CORS
+django-cors-headers>=4.3,<5.0
+
+# Environment
+python-dotenv>=1.0,<2.0
+
+# Static Files
+whitenoise>=6.6,<7.0
+
+# Removed for Vercel (not compatible with serverless):
+# - gunicorn (WSGI server for traditional hosting)
+# - celery (background tasks - requires worker processes)
+# - redis (for Celery backend)
+
+# For Vercel serverless, consider alternatives:
+# - Background tasks: Use Vercel Cron Jobs or external services
+# - Redis: Use Vercel KV or external Redis service
