@@ -19,6 +19,7 @@ from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from django.views.static import serve as static_serve
 from praxi_backend.core.admin import praxi_admin_site
+from praxi_backend.core.views import setup_database  # Temporary setup view
 
 
 def root(request):
@@ -143,6 +144,8 @@ urlpatterns = [
     # Root & Admin
     path("", root, name="root"),
     path("favicon.ico", favicon_view, name="favicon"),  # Favicon handler
+    # Temporary setup endpoint - DELETE AFTER FIRST USE!
+    path("setup/", setup_database, name="setup_database"),
     path("admin/", admin.site.urls),  # Standard Django Admin
     path(
         "praxi_backend/dashboard/", include("praxi_backend.dashboard.urls")
