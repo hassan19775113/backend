@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import dj_database_url
 
 from .base import *  # noqa: F403,F405
 
@@ -13,6 +14,16 @@ DEBUG = os.getenv("DJANGO_DEBUG", "False").strip().lower() == "true"
 # Enforce secret key in production deployments
 if not os.getenv("DJANGO_SECRET_KEY"):
     raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
+
+# Database: Use DATABASE_URL for production
+if os.getenv("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.getenv("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
 
 # Security
 SECURE_SSL_REDIRECT = True

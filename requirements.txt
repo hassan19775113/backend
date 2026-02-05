@@ -5,6 +5,7 @@ djangorestframework-simplejwt>=5.3,<6.0
 
 # Database - PostgreSQL driver for Vercel
 psycopg[binary]>=3.1,<4.0
+dj-database-url>=2.1,<3.0
 
 # CORS (Required for API)
 django-cors-headers>=4.3,<5.0
