@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import dj_database_url
+from urllib.parse import urlparse
 
 from .base import *  # noqa: F403,F405
 
@@ -17,12 +17,21 @@ if not os.getenv("DJANGO_SECRET_KEY"):
 
 # Database: Use DATABASE_URL for production
 if os.getenv("DATABASE_URL"):
+    db_url = urlparse(os.getenv("DATABASE_URL"))
     DATABASES = {
-        "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL"),
-            conn_max_age=600,
-            ssl_require=True
-        )
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_url.path.lstrip("/"),
+            "USER": db_url.username,
+            "PASSWORD": db_url.password,
+            "HOST": db_url.hostname,
+            "PORT": db_url.port or 5432,
+            "CONN_MAX_AGE": 600,
+            "OPTIONS": {
+                "sslmode": "require",
+                "connect_timeout": 10,
+            },
+        }
     }
 
 # Security
