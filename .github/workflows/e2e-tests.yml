@@ -23,6 +23,7 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Run Playwright tests
         run: npx playwright test --config=backend/tests/playwright.config.ts
 
       - name: Run Playwright tests
