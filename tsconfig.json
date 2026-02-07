@@ -7,6 +7,9 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "strict": false
-  }
+    "strict": false,
+    "noEmit": true
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "django/static/js/**/*", "dist", "build"]
 }
