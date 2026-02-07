@@ -33,6 +33,7 @@ def log_patient_action(user, action, patient_id=None, meta=None):
 from .appointments_api import (
     AppointmentDetailView,
     AppointmentListCreateView,
+    AppointmentMarkNoShowView,
     AppointmentSuggestView,
     AppointmentTypeDetailView,
     AppointmentTypeListCreateView,

@@ -176,11 +176,11 @@ def calculate_no_show_rate() -> dict[str, Any]:
 
     total = past_appointments.count()
 
-    # No-Show = Termine die nicht completed und nicht cancelled sind
-    # (Patient ist nicht erschienen, aber Termin wurde nicht abgesagt)
-    no_shows = past_appointments.filter(
-        status__in=["scheduled", "confirmed"]  # Sollte completed sein, ist es aber nicht
+    flagged_no_shows = past_appointments.filter(is_no_show=True).count()
+    fallback_no_shows = past_appointments.filter(
+        is_no_show=False, status__in=["scheduled", "confirmed"]
     ).count()
+    no_shows = flagged_no_shows + fallback_no_shows
 
     if total > 0:
         no_show_rate = round((no_shows / total) * 100, 1)
@@ -196,7 +196,9 @@ def calculate_no_show_rate() -> dict[str, Any]:
         start_time__gte=prev_30_start,
     )
     prev_total = prev_past.count()
-    prev_no_shows = prev_past.filter(status__in=["scheduled", "confirmed"]).count()
+    prev_flagged = prev_past.filter(is_no_show=True).count()
+    prev_fallback = prev_past.filter(is_no_show=False, status__in=["scheduled", "confirmed"]).count()
+    prev_no_shows = prev_flagged + prev_fallback
 
     if prev_total > 0:
         prev_rate = (prev_no_shows / prev_total) * 100

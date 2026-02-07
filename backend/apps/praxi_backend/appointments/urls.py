@@ -20,6 +20,7 @@ from django.urls import path
 from praxi_backend.appointments.views import (  # Appointments; Calendar; Doctor scheduling; Operations; OP Dashboard & Timeline; OP Stats; Patient Flow; Practice Hours; Resources
     AppointmentDetailView,
     AppointmentListCreateView,
+    AppointmentMarkNoShowView,
     AppointmentSuggestView,
     AppointmentTypeDetailView,
     AppointmentTypeListCreateView,
@@ -72,6 +73,11 @@ urlpatterns = [
     # Doctors (MUSS VOR appointments/<int:pk>/ stehen!)
     path("appointments/doctors/", DoctorListView.as_view(), name="doctors_list"),
     path("appointments/<int:pk>/", AppointmentDetailView.as_view(), name="detail"),
+    path(
+        "appointments/<int:pk>/mark-no-show/",
+        AppointmentMarkNoShowView.as_view(),
+        name="mark_no_show",
+    ),
     # Appointment Types
     path("appointment-types/", AppointmentTypeListCreateView.as_view(), name="types_list"),
     path("appointment-types/<int:pk>/", AppointmentTypeDetailView.as_view(), name="types_detail"),

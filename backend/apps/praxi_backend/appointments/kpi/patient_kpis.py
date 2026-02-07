@@ -450,16 +450,28 @@ def calculate_patient_risk_score(patient_id: int) -> dict[str, Any]:
     now = timezone.now()
     year_ago = now - timedelta(days=365)
 
-    no_shows = (
+    flagged_no_shows = (
         Appointment.objects.using("default")
         .filter(
             patient_id=patient_id,
             start_time__gte=year_ago,
             start_time__lt=now,
-            status="scheduled",
+            is_no_show=True,
         )
         .count()
     )
+    fallback_no_shows = (
+        Appointment.objects.using("default")
+        .filter(
+            patient_id=patient_id,
+            start_time__gte=year_ago,
+            start_time__lt=now,
+            is_no_show=False,
+            status__in=["scheduled", "confirmed"],
+        )
+        .count()
+    )
+    no_shows = flagged_no_shows + fallback_no_shows
 
     if no_shows >= 3:
         score += 10
@@ -515,7 +527,9 @@ def calculate_appointment_activity(patient_id: int) -> dict[str, Any]:
     confirmed = past.filter(status="confirmed").count()
     cancelled = appointments.filter(status="cancelled").count()
 
-    no_shows = past.filter(status="scheduled").count()
+    flagged_no_shows = past.filter(is_no_show=True).count()
+    fallback_no_shows = past.filter(is_no_show=False, status__in=["scheduled", "confirmed"]).count()
+    no_shows = flagged_no_shows + fallback_no_shows
 
     last_appointment = (
         Appointment.objects.using("default")

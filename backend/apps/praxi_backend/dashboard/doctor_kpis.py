@@ -354,7 +354,11 @@ def calculate_no_show_rate(doctor: User, start_date: date, end_date: date) -> di
     )
 
     total_past = past_appointments.count()
-    no_shows = past_appointments.filter(status="scheduled").count()
+    flagged_no_shows = past_appointments.filter(is_no_show=True).count()
+    fallback_no_shows = past_appointments.filter(
+        is_no_show=False, status__in=["scheduled", "confirmed"]
+    ).count()
+    no_shows = flagged_no_shows + fallback_no_shows
     completed = past_appointments.filter(status="completed").count()
 
     no_show_rate = round(no_shows / max(1, total_past) * 100, 1)

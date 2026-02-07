@@ -316,6 +316,60 @@ class AppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
         return response
 
 
+class AppointmentMarkNoShowView(generics.GenericAPIView):
+    """Mark an appointment as a confirmed no-show without changing status.
+
+    Business rules:
+    - Only past appointments are eligible.
+    - Only statuses scheduled/confirmed can be marked.
+    - Flag is idempotent; re-mark returns the current state.
+    """
+
+    permission_classes = [AppointmentPermission]
+    queryset = (
+        Appointment.objects.using("default")
+        .select_related("doctor", "type")
+        .prefetch_related("resources")
+    )
+    serializer_class = AppointmentSerializer
+
+    def post(self, request, *args, **kwargs):
+        appointment = self.get_object()
+        self.check_object_permissions(request, appointment)
+
+        now = timezone.now()
+
+        if appointment.end_time >= now:
+            return Response(
+                {"detail": "No-Show kann nur für vergangene Termine gesetzt werden."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if appointment.status not in (
+            Appointment.STATUS_SCHEDULED,
+            Appointment.STATUS_CONFIRMED,
+        ):
+            return Response(
+                {
+                    "detail": "Nur Termine im Status scheduled/confirmed können als No-Show markiert werden.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not appointment.is_no_show:
+            appointment.is_no_show = True
+            appointment.save(update_fields=["is_no_show", "updated_at"])
+            _log_patient_action(
+                request.user,
+                "appointment_mark_no_show",
+                appointment.patient_id,
+                meta={"appointment_id": appointment.id},
+            )
+
+        serializer = self.get_serializer(appointment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class AppointmentSuggestView(generics.GenericAPIView):
     permission_classes = [AppointmentSuggestPermission]
 

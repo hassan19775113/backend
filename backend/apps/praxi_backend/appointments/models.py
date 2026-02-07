@@ -290,6 +290,10 @@ class Appointment(models.Model):
         default=STATUS_SCHEDULED,
         verbose_name="Status",
     )
+    is_no_show = models.BooleanField(
+        default=False,
+        verbose_name="No-Show (bestaetigt)",
+    )
     notes = models.TextField(blank=True, null=True, verbose_name="Notizen")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Aktualisiert am")

@@ -253,10 +253,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "start_time",
             "end_time",
             "status",
+            "is_no_show",
             "notes",
             "created_at",
             "updated_at",
         ]
+
+        read_only_fields = ["is_no_show"]
 
     def get_appointment_color(self, obj):
         type_obj = getattr(obj, "type", None)
