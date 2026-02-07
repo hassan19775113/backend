@@ -23,8 +23,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: npx playwright test 
 
       - name: Run Playwright tests
         env:
@@ -37,7 +35,7 @@ jobs:
           E2E_DOCTOR_PASSWORD: ${{ secrets.E2E_DOCTOR_PASSWORD }}
           E2E_ASSIST_USER: ${{ secrets.E2E_ASSIST_USER }}
           E2E_ASSIST_PASSWORD: ${{ secrets.E2E_ASSIST_PASSWORD }}
-        run: npx playwright test
+        run: npx playwright test --config=playwright.config.ts
 
       - name: Upload Playwright report
         if: always()

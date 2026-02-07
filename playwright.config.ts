@@ -15,7 +15,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
 
   // HTML reporter for local review; adjust to 'list' for CI logs only
-  reporter: 'html',
+  reporter: [['list'], ['html']],
 
   use: {
     // Target base URL; override with BASE_URL env when running against other hosts
