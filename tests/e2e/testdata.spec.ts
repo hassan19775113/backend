@@ -1,8 +1,7 @@
 import { test, expect } from '../fixtures/testdata.setup';
-import { ApiClient } from '../utils/api-client';
+import { ApiClient } from '../../api-client';
 
 // Validates helper flows for creating and deleting resources
-
 test('create doctor/patient/appointment via helpers', async ({ testData }) => {
   expect(testData.doctorId).toBeTruthy();
   expect(testData.patientId).toBeTruthy();

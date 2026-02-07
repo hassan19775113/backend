@@ -1,5 +1,5 @@
 import base, { expect } from '@playwright/test';
-import { ApiClient } from '../api-client';
+import { ApiClient } from '../../api-client';
 
 // Extended test fixture that provisions test data (doctor, patient, appointment) before each test
 // and cleans up created appointments after each test. Doctor/Patient deletion endpoints are not
