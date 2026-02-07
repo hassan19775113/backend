@@ -12,7 +12,7 @@ async function globalSetup(config: FullConfig) {
   const api = await request.newContext({ baseURL });
 
   const tryLogin = async (payload: Record<string, string>) =>
-    api.post('/api/auth/login', { data: payload });
+    api.post('/api/auth/login/', { data: payload });
 
   let loginResponse = await tryLogin({ username, password });
 
