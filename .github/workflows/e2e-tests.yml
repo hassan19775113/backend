@@ -10,6 +10,17 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
 
+    env:
+      BASE_URL: http://localhost:8000
+      E2E_USER: ${{ secrets.E2E_USER }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_ADMIN_USER: ${{ secrets.E2E_ADMIN_USER }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      E2E_DOCTOR_USER: ${{ secrets.E2E_DOCTOR_USER }}
+      E2E_DOCTOR_PASSWORD: ${{ secrets.E2E_DOCTOR_PASSWORD }}
+      E2E_ASSIST_USER: ${{ secrets.E2E_ASSIST_USER }}
+      E2E_ASSIST_PASSWORD: ${{ secrets.E2E_ASSIST_PASSWORD }}
+
     services:
       postgres:
         image: postgres:15
@@ -56,18 +67,8 @@ jobs:
         run: npx wait-on http://localhost:8000
 
       # ---------------------------
-      # NODE / PLAYWRIGHT
+      # CREATE E2E USER
       # ---------------------------
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
       - name: Create E2E user
         run: |
           python django/manage.py shell -c "
@@ -80,17 +81,22 @@ jobs:
               '${{ secrets.E2E_PASSWORD }}'
           )
           "
+
+      # ---------------------------
+      # NODE / PLAYWRIGHT
+      # ---------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
       - name: Run Playwright tests
-        env:
-          BASE_URL: http://localhost:8000
-          E2E_USER: ${{ secrets.E2E_USER }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-          E2E_ADMIN_USER: ${{ secrets.E2E_ADMIN_USER }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          E2E_DOCTOR_USER: ${{ secrets.E2E_DOCTOR_USER }}
-          E2E_DOCTOR_PASSWORD: ${{ secrets.E2E_DOCTOR_PASSWORD }}
-          E2E_ASSIST_USER: ${{ secrets.E2E_ASSIST_USER }}
-          E2E_ASSIST_PASSWORD: ${{ secrets.E2E_ASSIST_PASSWORD }}
         run: npx playwright test
 
       - name: Upload Playwright report
