@@ -68,7 +68,18 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-
+      - name: Create E2E user
+        run: |
+          python django/manage.py shell -c "
+          from django.contrib.auth import get_user_model;
+          User = get_user_model();
+          User.objects.filter(username='${{ secrets.E2E_USER }}').delete();
+          User.objects.create_superuser(
+              '${{ secrets.E2E_USER }}',
+              'admin@example.com',
+              '${{ secrets.E2E_PASSWORD }}'
+          )
+          "
       - name: Run Playwright tests
         env:
           BASE_URL: http://localhost:8000
