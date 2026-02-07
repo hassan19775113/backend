@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { withApiClient } from '../utils/api-client';
+import { withApiClient } from '../../api-client';
 
 // Basic API reachability checks using authenticated context
 
