@@ -3,9 +3,9 @@ name: E2E Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, ai-fix ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, ai-fix ]
 
 jobs:
   e2e:
