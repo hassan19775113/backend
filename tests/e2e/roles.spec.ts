@@ -11,7 +11,8 @@ const assistantState = path.join(FIXTURES_DIR, 'storageState.assistant.json');
 
 async function loginAndSave(username: string, password: string, target: string) {
   const api = await request.newContext({ baseURL: BASE_URL });
-  const tryLogin = async (payload: Record<string, string>) => api.post('/api/auth/login', { data: payload });
+  // Use trailing slash to avoid Django redirect (POSTs without slash get 301/302)
+  const tryLogin = async (payload: Record<string, string>) => api.post('/api/auth/login/', { data: payload });
 
   let res = await tryLogin({ username, password });
   if (!res.ok()) {

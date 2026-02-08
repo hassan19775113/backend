@@ -19,8 +19,16 @@ async function globalSetup(config: FullConfig) {
 
   const api = await request.newContext({ baseURL });
 
+  // Ensure backend is healthy before attempting login to reduce flaky 5xx/redirects
+  const health = await api.get('/api/health/');
+  if (!health.ok()) {
+    const body = await health.text();
+    throw new Error(`Healthcheck failed: ${health.status()} - ${body}`);
+  }
+
   const tryLogin = async (payload: Record<string, string>) => {
     console.log("DEBUG Login payload:", payload);
+    // Trailing slash matches Django route and avoids 301 on POST
     return api.post('/api/auth/login/', { data: payload });
   };
 

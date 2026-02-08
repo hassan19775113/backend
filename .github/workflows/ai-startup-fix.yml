@@ -7,6 +7,10 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   ai-startup-fix:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
