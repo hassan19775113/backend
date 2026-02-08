@@ -302,6 +302,25 @@ Aus `praxi_backend/appointments/urls.py` (Auszug):
 
 ---
 
+## Self-Healing CI Pipeline
+
+- Invariants: storageState liegt unter tests/fixtures/storageState.json und wird über process.cwd() aufgelöst; nie __dirname oder .auth/user.json verwenden.
+- Fixes werden auf Branch ai-fix gepusht; niemals direkt auf main.
+
+### Workflow
+- .github/workflows/e2e-self-heal.yml führt npm ci, tsc und Playwright aus und lädt immer Artefakte hoch: playwright-log, test-results/, storageState.json, npm-error.log, tsc-output.log (7 Tage Aufbewahrung).
+
+### Lokaler autonomer Runner
+1) Env setzen: GITHUB_TOKEN, GH_OWNER, GH_REPO (optional: GH_WORKFLOW_FILE, GH_BRANCH_FIX, GH_BRANCH_MAIN, MAX_ITER)
+2) Dependencies: npm install
+3) Start: npx ts-node tools/auto-self-heal.ts
+
+Der Runner stößt e2e-self-heal auf ai-fix an, wartet auf Abschluss, lädt Artefakte, füttert die Logs in tools/ai-startup-fix-agent/startup-fix.js, committet/pusht auf ai-fix, eröffnet bei Bedarf einen PR nach main und wiederholt bis CI grün ist (max 10 Iterationen).
+
+Safety: kein Push nach main; Abbruch nach MAX_ITER zum Schutz vor Endlosschleifen.
+
+---
+
 ## Weiterführende Dokumente
 
 - `DEPLOYMENT.md` – Deployment-Checkliste
