@@ -36,38 +36,86 @@ function decide() {
   const flaky = readJson(FILES.flaky);
   const selector = readJson(FILES.selector);
 
-  const blockers = [];
-  if (!auth || auth.status !== 'ok') blockers.push('auth');
-  if (!seed || seed.status !== 'ok') blockers.push('seed');
-  if (!smoke || smoke.status !== 'ok') blockers.push('page-smoke');
+  // 1) Hard blockers: auth/seed/smoke
+  if (!auth || auth.status !== 'ok' || !seed || seed.status !== 'ok' || !smoke || smoke.status !== 'ok') {
+    return {
+      decision: 'abort',
+      reason: 'Prerequisites failed',
+      recommendations: ['Fix auth/seed/smoke first'],
+      auth,
+      seed,
+      smoke,
+      flaky,
+      selector,
+    };
+  }
 
   const deterministic = (flaky?.deterministic || []).length;
   const flakyCount = (flaky?.flaky || []).length;
 
-  const decision = {
-    allowSelfHeal: blockers.length === 0 && deterministic > 0,
-    reason: blockers.length ? `blocked by ${blockers.join(', ')}` : deterministic > 0 ? 'deterministic failures present' : 'no deterministic failures',
+  // 4) Selector issues
+  const selectorProblem = selector && selector.status !== 'ok';
+  if (selectorProblem) {
+    return {
+      decision: 'needs-selector-refactor',
+      reason: 'Selector issues detected',
+      recommendations: ['Run Selector-Refactor Agent'],
+      auth,
+      seed,
+      smoke,
+      flaky,
+      selector,
+    };
+  }
+
+  // 2) Only flaky failures
+  if (flakyCount > 0 && deterministic === 0) {
+    return {
+      decision: 'abort',
+      reason: 'Only flaky tests detected',
+      recommendations: ['Stabilize waits/selectors before healing'],
+      auth,
+      seed,
+      smoke,
+      flaky,
+      selector,
+    };
+  }
+
+  // 3) Deterministic failures present
+  if (deterministic > 0) {
+    return {
+      decision: 'run-self-heal',
+      reason: 'Deterministic failures detected',
+      recommendations: ['Trigger Self-Heal Agent with patch generation'],
+      auth,
+      seed,
+      smoke,
+      flaky,
+      selector,
+    };
+  }
+
+  // Default: nothing to do
+  return {
+    decision: 'abort',
+    reason: 'No deterministic failures found',
     recommendations: [],
+    auth,
+    seed,
+    smoke,
+    flaky,
+    selector,
   };
-
-  if (blockers.length) {
-    decision.recommendations.push('Fix auth/seed/smoke blockers before self-heal.');
-  }
-  if (flakyCount) {
-    decision.recommendations.push('Stabilize flaky tests before patching.');
-  }
-  if (selector && selector.status !== 'ok') {
-    decision.recommendations.push('Inspect selector auditor results for refactors.');
-  }
-
-  return { auth, seed, smoke, flaky, selector, decision, blockers };
 }
 
 function main() {
   const agg = decide();
-  if (agg.blockers.length) {
-    output('error', agg, 1);
-  }
+  const decisionPath = path.join(OUTPUT_DIR, 'supervisor-decision.json');
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.writeFileSync(decisionPath, JSON.stringify(agg, null, 2));
+
+  // Exit code 0 always, supervisor is advisory; decision carries state.
   output('ok', agg, 0);
 }
 
