@@ -1,6 +1,7 @@
 name: AI Startup Fix Agent
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Playwright Tests"]
     types:
