@@ -663,8 +663,6 @@ jobs:
         with:
           name: selector-auditor-output
           path: agent-outputs
-      - name: Check PostgreSQL status
-        run: pg_isready -U praxiapp
       - name: Run supervisor
         run: |
           node scripts/agents/fix-agent-supervisor.js > agent-outputs/fix-agent-supervisor.json
@@ -672,7 +670,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fix-agent-supervisor-output
-          path: agent-outputs/fix-agent-supervisor.json
+          path: |
+            agent-outputs/fix-agent-supervisor.json
+            agent-outputs/supervisor-decision.json
 
   ci-dashboard-agent:
     needs:
@@ -716,8 +716,6 @@ jobs:
         with:
           name: fix-agent-supervisor-output
           path: agent-outputs
-      - name: Check PostgreSQL status
-        run: pg_isready -U praxiapp
       - name: Run ci-dashboard-agent
         run: node scripts/agents/ci-dashboard-agent.js > agent-outputs/ci-dashboard-agent.json
       - name: Upload dashboard artifact
