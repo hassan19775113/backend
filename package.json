@@ -1,8 +1,16 @@
 {
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "self-heal": "node --loader ts-node/esm tools/auto-self-heal.ts",
+    "check:node": "node --loader ts-node/esm tools/check-node-version.ts"
+  },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "@types/node": "^25.2.1",
     "@types/adm-zip": "^0.5.0",
+    "@types/node": "^25.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },

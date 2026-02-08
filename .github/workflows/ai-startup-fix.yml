@@ -22,13 +22,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install NVM and Node 20
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          source "$NVM_DIR/nvm.sh"
+          nvm install 20
+          nvm use 20
+          NODE_BIN_DIR=$(dirname "$(nvm which 20)")
+          echo "NVM_DIR=$NVM_DIR" >> $GITHUB_ENV
+          echo "PATH=$NODE_BIN_DIR:$PATH" >> $GITHUB_ENV
+          node -v
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          npm install
+
+      - name: Verify Node version
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          node --loader ts-node/esm tools/check-node-version.ts
 
       - name: Download Playwright logs
         uses: actions/download-artifact@v4
@@ -47,11 +61,13 @@ jobs:
 
       - name: Run AI Startup Fix Agent
         run: |
+          source "$NVM_DIR/nvm.sh"
           node tools/ai-startup-fix-agent/startup-fix.js "${{ steps.readlog.outputs.log }}"
 
       - name: Push changes
         if: always()
         run: |
+          source "$NVM_DIR/nvm.sh"
           git config user.name "AI Startup Fix Agent"
           git config user.email "agent@praxiapp.local"
           git push

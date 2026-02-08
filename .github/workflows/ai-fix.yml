@@ -16,19 +16,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install NVM and Node 20
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          source "$NVM_DIR/nvm.sh"
+          nvm install 20
+          nvm use 20
+          NODE_BIN_DIR=$(dirname "$(nvm which 20)")
+          echo "NVM_DIR=$NVM_DIR" >> $GITHUB_ENV
+          echo "PATH=$NODE_BIN_DIR:$PATH" >> $GITHUB_ENV
+          node -v
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          npm install
+
+      - name: Verify Node version
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          node --loader ts-node/esm tools/check-node-version.ts
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run tests to generate log
         run: |
+          source "$NVM_DIR/nvm.sh"
           npx playwright test || true
           cp test-results/results.json test-results.log || true
 
@@ -36,4 +51,5 @@ jobs:
         env:
           AI_API_KEY: ${{ secrets.AI_API_KEY }}
         run: |
+          source "$NVM_DIR/nvm.sh"
           node tools/ai-fix-agent.js test-results.log

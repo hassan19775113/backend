@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+import './check-node-version.js';
 import { Octokit } from '@octokit/rest';
 import * as fs from 'fs';
 import * as os from 'os';

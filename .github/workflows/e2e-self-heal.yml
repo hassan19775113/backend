@@ -47,6 +47,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install NVM and Node 20
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          source "$NVM_DIR/nvm.sh"
+          nvm install 20
+          nvm use 20
+          NODE_BIN_DIR=$(dirname "$(nvm which 20)")
+          echo "NVM_DIR=$NVM_DIR" >> $GITHUB_ENV
+          echo "PATH=$NODE_BIN_DIR:$PATH" >> $GITHUB_ENV
+          node -v
+
       - name: Ensure Django settings
         run: echo "DJANGO_SETTINGS_MODULE=praxi_backend.settings.dev" >> $GITHUB_ENV
 
@@ -92,25 +104,35 @@ jobs:
           "
 
       - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          node -v
 
       - name: npm ci
         run: |
+          source "$NVM_DIR/nvm.sh"
           set -o pipefail
           npm ci 2>&1 | tee npm-error.log
 
+      - name: Verify Node version
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          node --loader ts-node/esm tools/check-node-version.ts
+
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          npx playwright install --with-deps
 
       - name: Compile TypeScript
         run: |
+          source "$NVM_DIR/nvm.sh"
           set -o pipefail
           npx tsc 2>&1 | tee tsc-output.log
 
       - name: Run Playwright tests
         run: |
+          source "$NVM_DIR/nvm.sh"
           mkdir -p logs
           set -o pipefail
           npx playwright test 2>&1 | tee logs/playwright.log
