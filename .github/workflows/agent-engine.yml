@@ -247,9 +247,18 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Prepare seed command
+        run: |
+          if [ -z "$SEED_COMMAND_INPUT" ]; then
+            echo 'SEED_COMMAND=echo "SEED_COMMAND not set; skipping"' >> $GITHUB_ENV
+          else
+            echo "SEED_COMMAND=$SEED_COMMAND_INPUT" >> $GITHUB_ENV
+          fi
+        env:
+          SEED_COMMAND_INPUT: ""
       - name: Run seed-orchestrator
         env:
-          SEED_COMMAND: ${{ secrets.SEED_COMMAND }}
+          SEED_COMMAND: ${{ env.SEED_COMMAND }}
         run: |
           mkdir -p $AGENT_OUTPUT_DIR
           node scripts/agents/seed-orchestrator.js > $AGENT_OUTPUT_DIR/seed-orchestrator.json
