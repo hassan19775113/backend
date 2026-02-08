@@ -37,7 +37,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -59,10 +59,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -70,6 +70,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Fallback E2E creds if unset
         run: |
           echo "E2E_USER=${E2E_USER:-e2e_ci}" >> $GITHUB_ENV
@@ -112,7 +114,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -134,10 +136,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -145,6 +147,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Fallback E2E creds if unset
         run: |
           echo "E2E_USER=${E2E_USER:-e2e_ci}" >> $GITHUB_ENV
@@ -165,6 +169,8 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run auth-validator
         run: |
           mkdir -p $AGENT_OUTPUT_DIR
@@ -193,7 +199,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -220,10 +226,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -231,6 +237,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Start Django server
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
@@ -256,6 +264,8 @@ jobs:
           fi
         env:
           SEED_COMMAND_INPUT: ""
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run seed-orchestrator
         env:
           SEED_COMMAND: ${{ env.SEED_COMMAND }}
@@ -281,7 +291,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -308,10 +318,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -319,6 +329,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Start Django server
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
@@ -335,6 +347,8 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run page-smoke
         run: |
           mkdir -p $AGENT_OUTPUT_DIR
@@ -359,7 +373,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -386,10 +400,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -397,6 +411,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Start Django server
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
@@ -413,6 +429,8 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run Playwright tests
         run: |
           mkdir -p logs
@@ -455,7 +473,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -487,10 +505,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -498,6 +516,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Start Django server
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
@@ -514,6 +534,8 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run flaky-classifier
         run: |
           mkdir -p $AGENT_OUTPUT_DIR
@@ -537,7 +559,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd="pg_isready -U praxiapp" --health-interval=5s --health-timeout=5s --health-retries=30
     steps:
       - uses: actions/checkout@v4
       - name: Ensure E2E fallback creds
@@ -564,10 +586,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..40}; do
             pg_isready -U praxiapp && break
             echo "Postgres not ready yet..."
-            sleep 2
+            sleep 3
           done
       - name: Check PostgreSQL status
         run: pg_isready -U praxiapp
@@ -575,6 +597,8 @@ jobs:
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
         run: python django/manage.py migrate
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Start Django server
         env:
           DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
@@ -591,6 +615,8 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run selector-auditor
         run: |
           mkdir -p $AGENT_OUTPUT_DIR
@@ -637,6 +663,8 @@ jobs:
         with:
           name: selector-auditor-output
           path: agent-outputs
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run supervisor
         run: |
           node scripts/agents/fix-agent-supervisor.js > agent-outputs/fix-agent-supervisor.json
@@ -658,7 +686,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download agent outputs
+      - name: Download auth outputs
         uses: actions/download-artifact@v4
         with:
           name: auth-validator-output
@@ -688,6 +716,8 @@ jobs:
         with:
           name: fix-agent-supervisor-output
           path: agent-outputs
+      - name: Check PostgreSQL status
+        run: pg_isready -U praxiapp
       - name: Run ci-dashboard-agent
         run: node scripts/agents/ci-dashboard-agent.js > agent-outputs/ci-dashboard-agent.json
       - name: Upload dashboard artifact
