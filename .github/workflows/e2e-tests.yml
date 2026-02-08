@@ -19,12 +19,12 @@ jobs:
       BASE_URL: http://localhost:8000
       E2E_USER: ${{ secrets.E2E_USER }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-      E2E_ADMIN_USER: ${{ secrets.E2E_ADMIN_USER }}
-      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      E2E_DOCTOR_USER: ${{ secrets.E2E_DOCTOR_USER }}
-      E2E_DOCTOR_PASSWORD: ${{ secrets.E2E_DOCTOR_PASSWORD }}
-      E2E_ASSIST_USER: ${{ secrets.E2E_ASSIST_USER }}
-      E2E_ASSIST_PASSWORD: ${{ secrets.E2E_ASSIST_PASSWORD }}
+      E2E_ADMIN_USER: ${{ secrets['E2E_ADMIN_USER'] || '' }}
+      E2E_ADMIN_PASSWORD: ${{ secrets['E2E_ADMIN_PASSWORD'] || '' }}
+      E2E_DOCTOR_USER: ${{ secrets['E2E_DOCTOR_USER'] || '' }}
+      E2E_DOCTOR_PASSWORD: ${{ secrets['E2E_DOCTOR_PASSWORD'] || '' }}
+      E2E_ASSIST_USER: ${{ secrets['E2E_ASSIST_USER'] || 'default_assist_user' }}
+      E2E_ASSIST_PASSWORD: ${{ secrets['E2E_ASSIST_PASSWORD'] || 'default_assist_password' }}
       POSTGRES_DB: praxiapp
       POSTGRES_USER: praxiapp
       POSTGRES_PASSWORD: praxiapp
