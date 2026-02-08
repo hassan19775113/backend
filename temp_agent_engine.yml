@@ -1,0 +1,662 @@
+﻿name: Agent Engine
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  BASE_URL: http://localhost:8000
+  E2E_USER: ${{ secrets.E2E_USER }}
+  E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+  E2E_ADMIN_USER: ""
+  E2E_ADMIN_PASSWORD: ""
+  E2E_DOCTOR_USER: ""
+  E2E_DOCTOR_PASSWORD: ""
+  E2E_ASSIST_USER: ""
+  E2E_ASSIST_PASSWORD: ""
+  POSTGRES_DB: praxiapp
+  POSTGRES_USER: praxiapp
+  POSTGRES_PASSWORD: praxiapp
+  STORAGE_PATH: tests/fixtures/storageState.json
+  AGENT_OUTPUT_DIR: agent-outputs
+
+jobs:
+  setup-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Fallback E2E creds if unset
+        run: |
+          echo "E2E_USER=${E2E_USER:-e2e_ci}" >> $GITHUB_ENV
+          echo "E2E_PASSWORD=${E2E_PASSWORD:-e2e_ci_pw}" >> $GITHUB_ENV
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: Create E2E user
+        run: |
+          python django/manage.py shell -c "
+          from django.contrib.auth import get_user_model;
+          User = get_user_model();
+          User.objects.filter(username='$E2E_USER').delete();
+          User.objects.create_superuser('$E2E_USER','admin@example.com','$E2E_PASSWORD')
+          "
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+  auth-validator:
+    needs: setup-backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Fallback E2E creds if unset
+        run: |
+          echo "E2E_USER=${E2E_USER:-e2e_ci}" >> $GITHUB_ENV
+          echo "E2E_PASSWORD=${E2E_PASSWORD:-e2e_ci_pw}" >> $GITHUB_ENV
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run auth-validator
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/auth-validator.js > $AGENT_OUTPUT_DIR/auth-validator.json
+      - name: Upload storage state
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures/storageState.json
+      - name: Upload auth report
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-validator-output
+          path: $AGENT_OUTPUT_DIR/auth-validator.json
+
+  seed-orchestrator:
+    needs: auth-validator
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run seed-orchestrator
+        env:
+          SEED_COMMAND: ${{ secrets.SEED_COMMAND }}
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/seed-orchestrator.js > $AGENT_OUTPUT_DIR/seed-orchestrator.json
+      - name: Upload seed report
+        uses: actions/upload-artifact@v4
+        with:
+          name: seed-orchestrator-output
+          path: $AGENT_OUTPUT_DIR/seed-orchestrator.json
+
+  page-smoke:
+    needs: seed-orchestrator
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run page-smoke
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/page-smoke.js > $AGENT_OUTPUT_DIR/page-smoke.json
+      - name: Upload smoke report
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-smoke-output
+          path: $AGENT_OUTPUT_DIR/page-smoke.json
+
+  e2e-tests:
+    needs: page-smoke
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: |
+          mkdir -p logs
+          npx playwright test 2>&1 | tee logs/playwright.log
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+          if-no-files-found: ignore
+      - name: Upload storage state
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures/storageState.json
+          if-no-files-found: ignore
+      - name: Upload Playwright log
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-log
+          path: logs/playwright.log
+          if-no-files-found: ignore
+
+  flaky-classifier:
+    needs: e2e-tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Download test-results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run flaky-classifier
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/flaky-classifier.js > $AGENT_OUTPUT_DIR/flaky-classifier.json
+      - name: Upload flaky report
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-classifier-output
+          path: $AGENT_OUTPUT_DIR/flaky-classifier.json
+
+  selector-auditor:
+    needs: e2e-tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run selector-auditor
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/selector-auditor.js > $AGENT_OUTPUT_DIR/selector-auditor.json
+      - name: Upload selector report
+        uses: actions/upload-artifact@v4
+        with:
+          name: selector-auditor-output
+          path: $AGENT_OUTPUT_DIR/selector-auditor.json
+
+  fix-agent-supervisor:
+    needs:
+      - auth-validator
+      - seed-orchestrator
+      - page-smoke
+      - e2e-tests
+      - flaky-classifier
+      - selector-auditor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download agent outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: auth-validator-output
+          path: agent-outputs
+      - name: Download seed outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: seed-orchestrator-output
+          path: agent-outputs
+      - name: Download smoke outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: page-smoke-output
+          path: agent-outputs
+      - name: Download flaky outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: flaky-classifier-output
+          path: agent-outputs
+      - name: Download selector outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: selector-auditor-output
+          path: agent-outputs
+      - name: Run supervisor
+        run: |
+          node scripts/agents/fix-agent-supervisor.js > agent-outputs/fix-agent-supervisor.json
+      - name: Upload supervisor report
+        uses: actions/upload-artifact@v4
+        with:
+          name: fix-agent-supervisor-output
+          path: agent-outputs/fix-agent-supervisor.json
+
+  ci-dashboard-agent:
+    needs:
+      - auth-validator
+      - seed-orchestrator
+      - page-smoke
+      - e2e-tests
+      - flaky-classifier
+      - selector-auditor
+      - fix-agent-supervisor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download agent outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: auth-validator-output
+          path: agent-outputs
+      - name: Download seed outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: seed-orchestrator-output
+          path: agent-outputs
+      - name: Download smoke outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: page-smoke-output
+          path: agent-outputs
+      - name: Download flaky outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: flaky-classifier-output
+          path: agent-outputs
+      - name: Download selector outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: selector-auditor-output
+          path: agent-outputs
+      - name: Download supervisor outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-agent-supervisor-output
+          path: agent-outputs
+      - name: Run ci-dashboard-agent
+        run: node scripts/agents/ci-dashboard-agent.js > agent-outputs/ci-dashboard-agent.json
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard
+          path: artifacts/dashboard/
+      - name: Upload dashboard agent output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-dashboard-agent-output
+          path: agent-outputs/ci-dashboard-agent.json
+
+  publish-dashboard:
+    needs: ci-dashboard-agent
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download dashboard artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard
+          path: public
+      - name: Upload to GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+  post-dashboard-comment:
+    runs-on: ubuntu-latest
+    needs: publish-dashboard
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download supervisor decision
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-agent-supervisor-output
+          path: agent-outputs
+      - name: Read supervisor decision
+        run: cat agent-outputs/supervisor-decision.json
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const decision = JSON.parse(fs.readFileSync('agent-outputs/supervisor-decision.json', 'utf8'));
+            const url = decision.dashboardUrl || '(no dashboard url)';
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `­ƒôè **Agent Dashboard**\n\nDashboard: ${url}\n\nDecision: ${decision.decision || 'n/a'}`
+            });
