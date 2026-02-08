@@ -13,6 +13,22 @@ const FILES = {
   selector: 'selector-auditor.json',
 };
 
+function computeDashboardUrl() {
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!repo) return null;
+  const [owner, repoName] = repo.split('/');
+  if (!owner || !repoName) return null;
+  return `https://${owner}.github.io/${repoName}/dashboard.html`;
+}
+
+function computeBadgeUrl() {
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!repo) return null;
+  const [owner, repoName] = repo.split('/');
+  if (!owner || !repoName) return null;
+  return `https://${owner}.github.io/${repoName}/badge.svg`;
+}
+
 function output(status, details = {}, exitCode = 0) {
   const payload = { status, ...details };
   console.log(JSON.stringify(payload, null, 2));
@@ -111,12 +127,15 @@ function decide() {
 
 function main() {
   const agg = decide();
+  const dashboardUrl = computeDashboardUrl();
+  const badgeUrl = computeBadgeUrl();
+  const payload = { ...agg, dashboardUrl, badgeUrl };
   const decisionPath = path.join(OUTPUT_DIR, 'supervisor-decision.json');
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-  fs.writeFileSync(decisionPath, JSON.stringify(agg, null, 2));
+  fs.writeFileSync(decisionPath, JSON.stringify(payload, null, 2));
 
   // Exit code 0 always, supervisor is advisory; decision carries state.
-  output('ok', agg, 0);
+  output('ok', payload, 0);
 }
 
 main();
