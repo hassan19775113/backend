@@ -88,30 +88,30 @@ jobs:
       - name: Wait for backend
         run: |
           npx wait-on http://127.0.0.1:8000
-            pg_isready -h 127.0.0.1 -U postgres && break
+          curl -f http://127.0.0.1:8000/api/health/
       - name: Check PostgreSQL status
         run: pg_isready -h 127.0.0.1 -U postgres
       - name: Create E2E user
         run: |
-        run: pg_isready -h 127.0.0.1 -U postgres
+          python django/manage.py shell -c "
           from django.contrib.auth import get_user_model;
           User = get_user_model();
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
+          User.objects.filter(username='$E2E_USER').delete();
           User.objects.create_superuser('$E2E_USER','admin@example.com','$E2E_PASSWORD')
           "
-        run: pg_isready -h 127.0.0.1 -U postgres
+      - name: npm ci
         run: npm ci
       - name: Install Playwright browsers
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
+        run: npx playwright install --with-deps
 
   auth-validator:
     needs: setup-backend
     runs-on: ubuntu-latest
     services:
-          npx wait-on http://127.0.0.1:8000
-          curl -f http://127.0.0.1:8000/api/health/
+      postgres:
+        image: postgres:15
         env:
-        run: pg_isready -h 127.0.0.1 -U postgres
+          POSTGRES_DB: praxiapp_system
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
