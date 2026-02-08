@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const OUTPUT_DIR = process.env.AGENT_OUTPUT_DIR || 'agent-outputs';
-const ARTIFACT_PATH = path.join('artifacts', 'dashboard.html');
+const ARTIFACT_PATH = path.join('artifacts', 'dashboard', 'dashboard.html');
 
 const FILES = {
   auth: 'auth-validator.json',
@@ -125,7 +125,12 @@ function main() {
   fs.mkdirSync(path.dirname(ARTIFACT_PATH), { recursive: true });
   fs.writeFileSync(ARTIFACT_PATH, html, 'utf8');
 
-  console.log(JSON.stringify({ status: 'dashboard-generated', file: ARTIFACT_PATH }, null, 2));
+  // Also place a copy at artifacts/dashboard.html for convenience
+  const flatPath = path.join('artifacts', 'dashboard.html');
+  fs.mkdirSync(path.dirname(flatPath), { recursive: true });
+  fs.writeFileSync(flatPath, html, 'utf8');
+
+  console.log(JSON.stringify({ status: 'dashboard-generated', file: ARTIFACT_PATH, flatFile: flatPath }, null, 2));
 }
 
 main();

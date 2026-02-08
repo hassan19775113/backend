@@ -510,6 +510,61 @@ jobs:
           name: selector-auditor-output
           path: $AGENT_OUTPUT_DIR/selector-auditor.json
 
+  ci-dashboard-agent:
+    needs:
+      - auth-validator
+      - seed-orchestrator
+      - page-smoke
+      - e2e-tests
+      - flaky-classifier
+      - selector-auditor
+      - fix-agent-supervisor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download agent outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: auth-validator-output
+          path: agent-outputs
+      - name: Download seed outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: seed-orchestrator-output
+          path: agent-outputs
+      - name: Download smoke outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: page-smoke-output
+          path: agent-outputs
+      - name: Download flaky outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: flaky-classifier-output
+          path: agent-outputs
+      - name: Download selector outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: selector-auditor-output
+          path: agent-outputs
+      - name: Download supervisor outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-agent-supervisor-output
+          path: agent-outputs
+      - name: Run ci-dashboard-agent
+        run: node scripts/agents/ci-dashboard-agent.js > agent-outputs/ci-dashboard-agent.json
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard
+          path: artifacts/dashboard/
+      - name: Upload dashboard agent output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-dashboard-agent-output
+          path: agent-outputs/ci-dashboard-agent.json
+
   fix-agent-supervisor:
     needs:
       - auth-validator
@@ -554,3 +609,23 @@ jobs:
         with:
           name: fix-agent-supervisor-output
           path: agent-outputs/fix-agent-supervisor.json
+
+  publish-dashboard:
+    needs: ci-dashboard-agent
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download dashboard artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard
+          path: public
+      - name: Upload to GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
