@@ -222,3 +222,69 @@ jobs:
         with:
           name: seed-orchestrator-output
           path: $AGENT_OUTPUT_DIR/seed-orchestrator.json
+
+  page-smoke:
+    needs: seed-orchestrator
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: praxiapp
+          POSTGRES_USER: praxiapp
+          POSTGRES_PASSWORD: praxiapp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U praxiapp" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure E2E fallback creds
+        run: |
+          if [ -z "${E2E_USER}" ]; then echo "E2E_USER=e2e_ci" >> $GITHUB_ENV; fi
+          if [ -z "${E2E_PASSWORD}" ]; then echo "E2E_PASSWORD=e2e_ci_pw" >> $GITHUB_ENV; fi
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+          path: tests/fixtures
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install backend deps
+        run: pip install -r requirements.txt
+      - name: Apply migrations
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: python django/manage.py migrate
+      - name: Start Django server
+        env:
+          DATABASE_URL: postgres://praxiapp:praxiapp@localhost:5432/praxiapp
+        run: |
+          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+      - name: Wait for backend
+        run: |
+          npx wait-on http://localhost:8000
+          curl -f http://localhost:8000/api/health/
+      - name: npm ci
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run page-smoke
+        run: |
+          mkdir -p $AGENT_OUTPUT_DIR
+          node scripts/agents/page-smoke.js > $AGENT_OUTPUT_DIR/page-smoke.json
+      - name: Upload smoke report
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-smoke-output
+          path: $AGENT_OUTPUT_DIR/page-smoke.json
