@@ -86,12 +86,23 @@ jobs:
               if [ $run_count -le $KEEP_RECENT_RUNS ]; then
                 echo "  ✓ Keeping recent run #$run_count: ID $run_id (created: $run_created, status: $run_status)"
                 workflow_kept=$((workflow_kept + 1))
+                total_kept=$((total_kept + 1))
                 continue
               fi
               
               # Delete runs older than cutoff date
               if [[ "$run_created" < "$CUTOFF_DATE" ]]; then
-                echo "  ✗ Deleting old run: ID $run_id (created: $run_created, age: $((RETENTION_DAYS+1))+ days, status: $run_status, conclusion: $run_conclusion)"
+                # Calculate actual age in days
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                  # macOS
+                  run_age_seconds=$(( $(date -u +%s) - $(date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$run_created" +%s) ))
+                else
+                  # Linux
+                  run_age_seconds=$(( $(date -u +%s) - $(date -u -d "$run_created" +%s) ))
+                fi
+                run_age_days=$(( run_age_seconds / 86400 ))
+                
+                echo "  ✗ Deleting old run: ID $run_id (created: $run_created, age: $run_age_days days, status: $run_status, conclusion: $run_conclusion)"
                 
                 # Delete the run
                 if gh api -X DELETE "/repos/$REPO/actions/runs/$run_id" 2>/dev/null; then
