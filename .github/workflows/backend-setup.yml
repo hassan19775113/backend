@@ -104,9 +104,14 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          until pg_isready -h 127.0.0.1 -p 5432 -U "${POSTGRES_USER}"; do
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U "${POSTGRES_USER}"; then
+              exit 0
+            fi
             sleep 1
           done
+          echo "PostgreSQL not ready after 30 seconds" >&2
+          exit 1
 
       # Django DB prep
       - name: Apply migrations
