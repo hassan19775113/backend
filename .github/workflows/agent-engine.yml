@@ -66,9 +66,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
@@ -138,9 +136,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
@@ -230,9 +226,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
@@ -319,9 +313,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
@@ -407,9 +399,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
@@ -519,9 +509,7 @@ jobs:
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           sleep 10
 
-      - run: |
-          npx wait-on http://localhost:8000
-          curl -f http://localhost:8000/api/health/
+        - run: npx wait-on http://localhost:8000 && curl -f http://localhost:8000/api/health/
 
       - name: Create E2E user
         env:
