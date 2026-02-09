@@ -19,5 +19,5 @@ PY`
   - `python django/manage.py loaddata path/to/fixture.json`
 - Confirm runtime DB engine:
   - `python django/manage.py shell -c "from django.conf import settings; print(settings.DATABASES['default']['ENGINE'])"`
-- Ensure no local SQLite files exist:
-  - `Get-ChildItem -Recurse -Filter "*.sqlite*"` (PowerShell)
+- Ensure no local file-based DB artifacts exist:
+  - `Get-ChildItem -Recurse -File | ForEach-Object { $h = [IO.File]::OpenRead($_.FullName); $b = New-Object byte[] 16; $h.Read($b,0,16) | Out-Null; $h.Dispose(); $magic = [byte[]](83,81,76,105,116,101,32,102,111,114,109,97,116,32,51,0); if ($b[0..15] -ceq $magic) { $_.FullName } }`
