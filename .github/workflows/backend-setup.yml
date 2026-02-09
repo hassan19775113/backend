@@ -61,6 +61,7 @@ jobs:
         with:
           python-version: '3.12'
 
+      # Caches to speed up installs (OS-scoped with restore keys)
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -77,6 +78,7 @@ jobs:
           restore-keys: |
             pw-${{ runner.os }}-
 
+      # Install all runtime deps (Python + Node + browsers)
       - name: Install base dependencies
         shell: bash
         run: |
@@ -86,14 +88,18 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
+      # Log critical env for transparency
       - name: Show debug environment
         shell: bash
         run: |
           set -eo pipefail
           echo "BASE_URL=${BASE_URL}"
           echo "POSTGRES_DB=${POSTGRES_DB}"
+          echo "POSTGRES_USER=${POSTGRES_USER}"
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
           echo "AGENT_OUTPUT_DIR=${AGENT_OUTPUT_DIR:-agent-outputs}"
 
+      # Ensure Postgres is ready before touching the DB
       - name: Wait for PostgreSQL
         shell: bash
         run: |
@@ -102,6 +108,7 @@ jobs:
             sleep 1
           done
 
+      # Django DB prep
       - name: Apply migrations
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
@@ -123,28 +130,40 @@ jobs:
           User.objects.create_superuser('e2e_ci','admin@example.com','e2e_ci_pw')
           "
 
+      # Clean stale PID before starting server
       - name: Clean up stale PID
         shell: bash
         run: |
           set -eo pipefail
           if [ -f server.pid ]; then rm server.pid; fi
 
+      # Start Django in background with logging
       - name: Start Django
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
         shell: bash
         run: |
           set -eo pipefail
-          nohup python django/manage.py runserver 0.0.0.0:8000 &
+          nohup python django/manage.py runserver 0.0.0.0:8000 > server.log 2>&1 &
           echo $! > server.pid
           sleep 10
 
+      # Wait for HTTP readiness; dump server.log on failure
       - name: Wait for backend
         shell: bash
         run: |
           set -eo pipefail
-          npx --yes wait-on@latest "$BASE_URL"
+          npx --yes wait-on@latest "$BASE_URL" || {
+            echo "Backend not reachable at $BASE_URL"
+            if [ -f server.log ]; then
+              echo "--- server.log ---"
+              cat server.log || true
+              echo "------------------"
+            fi
+            exit 1
+          }
 
+      # Run the agent command with safe output dir
       - name: Run agent command
         shell: bash
         env:
@@ -156,6 +175,7 @@ jobs:
           echo "Using AGENT_OUTPUT_DIR=$OUT_DIR"
           AGENT_OUTPUT_DIR="$OUT_DIR" ${{ inputs.agent_command }}
 
+      # Tolerant shutdown of Django
       - name: Stop Django
         if: always()
         shell: bash
