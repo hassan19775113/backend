@@ -42,7 +42,7 @@ jobs:
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
     with:
       agent_command: |
-        mkdir -p logs
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
         npx playwright test 2>&1 | tee logs/playwright.log
       upload_artifact_name: test-results
       upload_artifact_path: logs/playwright.log
@@ -50,7 +50,7 @@ jobs:
   flaky-classifier:
     needs: e2e-tests
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
-    with:
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
       agent_command: node scripts/agents/flaky-classifier.js > agent-outputs/flaky-classifier.json
       upload_artifact_name: flaky-classifier-output
       upload_artifact_path: agent-outputs/flaky-classifier.json
@@ -58,7 +58,7 @@ jobs:
   selector-auditor:
     needs: e2e-tests
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
-    with:
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
       agent_command: node scripts/agents/selector-auditor.js > agent-outputs/selector-auditor.json
       upload_artifact_name: selector-auditor-output
       upload_artifact_path: agent-outputs/selector-auditor.json
@@ -66,7 +66,7 @@ jobs:
   fix-agent-supervisor:
     needs:
       - auth-validator
-      - seed-orchestrator
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
       - page-smoke
       - e2e-tests
       - flaky-classifier
@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download agent outputs
-        uses: actions/download-artifact@v4
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
         with:
           name: auth-validator-output
           path: agent-outputs
@@ -84,7 +84,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: seed-orchestrator-output
-          path: agent-outputs
+        uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
       - name: Download smoke outputs
         uses: actions/download-artifact@v4
         with:
