@@ -65,21 +65,39 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.txt') }}
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
 
       - name: Cache Playwright
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: pw-${{ hashFiles('package-lock.json') }}
+          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            pw-${{ runner.os }}-
 
-      - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
-      - run: npm ci
-      - run: npx playwright install --with-deps
+      - name: Install base dependencies
+        shell: bash
+        run: |
+          set -eo pipefail
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Show debug environment
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "BASE_URL=${BASE_URL}"
+          echo "POSTGRES_DB=${POSTGRES_DB}"
+          echo "AGENT_OUTPUT_DIR=${AGENT_OUTPUT_DIR:-agent-outputs}"
 
       - name: Wait for PostgreSQL
+        shell: bash
         run: |
+          set -eo pipefail
           until pg_isready -h 127.0.0.1 -p 5432 -U "${POSTGRES_USER}"; do
             sleep 1
           done
@@ -87,12 +105,17 @@ jobs:
       - name: Apply migrations
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
-        run: python django/manage.py migrate
+        shell: bash
+        run: |
+          set -eo pipefail
+          python django/manage.py migrate
 
       - name: Create E2E user
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
+        shell: bash
         run: |
+          set -eo pipefail
           python django/manage.py shell -c "
           from django.contrib.auth import get_user_model;
           User = get_user_model();
@@ -101,30 +124,47 @@ jobs:
           "
 
       - name: Clean up stale PID
+        shell: bash
         run: |
+          set -eo pipefail
           if [ -f server.pid ]; then rm server.pid; fi
 
       - name: Start Django
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/praxiapp_system
+        shell: bash
         run: |
+          set -eo pipefail
           nohup python django/manage.py runserver 0.0.0.0:8000 &
           echo $! > server.pid
           sleep 10
 
-      - run: npx --yes wait-on@latest "$BASE_URL"
+      - name: Wait for backend
+        shell: bash
+        run: |
+          set -eo pipefail
+          npx --yes wait-on@latest "$BASE_URL"
 
       - name: Run agent command
+        shell: bash
+        env:
+          AGENT_OUTPUT_DIR: ${{ env.AGENT_OUTPUT_DIR }}
         run: |
-          mkdir -p $AGENT_OUTPUT_DIR
-          ${{ inputs.agent_command }}
+          set -eo pipefail
+          OUT_DIR="${AGENT_OUTPUT_DIR:-agent-outputs}"
+          mkdir -p "$OUT_DIR" || true
+          echo "Using AGENT_OUTPUT_DIR=$OUT_DIR"
+          AGENT_OUTPUT_DIR="$OUT_DIR" ${{ inputs.agent_command }}
 
       - name: Stop Django
         if: always()
+        shell: bash
         run: |
+          set -eo pipefail
           if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
+            kill "$(cat server.pid)" || true
           fi
+          sleep 2
 
       - name: Upload artifact
         if: ${{ inputs.upload_artifact_name && inputs.upload_artifact_path }}
