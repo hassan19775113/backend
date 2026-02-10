@@ -27,7 +27,7 @@ jobs:
     needs: auth-validator
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
     with:
-      agent_command: bash -c "export SEED_COMMAND=\"python django/manage.py seed --flush\" && node scripts/agents/seed-orchestrator.js" > agent-outputs/seed-orchestrator.json
+      agent_command: bash -c "export SEED_COMMAND=\"python django/manage.py seed\" && node scripts/agents/seed-orchestrator.js" > agent-outputs/seed-orchestrator.json
       upload_artifact_name: seed-orchestrator-output
       upload_artifact_path: agent-outputs/seed-orchestrator.json
       download_storage_state: true
