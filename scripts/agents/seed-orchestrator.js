@@ -12,7 +12,6 @@ const SEED_COMMAND = process.env.SEED_COMMAND || '';
 const ENDPOINTS = [
   { key: 'patients', path: '/api/patients/' },
   { key: 'appointments', path: '/api/appointments/' },
-  { key: 'kpis', path: '/api/kpis/' },
   { key: 'operations', path: '/api/operations/' },
 ];
 
@@ -115,10 +114,11 @@ async function main() {
     const authRefresh = spawnSync('node', ['scripts/agents/auth-validator.js'], {
       env: {
         ...process.env,
-        STORAGE_PATH,
-        BASE_URL,
+        STORAGE_PATH: STORAGE_PATH,
+        BASE_URL: BASE_URL,
         E2E_USER: process.env.E2E_USER,
         E2E_PASSWORD: process.env.E2E_PASSWORD,
+        AGENT_OUTPUT_DIR: process.env.AGENT_OUTPUT_DIR || 'agent-outputs',
       },
       encoding: 'utf8',
     });
