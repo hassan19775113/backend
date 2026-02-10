@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const { spawnSync } = require('child_process');
-const path = require('path');
-const { request } = require('@playwright/test');
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { request } from '@playwright/test';
 
 const STORAGE_PATH = process.env.STORAGE_PATH || path.join('tests', 'fixtures', 'storageState.json');
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
