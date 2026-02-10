@@ -268,16 +268,39 @@ jobs:
             exit 1
           }
           echo "Running agent command; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
+
+          # Run agent command and capture exit code
           AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" ${{ inputs.agent_command }} 2>&1 || {
-            echo "Agent command failed" | tee -a django/logs/system/ci.log
-            if [ -f django/logs/agent/agent.log ]; then
-              echo "--- agent.log ---" | tee -a django/logs/system/ci.log
-              cat django/logs/agent/agent.log | tee -a django/logs/system/ci.log
-              echo "-----------------" | tee -a django/logs/system/ci.log
+            AGENT_EXIT_CODE=$?
+            echo "Agent command failed with exit code $AGENT_EXIT_CODE" | tee -a django/logs/system/ci.log
+
+            # Show the ACTUAL agent output file (contains error details)
+            if [ -f agent-outputs/seed-orchestrator.json ]; then
+              echo "--- seed-orchestrator.json ---" | tee -a django/logs/system/ci.log
+              cat agent-outputs/seed-orchestrator.json | tee -a django/logs/system/ci.log
+              echo "------------------------------" | tee -a django/logs/system/ci.log
+            else
+              echo "No seed-orchestrator.json found" | tee -a django/logs/system/ci.log
             fi
+
+            # Also show auth-validator log for context
+            if [ -f django/logs/agent/agent.log ]; then
+              echo "--- agent.log (auth-validator context) ---" | tee -a django/logs/system/ci.log
+              cat django/logs/agent/agent.log | tee -a django/logs/system/ci.log
+              echo "------------------------------------------" | tee -a django/logs/system/ci.log
+            fi
+
+            # Show Django server logs if available
+            if [ -f django/logs/django/server.log ]; then
+              echo "--- Django server.log (last 50 lines) ---" | tee -a django/logs/system/ci.log
+              tail -50 django/logs/django/server.log | tee -a django/logs/system/ci.log
+              echo "-----------------------------------------" | tee -a django/logs/system/ci.log
+            fi
+
             exit 1
           }
-          echo "Agent command completed" | tee -a django/logs/system/ci.log
+
+          echo "Agent command completed successfully" | tee -a django/logs/system/ci.log
 
       - name: Upload storage state
         if: ${{ inputs.upload_storage_state }}
