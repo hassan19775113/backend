@@ -3,7 +3,7 @@
 const fs = require('fs');
 const { spawnSync } = require('child_process');
 const path = require('path');
-const { request } = require('playwright');
+const { request } = require('@playwright/test');
 
 const STORAGE_PATH = process.env.STORAGE_PATH || path.join('tests', 'fixtures', 'storageState.json');
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
