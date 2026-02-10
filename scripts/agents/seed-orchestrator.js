@@ -71,7 +71,7 @@ async function fetchCounts(ctx) {
 
 async function main() {
   ensureStorage();
-  const ctx = await request.newContext({ baseURL: BASE_URL, storageState: STORAGE_PATH });
+  let ctx = await request.newContext({ baseURL: BASE_URL, storageState: STORAGE_PATH });
   let seedLogs = '';
 
   const before = await fetchCounts(ctx);
@@ -108,6 +108,25 @@ async function main() {
         1
       );
     }
+
+    // Refresh auth token after seeding (seed --flush invalidates the old token)
+    await ctx.dispose();
+
+    const authRefresh = spawnSync('node', ['scripts/agents/auth-validator.js'], {
+      env: process.env,
+      encoding: 'utf8',
+    });
+
+    if (authRefresh.status !== 0) {
+      output('error', {
+        reason: 'auth-refresh-failed',
+        message: 'Failed to refresh auth token after seeding',
+        logs: authRefresh.stdout || authRefresh.stderr
+      }, 1);
+    }
+
+    // Create new context with refreshed token
+    ctx = await request.newContext({ baseURL: BASE_URL, storageState: STORAGE_PATH });
   }
 
   const after = await fetchCounts(ctx);
