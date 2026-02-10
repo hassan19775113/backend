@@ -85,7 +85,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.storage_state_artifact_name }}
-          path: .
+          path: tests/fixtures
 
       - name: Setup Node
         uses: actions/setup-node@v4
