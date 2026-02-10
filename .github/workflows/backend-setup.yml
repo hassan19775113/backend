@@ -189,24 +189,30 @@ jobs:
           echo "Starting Django server" | tee -a django/logs/system/ci.log
           nohup python django/manage.py runserver 0.0.0.0:8000 >> django/logs/django/server.log 2>&1 &
           echo $! > django/logs/django/server.pid
-          sleep 15
-          if ! kill -0 "$(cat django/logs/django/server.pid)" 2>/dev/null; then
-            echo "Django server failed to start" | tee -a django/logs/system/ci.log
-            if [ -f django/logs/django/server.log ]; then
-              echo "--- server.log ---" | tee -a django/logs/system/ci.log
-              cat django/logs/django/server.log | tee -a django/logs/system/ci.log
-              echo "------------------" | tee -a django/logs/system/ci.log
+          # Wait for Django to be ready (max 30s)
+          ready=false
+          for i in {1..30}; do
+            if kill -0 "$(cat django/logs/django/server.pid)" 2>/dev/null; then
+              if curl -sf "http://127.0.0.1:8000/api/health/" >/dev/null 2>&1; then
+                ready=true
+                echo "Django is ready after ${i}s" | tee -a django/logs/system/ci.log
+                break
+              fi
             fi
+            sleep 1
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "Django server failed to start within 30s" | tee -a django/logs/system/ci.log
             exit 1
           fi
-          echo "Django process is running" | tee -a django/logs/system/ci.log
 
       # Wait for HTTP readiness; dump server.log on failure
       - name: Unified health checks (DB, Django, HTTP)
         shell: bash
         run: |
           ready=false
-          for i in {1..90}; do
+          for i in {1..30}; do
             if pg_isready -h 127.0.0.1 -p 5432 -U "${POSTGRES_USER}"; then
               ready=true
               break
@@ -215,7 +221,7 @@ jobs:
           done
 
           if [ "$ready" != "true" ]; then
-            echo "PostgreSQL not ready after 90 seconds"
+            echo "PostgreSQL not ready after 30 seconds"
             exit 1
           fi
           echo "PostgreSQL is ready"
@@ -225,7 +231,7 @@ jobs:
           python django/manage.py shell -c "import django; print('Django OK')"
 
           ready=false
-          for i in {1..60}; do
+          for i in {1..30}; do
             if curl -sf "http://127.0.0.1:8000/api/health/" >/dev/null; then
               ready=true
               break
@@ -234,7 +240,7 @@ jobs:
           done
 
           if [ "$ready" != "true" ]; then
-            echo "Backend HTTP health endpoint not ready after 60 seconds"
+            echo "Backend HTTP health endpoint not ready after 30 seconds"
             exit 1
           fi
           echo "HTTP API is ready"
@@ -308,7 +314,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-logs
+          name: backend-logs-${{ github.job }}
           path: django/logs/
 
       - name: Show CI log on failure
