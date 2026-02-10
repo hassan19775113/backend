@@ -126,7 +126,7 @@ async function main() {
       output('error', {
         reason: 'auth-refresh-failed',
         message: 'Failed to refresh auth token after seeding',
-        logs: authLogs || undefined
+        ...(authLogs && { logs: authLogs })
       }, 1);
     }
 
