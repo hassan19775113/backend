@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const path = require('path');
 const { request } = require('playwright');
 
@@ -18,8 +18,24 @@ const ENDPOINTS = [
 
 function output(status, details = {}, exitCode = 0) {
   const payload = { status, ...details };
-  console.log(JSON.stringify(payload, null, 2));
+  try {
+    const json = JSON.stringify(payload, null, 2);
+    if (typeof json !== 'string') {
+      throw new Error('invalid-json');
+    }
+    console.log(json);
+  } catch (err) {
+    const fallback = { status: 'error', reason: 'invalid-json', message: err.message };
+    console.log(JSON.stringify(fallback));
+    process.exit(1);
+  }
   process.exit(exitCode);
+}
+
+function truncateLog(value, limit = 2000) {
+  if (!value) return '';
+  if (value.length <= limit) return value;
+  return `${value.slice(0, limit)}\n...truncated...`;
 }
 
 function ensureStorage() {
@@ -56,6 +72,7 @@ async function fetchCounts(ctx) {
 async function main() {
   ensureStorage();
   const ctx = await request.newContext({ baseURL: BASE_URL, storageState: STORAGE_PATH });
+  let seedLogs = '';
 
   const before = await fetchCounts(ctx);
   const emptyKeys = before.filter((r) => r.count === 0 || r.status >= 400 || r.status === 0).map((r) => r.key);
@@ -66,11 +83,30 @@ async function main() {
   }
 
   if (emptyKeys.length && SEED_COMMAND) {
-    try {
-      execSync(SEED_COMMAND, { stdio: 'inherit', env: process.env });
-    } catch (err) {
+    const result = spawnSync(SEED_COMMAND, {
+      shell: true,
+      env: process.env,
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+    });
+
+    const stdoutLog = truncateLog(result.stdout || '');
+    const stderrLog = truncateLog(result.stderr || '');
+    const combinedLog = [stdoutLog, stderrLog].filter(Boolean).join('\n');
+    seedLogs = combinedLog;
+
+    if (result.status !== 0) {
       await ctx.dispose();
-      output('error', { reason: 'seed-command-failed', empty: emptyKeys, message: err.message }, 1);
+      output(
+        'error',
+        {
+          reason: 'seed-command-failed',
+          empty: emptyKeys,
+          message: result.error ? result.error.message : `exit code ${result.status}`,
+          logs: combinedLog || undefined,
+        },
+        1
+      );
     }
   }
 
@@ -79,10 +115,20 @@ async function main() {
 
   const stillEmpty = after.filter((r) => r.count === 0 || r.status >= 400 || r.status === 0).map((r) => r.key);
   if (stillEmpty.length) {
-    output('error', { reason: 'seed-incomplete', empty: stillEmpty, before, after }, 1);
+    output(
+      'error',
+      {
+        reason: 'seed-incomplete',
+        empty: stillEmpty,
+        before,
+        after,
+        logs: seedLogs || undefined,
+      },
+      1
+    );
   }
 
-  output('ok', { before, after }, 0);
+  output('ok', { before, after, logs: seedLogs || undefined }, 0);
 }
 
 main().catch((err) => {
