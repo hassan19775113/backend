@@ -118,10 +118,11 @@ async function main() {
     });
 
     if (authRefresh.status !== 0) {
+      const authLogs = [authRefresh.stdout, authRefresh.stderr].filter(Boolean).join('\n');
       output('error', {
         reason: 'auth-refresh-failed',
         message: 'Failed to refresh auth token after seeding',
-        logs: authRefresh.stdout || authRefresh.stderr
+        logs: authLogs || undefined
       }, 1);
     }
 
