@@ -32,7 +32,7 @@ function output(status, details = {}, exitCode = 0) {
   process.exit(exitCode);
 }
 
-function truncateLog(value, limit = 2000) {
+function truncateLog(value, limit = 10000) {
   if (!value) return '';
   if (value.length <= limit) return value;
   return `${value.slice(0, limit)}\n...truncated...`;
