@@ -268,7 +268,7 @@ jobs:
             exit 1
           }
           echo "Running agent command; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
-          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" ${{ inputs.agent_command }} || {
+          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" ( ${{ inputs.agent_command }} 2>&1 ) || {
             echo "Agent command failed" | tee -a django/logs/system/ci.log
             if [ -f django/logs/agent/agent.log ]; then
               echo "--- agent.log ---" | tee -a django/logs/system/ci.log
