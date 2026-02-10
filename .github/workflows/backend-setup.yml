@@ -270,7 +270,7 @@ jobs:
           echo "Running agent command; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
 
           # Run agent command and capture exit code
-          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" ${{ inputs.agent_command }} 2>&1 || {
+          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" bash -c '${{ inputs.agent_command }}' 2>&1 || {
             AGENT_EXIT_CODE=$?
             echo "Agent command failed with exit code $AGENT_EXIT_CODE" | tee -a django/logs/system/ci.log
 

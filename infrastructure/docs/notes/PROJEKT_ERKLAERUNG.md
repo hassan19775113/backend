@@ -5,7 +5,7 @@
 1. [Projektübersicht](#projektübersicht)
 2. [Architektur im Detail](#architektur-im-detail)
 3. [Wichtige Module und deren Zweck](#wichtige-module-und-deren-zweck)
-4. [Datenbankarchitektur (Dual-DB)](#datenbankarchitektur-dual-db)
+4. [Datenbankarchitektur (Single-DB)](#datenbankarchitektur-single-db)
 5. [Scheduling-Engine (Kernkomponente)](#scheduling-engine-kernkomponente)
 6. [API-Struktur](#api-struktur)
 7. [Sicherheit & Berechtigungen (RBAC)](#sicherheit--berechtigungen-rbac)
@@ -181,7 +181,7 @@ log_patient_action(user, 'appointment_create', patient_id, meta={...})
 
 ## Datenbankarchitektur (Single-DB)
 
-PraxiApp nutzt eine **einzige** Datenbank (`default`, PostgreSQL) für:
+**PraxiApp** nutzt eine **Single-Database-Architektur** (PostgreSQL "default"):
 
 - Django-Systemtabellen (auth, sessions, etc.)
 - App-Daten (`core`, `appointments`, `patients`, `dashboard`)
