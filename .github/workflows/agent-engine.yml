@@ -37,7 +37,7 @@ jobs:
     needs: seed-orchestrator
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
     with:
-      agent_command: node scripts/agents/page-smoke.js > agent-outputs/page-smoke.json
+      agent_command: node scripts/agents/page-smoke.cjs > agent-outputs/page-smoke.json
       upload_artifact_name: page-smoke-output
       upload_artifact_path: agent-outputs/page-smoke.json
       download_storage_state: true
@@ -59,7 +59,7 @@ jobs:
     needs: e2e-tests
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
     with:
-      agent_command: node scripts/agents/flaky-classifier.js > agent-outputs/flaky-classifier.json
+      agent_command: node scripts/agents/flaky-classifier.cjs > agent-outputs/flaky-classifier.json
       upload_artifact_name: flaky-classifier-output
       upload_artifact_path: agent-outputs/flaky-classifier.json
       download_storage_state: true
@@ -69,7 +69,7 @@ jobs:
     needs: e2e-tests
     uses: hassan19775113/PraxiApp/.github/workflows/backend-setup.yml@main
     with:
-      agent_command: node scripts/agents/selector-auditor.js > agent-outputs/selector-auditor.json
+      agent_command: node scripts/agents/selector-auditor.cjs > agent-outputs/selector-auditor.json
       upload_artifact_name: selector-auditor-output
       upload_artifact_path: agent-outputs/selector-auditor.json
       download_storage_state: true
@@ -119,7 +119,7 @@ jobs:
       - name: Run supervisor
         run: |
           mkdir -p agent-outputs
-          node scripts/agents/fix-agent-supervisor.js > agent-outputs/fix-agent-supervisor.json
+          node scripts/agents/fix-agent-supervisor.cjs > agent-outputs/fix-agent-supervisor.json
       - name: Upload supervisor report
         uses: actions/upload-artifact@v4
         with:

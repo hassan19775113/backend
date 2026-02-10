@@ -113,7 +113,13 @@ async function main() {
     await ctx.dispose();
 
     const authRefresh = spawnSync('node', ['scripts/agents/auth-validator.js'], {
-      env: process.env,
+      env: {
+        ...process.env,
+        STORAGE_PATH,
+        BASE_URL,
+        E2E_USER: process.env.E2E_USER,
+        E2E_PASSWORD: process.env.E2E_PASSWORD,
+      },
       encoding: 'utf8',
     });
 

@@ -112,10 +112,10 @@ function decide() {
     };
   }
 
-  // Default: nothing to do
+  // Default: all green
   return {
-    decision: 'abort',
-    reason: 'No deterministic failures found',
+    decision: 'ok',
+    reason: 'All tests passed',
     recommendations: [],
     auth,
     seed,

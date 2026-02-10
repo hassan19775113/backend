@@ -18,12 +18,14 @@ function ensureDirs() {
 
 function runRerun() {
   try {
-    execSync(`npx playwright test --last-failed --repeat-each=2 --reporter=json --output=flaky-output > ${REPORT_PATH}`, {
-      stdio: 'inherit',
+    const result = execSync(`npx playwright test --last-failed --repeat-each=2 --reporter=json`, {
+      encoding: 'utf8',
       env: process.env,
     });
+    fs.writeFileSync(REPORT_PATH, result, 'utf8');
   } catch (err) {
-    // Allow failures; classification will interpret results.
+    // Allow failures; write stderr if available
+    if (err.stdout) fs.writeFileSync(REPORT_PATH, err.stdout, 'utf8');
   }
 }
 
