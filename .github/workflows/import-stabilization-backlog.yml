@@ -1,0 +1,68 @@
+name: Import Stabilization Backlog
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run without creating issues"
+        required: false
+        default: "false"
+
+jobs:
+  import-backlog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install GitHub CLI
+        uses: cli/cli@v2
+        with:
+          version: latest
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Load issues.json
+        id: load
+        run: |
+          echo "json=$(cat automation/issues.json | jq -c .)" >> $GITHUB_OUTPUT
+
+      - name: Import Issues
+        run: |
+          echo "Starting issue import..."
+          echo "${{ steps.load.outputs.json }}" | jq -c '.[]' | while read issue; do
+            TITLE=$(echo "$issue" | jq -r '.title')
+            BODY=$(echo "$issue" | jq -r '.body')
+            LABELS=$(echo "$issue" | jq -r '.labels | join(",")')
+
+            # Check if issue already exists
+            if gh issue list --search "$TITLE" --json title | jq -e ".[] | select(.title==\"$TITLE\")" > /dev/null; then
+              echo "Skipping existing issue: $TITLE"
+              continue
+            fi
+
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              echo "[DRY RUN] Would create issue: $TITLE"
+            else
+              echo "Creating issue: $TITLE"
+              gh issue create \
+                --title "$TITLE" \
+                --body "$BODY" \
+                --label "$LABELS"
+            fi
+          done
+
+      - name: Import Project Structure (YAML)
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "[DRY RUN] Would import project YAML"
+          else
+            echo "Importing project YAML..."
+            gh project item-import \
+              --owner "${{ github.repository_owner }}" \
+              --format yaml \
+              --input automation/project-import.yml
+          fi
