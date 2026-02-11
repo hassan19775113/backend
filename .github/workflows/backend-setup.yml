@@ -61,12 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    env:
-      # Use a dynamically-mapped localhost port to avoid collisions and ensure each job
-      # connects to its own service container.
-      POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:${{ job.services.postgres.ports[5432] }}/praxiapp_system
-
     services:
       postgres:
         image: postgres:15
@@ -95,6 +89,14 @@ jobs:
           : > django/logs/agent/agent.log
           : > django/logs/system/ci.log
           echo "Initialized log directories" >> django/logs/system/ci.log
+
+      - name: Configure Postgres env
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "POSTGRES_PORT=${{ job.services.postgres.ports[5432] }}" >> "$GITHUB_ENV"
+          echo "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${{ job.services.postgres.ports[5432] }}/${POSTGRES_DB}" >> "$GITHUB_ENV"
+          echo "Configured Postgres: 127.0.0.1:${{ job.services.postgres.ports[5432] }}" | tee -a django/logs/system/ci.log
 
       - name: Download storage state
         if: ${{ inputs.download_storage_state }}
@@ -183,8 +185,6 @@ jobs:
           fi
 
       - name: Apply migrations
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
         shell: bash
         run: |
           set -eo pipefail
@@ -196,8 +196,6 @@ jobs:
           echo "Migrations complete" | tee -a django/logs/system/ci.log
 
       - name: Create E2E user
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
         shell: bash
         run: |
           set -eo pipefail
@@ -239,8 +237,6 @@ jobs:
 
       # Start Django in background with logging
       - name: Start Django
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
         shell: bash
         run: |
           set -eo pipefail
@@ -411,26 +407,18 @@ jobs:
             echo "exit_code=$?"
             echo ""
             echo "tcp_connect (127.0.0.1:${POSTGRES_PORT}):"
-            python - <<'PY'
-          import socket
-
+          python - <<'PY'
           import os
+          import socket
 
           host = "127.0.0.1"
           port = int(os.environ.get("POSTGRES_PORT", "5432"))
 
-          s = socket.socket()
-          s.settimeout(5)
           try:
-              s.connect((host, port))
-              print("tcp_ok")
+              with socket.create_connection((host, port), timeout=5):
+                  print("tcp_ok")
           except Exception as e:
               print("tcp_fail", repr(e))
-          finally:
-              try:
-                  s.close()
-              except Exception:
-                  pass
           PY
             echo ""
             echo "postgres_container_logs (tail 200):"
