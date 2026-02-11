@@ -29,6 +29,10 @@ on:
         type: string
         default: tests/fixtures/storageState.json
 
+      logs_artifact_name:
+        required: false
+        type: string
+
 permissions:
   contents: read
 
@@ -290,13 +294,24 @@ jobs:
             AGENT_EXIT_CODE=$?
             echo "Agent command failed with exit code $AGENT_EXIT_CODE" | tee -a django/logs/system/ci.log
 
-            # Show the ACTUAL agent output file (contains error details)
-            if [ -f agent-outputs/seed-orchestrator.json ]; then
-              echo "--- seed-orchestrator.json ---" | tee -a django/logs/system/ci.log
-              cat agent-outputs/seed-orchestrator.json | tee -a django/logs/system/ci.log
-              echo "------------------------------" | tee -a django/logs/system/ci.log
+            # Show any agent JSON outputs for fast debugging
+            echo "--- agent outputs (json) ---" | tee -a django/logs/system/ci.log
+            if [ -d "$OUT_DIR" ]; then
+              ls -la "$OUT_DIR" | tee -a django/logs/system/ci.log || true
+              found_any=false
+              for f in "$OUT_DIR"/*.json; do
+                if [ -f "$f" ]; then
+                  found_any=true
+                  echo "--- $(basename "$f") ---" | tee -a django/logs/system/ci.log
+                  cat "$f" | tee -a django/logs/system/ci.log
+                  echo "------------------------" | tee -a django/logs/system/ci.log
+                fi
+              done
+              if [ "$found_any" != "true" ]; then
+                echo "No JSON outputs found in $OUT_DIR" | tee -a django/logs/system/ci.log
+              fi
             else
-              echo "No seed-orchestrator.json found" | tee -a django/logs/system/ci.log
+              echo "Agent output directory missing: $OUT_DIR" | tee -a django/logs/system/ci.log
             fi
 
             # Also show auth-validator log for context
@@ -351,10 +366,12 @@ jobs:
 
       - name: Upload logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: backend-logs-${{ github.job }}
+          name: ${{ inputs.logs_artifact_name || format('backend-logs-{0}', github.job) }}
           path: django/logs/
+          if-no-files-found: warn
 
       - name: Show CI log on failure
         if: failure()
