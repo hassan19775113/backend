@@ -37,20 +37,29 @@ async function run() {
     let status = 'ok';
     let reason = '';
     let httpStatus = 0;
+    let finalUrl = '';
     try {
       const resp = await page.goto(pageDef.path);
       httpStatus = resp ? resp.status() : 0;
+      finalUrl = (resp && resp.url && resp.url()) ? resp.url() : page.url();
       await page.waitForLoadState('networkidle');
       const count = await page.locator(pageDef.anchor).count();
       if (count === 0) {
-        status = 'missing-anchor';
-        reason = 'anchor-not-found';
+        const redirectedToLogin = (finalUrl || '').includes('/admin/login');
+        const hasLoginForm = (await page.locator('#id_username, input[name="username"]').count()) > 0;
+        if (redirectedToLogin || hasLoginForm) {
+          status = 'unauthorized';
+          reason = 'redirected-to-login';
+        } else {
+          status = 'missing-anchor';
+          reason = 'anchor-not-found';
+        }
       }
     } catch (err) {
       status = 'error';
       reason = err.message;
     }
-    results.push({ key: pageDef.key, status, reason, httpStatus, anchor: pageDef.anchor, path: pageDef.path });
+    results.push({ key: pageDef.key, status, reason, httpStatus, finalUrl, anchor: pageDef.anchor, path: pageDef.path });
     await page.close();
   }
 
