@@ -408,26 +408,25 @@ jobs:
             echo ""
             echo "tcp_connect (127.0.0.1:${POSTGRES_PORT}):"
             python - <<'PY'
-          import socket
+import os
+import socket
 
-          import os
+host = "127.0.0.1"
+port = int(os.environ.get("POSTGRES_PORT", "5432"))
 
-          host = "127.0.0.1"
-          port = int(os.environ.get("POSTGRES_PORT", "5432"))
-
-          s = socket.socket()
-          s.settimeout(5)
-          try:
-              s.connect((host, port))
-              print("tcp_ok")
-          except Exception as e:
-              print("tcp_fail", repr(e))
-          finally:
-              try:
-                  s.close()
-              except Exception:
-                  pass
-          PY
+s = socket.socket()
+s.settimeout(5)
+try:
+    s.connect((host, port))
+    print("tcp_ok")
+except Exception as e:
+    print("tcp_fail", repr(e))
+finally:
+    try:
+        s.close()
+    except Exception:
+        pass
+PY
             echo ""
             echo "postgres_container_logs (tail 200):"
             if [ -n "${POSTGRES_CONTAINER_ID:-}" ]; then
