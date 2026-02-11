@@ -14,7 +14,6 @@ on:
 permissions:
   contents: read
   issues: write
-  projects: write
 
 jobs:
   import:
@@ -69,8 +68,17 @@ jobs:
             echo "[DRY RUN] Would import project YAML"
           else
             echo "Importing project YAML..."
+            if [ -z "${GH_TOKEN:-}" ]; then
+              echo "Missing GH_TOKEN. Set repo secret IMPORT_GH_TOKEN with Projects access." >&2
+              exit 1
+            fi
             gh project item-import \
               --owner "${{ github.repository_owner }}" \
               --format yaml \
               --input automation/project-import.yml
           fi
+        env:
+          # NOTE: GitHub Actions permissions do not support `projects: write`.
+          # For Projects v2 import, provide a PAT/Fine-grained token as a repo secret.
+          GH_TOKEN: ${{ secrets.IMPORT_GH_TOKEN }}
+
