@@ -56,7 +56,18 @@ async function loginAndGetToken() {
     output('error', { reason: 'login-failed', status: resp.status(), body }, 1);
   }
   
-  const { access } = await resp.json();
+  const responseData = await resp.json();
+  
+  if (!responseData.access) {
+    await api.dispose();
+    output('error', { 
+      reason: 'login-failed', 
+      message: 'Login response missing access token',
+      response: responseData 
+    }, 1);
+  }
+  
+  const { access } = responseData;
   await api.dispose();
   return access;
 }
