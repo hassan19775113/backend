@@ -55,14 +55,17 @@ env:
   AGENT_OUTPUT_DIR: agent-outputs
   E2E_USER: e2e_ci
   E2E_PASSWORD: e2e_ci_pw
-  # Important: use the service hostname to avoid accidentally connecting to a host-level Postgres
-  # (e.g., on self-hosted runners) and to avoid fixed host port collisions.
-  DATABASE_URL: postgres://postgres:postgres@postgres:5432/praxiapp_system
 
 jobs:
   backend-job:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    env:
+      # Use a dynamically-mapped localhost port to avoid collisions and ensure each job
+      # connects to its own service container.
+      POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:${{ job.services.postgres.ports[5432] }}/praxiapp_system
 
     services:
       postgres:
@@ -71,6 +74,8 @@ jobs:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432
         options: >-
           --health-cmd="pg_isready -h 127.0.0.1 -U postgres"
           --health-interval=5s
@@ -164,7 +169,7 @@ jobs:
           echo "Waiting for PostgreSQL to become ready (max 90s)" | tee -a django/logs/system/ci.log
           ready=false
           for i in {1..90}; do
-            if pg_isready -h postgres -p 5432 -U "${POSTGRES_USER}" >/dev/null 2>&1; then
+            if pg_isready -h 127.0.0.1 -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" >/dev/null 2>&1; then
               ready=true
               echo "PostgreSQL is ready after ${i}s" | tee -a django/logs/system/ci.log
               break
@@ -266,7 +271,7 @@ jobs:
         run: |
           ready=false
           for i in {1..90}; do
-            if pg_isready -h postgres -p 5432 -U "${POSTGRES_USER}"; then
+            if pg_isready -h 127.0.0.1 -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}"; then
               ready=true
               break
             fi
@@ -399,18 +404,20 @@ jobs:
           OUT_FILE="django/logs/system/db-diagnostics.log"
           {
             echo "timestamp=$(date -u +%FT%TZ)"
-            echo "host=postgres port=5432 db=${POSTGRES_DB} user=${POSTGRES_USER}"
+            echo "host=127.0.0.1 port=${POSTGRES_PORT} db=${POSTGRES_DB} user=${POSTGRES_USER}"
             echo ""
-            echo "pg_isready (service hostname):"
-            pg_isready -h postgres -p 5432 -U "${POSTGRES_USER}" -t 5
+            echo "pg_isready (localhost mapped port):"
+            pg_isready -h 127.0.0.1 -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -t 5
             echo "exit_code=$?"
             echo ""
-            echo "tcp_connect (postgres:5432):"
+            echo "tcp_connect (127.0.0.1:${POSTGRES_PORT}):"
             python - <<'PY'
           import socket
 
-          host = "postgres"
-          port = 5432
+          import os
+
+          host = "127.0.0.1"
+          port = int(os.environ.get("POSTGRES_PORT", "5432"))
 
           s = socket.socket()
           s.settimeout(5)
