@@ -350,6 +350,7 @@ Safety: kein Push nach main; Abbruch nach MAX_ITER zum Schutz vor Endlosschleife
 - `praxi_backend/appointments/SCHEDULING_OPTIMIZATION.md` – Scheduling-Optimierung
 - `praxi_backend/static/docs/*` – Design-System/Frontend-Docs (statische Dokumente)
 - `docs/ONBOARDING.md` – Entwickler-Onboarding (wird gepflegt)
+- `docs/ci-cd-troubleshooting.md` – CI/CD Troubleshooting Guide (Logs, häufige Fehler, Eskalation)
 - `docs/API_REFERENCE.md` – Detaillierte API-Referenz (wird gepflegt)
 - `docs/ARCHITECTURE.md` – Architektur im Detail (wird gepflegt)
 - `docs/ARCHITECTURE_REVIEW.md` – Analyse + Empfehlungen (wird gepflegt)
