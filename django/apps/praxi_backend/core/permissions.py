@@ -10,11 +10,21 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 def is_running_tests() -> bool:
-    """Heuristic to detect Django test runs.
+    """Detect test runs.
 
-    Dashboard/template views sometimes rely on RequestFactory without auth.
-    Centralizing this helper keeps behavior consistent across apps.
+    Prefer an explicit settings flag (set by the test runner) so behavior is
+    deterministic and does not depend on argv.
     """
+    try:
+        from django.conf import settings
+
+        if getattr(settings, "configured", False):
+            return bool(getattr(settings, "PRAXI_RUNNING_TESTS", False))
+    except Exception:
+        # Fall back to argv when Django isn't configured (e.g., importing this
+        # module in tooling contexts).
+        pass
+
     import sys
 
     argv = {str(a).lower() for a in sys.argv}

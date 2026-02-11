@@ -4,7 +4,7 @@ import importlib
 
 from django.conf import settings
 from django.test.runner import DiscoverRunner
-from django.test.utils import setup_databases, teardown_databases
+from django.test.utils import override_settings, setup_databases, teardown_databases
 
 
 class PraxiAppTestRunner(DiscoverRunner):
@@ -14,6 +14,19 @@ class PraxiAppTestRunner(DiscoverRunner):
     - Django creates a test DB only for alias "default".
     - No multi-DB routing / no secondary DB aliases.
     """
+
+    _test_flags_override = None
+
+    def setup_test_environment(self, **kwargs):
+        super().setup_test_environment(**kwargs)
+        self._test_flags_override = override_settings(PRAXI_RUNNING_TESTS=True)
+        self._test_flags_override.enable()
+
+    def teardown_test_environment(self, **kwargs):
+        if self._test_flags_override is not None:
+            self._test_flags_override.disable()
+            self._test_flags_override = None
+        super().teardown_test_environment(**kwargs)
 
     def build_suite(self, test_labels=None, **kwargs):
         """Build the test suite.

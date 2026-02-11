@@ -5,21 +5,19 @@ The dashboard app mixes Django TemplateViews and JSON endpoints.
 Phase 3 goal: unify access-control usage across views.
 
 Important stability note:
-- Some existing tests render dashboard views via RequestFactory without authentication.
-  We therefore *bypass* staff checks while running tests.
-- Outside tests, dashboard pages remain staff-only (compatible with the previous
-  behavior for the majority of dashboard endpoints).
+- Some existing unit tests render dashboard views via RequestFactory without authentication.
+  Those tests can opt into bypassing staff checks via a settings flag.
+- Outside that explicitly-enabled mode, dashboard pages remain staff-only.
 """
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from praxi_backend.core.permissions import is_running_tests
 
 
-def _is_running_tests() -> bool:
-    """Backward-compatible wrapper around core.permissions.is_running_tests."""
-    return is_running_tests()
+def _bypass_staff_checks() -> bool:
+  return bool(getattr(settings, "DASHBOARD_AUTH_BYPASS_FOR_TESTS", False))
 
 
 def dashboard_access_required(view_func):
@@ -27,7 +25,7 @@ def dashboard_access_required(view_func):
 
     Use with `@method_decorator(dashboard_access_required)` on CBVs.
     """
-    if _is_running_tests():
+    if _bypass_staff_checks():
         return view_func
     return staff_member_required(view_func)
 

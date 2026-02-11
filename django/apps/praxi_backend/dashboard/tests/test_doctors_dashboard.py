@@ -19,6 +19,13 @@ class DoctorsDashboardRenderTest(TestCase):
             name="doctor",
             defaults={"label": "Arzt"},
         )
+        self.staff_user = User.objects.db_manager("default").create_user(
+            username="test_staff_doctors_dashboard",
+            email="test_staff_doctors_dashboard@example.com",
+            password="DummyPass123!",
+            is_staff=True,
+            is_active=True,
+        )
         self.doctor = User.objects.db_manager("default").create_user(
             username="test_doctor_dashboard",
             email="test_doctor_dashboard@example.com",
@@ -32,6 +39,7 @@ class DoctorsDashboardRenderTest(TestCase):
 
     def test_overview_renders_doctors_table(self):
         request = self.rf.get("/dashboard/doctors/")
+        request.user = self.staff_user
         response = DoctorDashboardView.as_view()(request)
         response.render()
         html = response.content.decode("utf-8")
@@ -43,6 +51,7 @@ class DoctorsDashboardRenderTest(TestCase):
         request = self.rf.get(
             "/dashboard/doctors/", {"doctor_id": str(self.doctor.id), "period": "week"}
         )
+        request.user = self.staff_user
         response = DoctorDashboardView.as_view()(request)
         response.render()
         html = response.content.decode("utf-8")
