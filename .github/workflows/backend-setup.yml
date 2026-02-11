@@ -386,6 +386,25 @@ jobs:
           path: django/logs/
           if-no-files-found: warn
 
+      - name: Workflow summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOC_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/ci-cd-troubleshooting.md"
+          LOG_ARTIFACT_NAME="${{ inputs.logs_artifact_name || format('backend-logs-{0}', github.job) }}"
+
+          {
+            echo "## Troubleshooting"
+            echo "- Guide: ${DOC_URL}"
+            echo "- Logs artifact: **${LOG_ARTIFACT_NAME}**"
+            if [ -n "${{ inputs.upload_artifact_name || '' }}" ]; then
+              echo "- Output artifact: **${{ inputs.upload_artifact_name }}**"
+            fi
+            echo ""
+            echo "If a step fails, download artifacts and start with the failing step’s logs."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Show CI log on failure
         if: failure()
         shell: bash
