@@ -19,138 +19,53 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug workspace layout
-        run: |
-          ls -R .
-          ls -R automation
-
-      - name: Import issues and sync project
-        uses: actions/github-script@v7
+      - name: Install GitHub CLI
+        uses: cli/cli@v2
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
+          version: latest
 
-            const projectId = process.env.PROJECT_ID;
-            const projectNumber = process.env.PROJECT_NUMBER;
-            const parentFieldId = process.env.PARENT_FIELD_ID;
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-            if (!projectId || !projectNumber || !parentFieldId) {
-              core.setFailed('PROJECT_ID, PROJECT_NUMBER, and PARENT_FIELD_ID must be provided through secrets or environment variables.');
-              return;
-            }
+      - name: Load issues.json
+        id: load
+        run: |
+          echo "json=$(cat automation/issues.json | jq -c .)" >> $GITHUB_OUTPUT
 
-            core.info(`Targeting project ${projectNumber} (${projectId}).`);
+      - name: Import Issues
+        run: |
+          echo "Starting issue import..."
+          echo "${{ steps.load.outputs.json }}" | jq -c '.[]' | while read issue; do
+            TITLE=$(echo "$issue" | jq -r '.title')
+            BODY=$(echo "$issue" | jq -r '.body')
+            LABELS=$(echo "$issue" | jq -r '.labels | join(",")')
 
-            const issuesPath = path.join(process.cwd(), 'automation', 'issues.json');
-            const issues = JSON.parse(fs.readFileSync(issuesPath, 'utf8'));
-            const epicMap = new Map();
-            const { owner, repo } = context.repo;
+            # Check if issue already exists
+            if gh issue list --search "$TITLE" --json title | jq -e ".[] | select(.title==\"$TITLE\")" > /dev/null; then
+              echo "Skipping existing issue: $TITLE"
+              continue
+            fi
 
-            async function searchIssueByTitle(title) {
-              const query = `repo:${owner}/${repo} in:title "${title}" type:issue`;
-              const search = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 5 });
-              return search.data.items.find(item => item.title === title && !item.pull_request) || null;
-            }
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              echo "[DRY RUN] Would create issue: $TITLE"
+            else
+              echo "Creating issue: $TITLE"
+              gh issue create \
+                --title "$TITLE" \
+                --body "$BODY" \
+                --label "$LABELS"
+            fi
+          done
 
-            async function ensureIssue(issue) {
-              const existing = await searchIssueByTitle(issue.title);
-              if (existing) {
-                core.info(`Found existing issue #${existing.number} for ${issue.title}.`);
-                return existing;
-              }
-
-              const created = await github.rest.issues.create({
-                owner,
-                repo,
-                title: issue.title,
-                body: issue.body,
-                labels: issue.labels
-              });
-
-              core.info(`Created issue #${created.data.number} for ${issue.title}.`);
-              return created.data;
-            }
-
-            async function fetchProjectItemId(issueNodeId) {
-              const query = await github.graphql(
-                `query($nodeId: ID!) {
-                  node(id: $nodeId) {
-                    ... on Issue {
-                      projectItems(first: 20) {
-                        nodes {
-                          id
-                          project { id }
-                        }
-                      }
-                    }
-                  }
-                }`,
-                { nodeId: issueNodeId }
-              );
-
-              const nodes = query?.node?.projectItems?.nodes || [];
-              const existing = nodes.find(node => node.project.id === projectId);
-              if (existing) {
-                core.info(`Issue already linked to project: ${existing.id}`);
-                return existing.id;
-              }
-
-              const added = await github.graphql(
-                `mutation($projectId: ID!, $contentId: ID!) {
-                  addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
-                    item { id }
-                  }
-                }`,
-                { projectId, contentId: issueNodeId }
-              );
-
-              const itemId = added.addProjectV2ItemById.item.id;
-              core.info(`Added project item ${itemId}.`);
-              return itemId;
-            }
-
-            async function linkToParent(itemId, parentItemId) {
-              await github.graphql(
-                `mutation($projectId: ID!, $fieldId: ID!, $itemId: ID!, $parentId: ID!) {
-                  updateProjectV2ItemFieldValue(
-                    input: {
-                      projectId: $projectId,
-                      fieldId: $fieldId,
-                      itemId: $itemId,
-                      value: { projectV2ItemId: $parentId }
-                    }
-                  ) {
-                    projectV2Item { id }
-                  }
-                }`,
-                {
-                  projectId,
-                  fieldId: parentFieldId,
-                  itemId,
-                  parentId: parentItemId
-                }
-              );
-
-              core.info(`Linked ${itemId} to parent ${parentItemId}.`);
-            }
-
-            for (const issue of issues) {
-              const record = await ensureIssue(issue);
-              const issueNodeId = record.node_id;
-              const projectItemId = await fetchProjectItemId(issueNodeId);
-
-              if (!issue.epic) {
-                epicMap.set(issue.id, { projectItemId });
-                continue;
-              }
-
-              const parent = epicMap.get(issue.epic);
-              if (!parent) {
-                throw new Error(`Parent epic with id ${issue.epic} not processed before child ${issue.title}.`);
-              }
-
-              await linkToParent(projectItemId, parent.projectItemId);
-            }
-
-            core.info('Backlog import completed successfully.');
+      - name: Import Project Structure (YAML)
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "[DRY RUN] Would import project YAML"
+          else
+            echo "Importing project YAML..."
+            gh project item-import \
+              --owner "${{ github.repository_owner }}" \
+              --format yaml \
+              --input automation/project-import.yml
+          fi
