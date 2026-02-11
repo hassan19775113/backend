@@ -1,9 +1,15 @@
 name: Import Stabilization Backlog
 
-run-name: Import Stabilization Backlog
+run-name: Import Stabilization Backlog (dry_run=${{ inputs.dry_run }})
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "If true, only print what would be created/imported"
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: read
@@ -17,6 +23,7 @@ jobs:
       PROJECT_ID: ${{ secrets.PROJECT_ID }}
       PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}
       PARENT_FIELD_ID: ${{ secrets.PARENT_FIELD_ID }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,10 +32,6 @@ jobs:
         uses: cli/cli@v2
         with:
           version: latest
-
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Load issues.json
         id: load
@@ -49,7 +52,7 @@ jobs:
               continue
             fi
 
-            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
               echo "[DRY RUN] Would create issue: $TITLE"
             else
               echo "Creating issue: $TITLE"
@@ -62,7 +65,7 @@ jobs:
 
       - name: Import Project Structure (YAML)
         run: |
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
             echo "[DRY RUN] Would import project YAML"
           else
             echo "Importing project YAML..."
