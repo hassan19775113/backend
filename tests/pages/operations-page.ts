@@ -16,6 +16,7 @@ export class OperationsPage {
 
   async goto(baseURL: string) {
     await this.page.goto(`${baseURL}/praxi_backend/operations/`);
+    await this.page.waitForLoadState('domcontentloaded');
     await expect(this.periodSelect).toBeVisible();
   }
 

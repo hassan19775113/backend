@@ -2,6 +2,7 @@ import { test, expect } from '../fixtures/testdata.setup';
 import { ApiClient } from '../../api-client';
 import { CalendarPage } from '../pages/calendar-page';
 import { AppointmentModalPage } from '../pages/appointment-modal-page';
+import { waitForOptionValue } from '../utils/select-utils';
 
 type AppointmentDetail = {
   id: number;
@@ -53,21 +54,6 @@ async function getAppointmentOrThrow(api: ApiClient, id: number | string): Promi
   const appt = (await res.json()) as AppointmentDetail;
   if (!appt?.start_time || !appt?.end_time) throw new Error('Appointment detail missing times');
   return appt;
-}
-
-async function getSelectOptionValues(select: any): Promise<string[]> {
-  return select.evaluate((el: HTMLSelectElement) =>
-    Array.from(el.querySelectorAll('option')).map((o) => (o.getAttribute('value') || '').trim())
-  );
-}
-
-async function waitForOptionValue(select: any, value: string, timeout = 10_000) {
-  await expect
-    .poll(async () => {
-      const values = await getSelectOptionValues(select);
-      return values.includes(value);
-    }, { timeout })
-    .toBeTruthy();
 }
 
 test('API: boundary overlap rule (end == start) is allowed; partial overlap is rejected', async ({ testData }) => {
@@ -185,9 +171,7 @@ test('UI: boundary (end == start) keeps doctor available in modal filtering', as
     await waitForOptionValue(modal.doctorSelect, doctorIdStr);
 
     // Trigger availability filtering for the adjacent slot.
-    await modal.dateInput.fill(dateStr);
-    await modal.startTimeInput.fill(startStr);
-    await modal.endTimeInput.fill(endStr);
+    await modal.updateTimesAndWaitForAvailability(dateStr, startStr, endStr);
 
     // Doctor should remain available for boundary-adjacent slot.
     await waitForOptionValue(modal.doctorSelect, doctorIdStr);

@@ -2,6 +2,7 @@ import { test, expect } from '../fixtures/testdata.setup';
 import { ApiClient } from '../../api-client';
 import { CalendarPage } from '../pages/calendar-page';
 import { AppointmentModalPage } from '../pages/appointment-modal-page';
+import { waitForOptionValue, waitForOptionValueMissing } from '../utils/select-utils';
 
 type AvailabilityDoctor = { id: number; name?: string };
 
@@ -59,30 +60,6 @@ async function getAppointmentOrThrow(api: ApiClient, id: number | string): Promi
   return appt;
 }
 
-async function getSelectOptionValues(select: any): Promise<string[]> {
-  return select.evaluate((el: HTMLSelectElement) =>
-    Array.from(el.querySelectorAll('option')).map((o) => (o.getAttribute('value') || '').trim())
-  );
-}
-
-async function waitForOptionValue(select: any, value: string, timeout = 10_000) {
-  await expect
-    .poll(async () => {
-      const values = await getSelectOptionValues(select);
-      return values.includes(value);
-    }, { timeout })
-    .toBeTruthy();
-}
-
-async function waitForOptionValueMissing(select: any, value: string, timeout = 10_000) {
-  await expect
-    .poll(async () => {
-      const values = await getSelectOptionValues(select);
-      return values.includes(value);
-    }, { timeout })
-    .toBeFalsy();
-}
-
 test('UI: calendar modal filters out booked doctor + patient for overlapping time', async ({
   page,
   baseURL,
@@ -128,9 +105,7 @@ test('UI: calendar modal filters out booked doctor + patient for overlapping tim
 
     // Trigger availability filtering for the exact booked time range.
     // The modal will call /api/availability/ and replace doctor/patient dropdown contents.
-    await modal.dateInput.fill(dateStr);
-    await modal.startTimeInput.fill(startStr);
-    await modal.endTimeInput.fill(endStr);
+    await modal.updateTimesAndWaitForAvailability(dateStr, startStr, endStr);
 
     // Assert the booked doctor is filtered out.
     await waitForOptionValueMissing(modal.doctorSelect, bookedDoctorId);

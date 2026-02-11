@@ -8,27 +8,45 @@ export class NavPage {
   constructor(private readonly page: Page) {}
 
   async gotoDashboards() {
-    await this.page.getByRole('link', { name: 'Dashboards' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/?/),
+      this.page.getByRole('link', { name: 'Dashboards' }).click(),
+    ]);
   }
 
   async gotoScheduling() {
-    await this.page.getByRole('link', { name: 'Terminplanung' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/appointments\/?/),
+      this.page.getByRole('link', { name: 'Terminplanung' }).click(),
+    ]);
   }
 
   async gotoPatients() {
-    await this.page.getByRole('link', { name: 'Patienten' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/patients\/?/),
+      this.page.getByRole('link', { name: 'Patienten' }).click(),
+    ]);
   }
 
   async gotoDoctors() {
-    await this.page.getByRole('link', { name: 'Ärzte' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/doctors\/?/),
+      this.page.getByRole('link', { name: 'Ärzte' }).click(),
+    ]);
   }
 
   async gotoOperations() {
-    await this.page.getByRole('link', { name: 'Operationen' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/operations\/?/),
+      this.page.getByRole('link', { name: 'Operationen' }).click(),
+    ]);
   }
 
   async gotoResources() {
-    await this.page.getByRole('link', { name: 'Ressourcen' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/praxi_backend\/dashboard\/resources\/?/),
+      this.page.getByRole('link', { name: 'Ressourcen' }).click(),
+    ]);
   }
 
   async gotoAdmin() {

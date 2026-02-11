@@ -2,6 +2,7 @@ import { test, expect } from '../fixtures/testdata.setup';
 import { ApiClient } from '../../api-client';
 import { CalendarPage } from '../pages/calendar-page';
 import { AppointmentModalPage } from '../pages/appointment-modal-page';
+import { waitForOptionValue, waitForOptionValueMissing } from '../utils/select-utils';
 
 type AvailabilityDoctor = { id: number; name?: string };
 
@@ -49,30 +50,6 @@ async function getAppointmentOrThrow(api: ApiClient, id: number | string): Promi
   return appt;
 }
 
-async function getSelectOptionValues(select: any): Promise<string[]> {
-  return select.evaluate((el: HTMLSelectElement) =>
-    Array.from(el.querySelectorAll('option')).map((o) => (o.getAttribute('value') || '').trim())
-  );
-}
-
-async function waitForOptionValue(select: any, value: string, timeout = 10_000) {
-  await expect
-    .poll(async () => {
-      const values = await getSelectOptionValues(select);
-      return values.includes(value);
-    }, { timeout })
-    .toBeTruthy();
-}
-
-async function waitForOptionValueMissing(select: any, value: string, timeout = 10_000) {
-  await expect
-    .poll(async () => {
-      const values = await getSelectOptionValues(select);
-      return values.includes(value);
-    }, { timeout })
-    .toBeFalsy();
-}
-
 test('UI: booked patient is filtered out for an overlapping slot', async ({ page, baseURL, testData }) => {
   // Baseline appointment created deterministically by testdata.setup.ts
   expect(testData.appointmentId).toBeTruthy();
@@ -103,9 +80,7 @@ test('UI: booked patient is filtered out for an overlapping slot', async ({ page
     await waitForOptionValue(modal.patientSelect, freePatientIdStr);
 
     // Trigger availability filtering.
-    await modal.dateInput.fill(dateStr);
-    await modal.startTimeInput.fill(startStr);
-    await modal.endTimeInput.fill(endStr);
+    await modal.updateTimesAndWaitForAvailability(dateStr, startStr, endStr);
 
     // Patient with an existing appointment in this window must be absent.
     await waitForOptionValueMissing(modal.patientSelect, bookedPatientId);

@@ -1,4 +1,11 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { waitForResponseAfter } from '../utils/network-utils';
+import {
+  getFirstNonEmptyOptionLabel,
+  waitForFirstNonEmptyOptionLabel,
+  waitForOptionValue,
+  waitForOptionValueMissing,
+} from '../utils/select-utils';
 
 // Page Object: Appointment modal (calendar/modal.js)
 // Real selectors captured:
@@ -8,6 +15,7 @@ import { Page, Locator, expect } from '@playwright/test';
 // Dependencies: calendar page opens this modal; requires authenticated session
 export class AppointmentModalPage {
   readonly backdrop: Locator;
+  readonly closeButton: Locator;
   readonly titleSelect: Locator;
   readonly doctorSelect: Locator;
   readonly patientSelect: Locator;
@@ -21,6 +29,7 @@ export class AppointmentModalPage {
 
   constructor(private readonly page: Page) {
     this.backdrop = page.locator('#calendarModalBackdrop');
+    this.closeButton = page.locator('#calendarModalClose');
     this.titleSelect = page.locator('#modalTitle');
     this.doctorSelect = page.locator('#modalDoctor');
     this.patientSelect = page.locator('#modalPatient');
@@ -37,6 +46,41 @@ export class AppointmentModalPage {
     await expect(this.backdrop).toBeVisible();
   }
 
+  async expectClosed() {
+    await expect(this.backdrop).toBeHidden();
+  }
+
+  async waitForDropdownsLoaded(timeout = 10_000) {
+    await this.titleSelect.waitFor({ state: 'visible' });
+    await this.doctorSelect.waitFor({ state: 'visible' });
+    await this.patientSelect.waitFor({ state: 'visible' });
+
+    await waitForFirstNonEmptyOptionLabel(this.titleSelect, {
+      timeout,
+      message: 'Waiting for appointment type options to load',
+    });
+    await waitForFirstNonEmptyOptionLabel(this.doctorSelect, {
+      timeout,
+      message: 'Waiting for doctor options to load',
+    });
+    await waitForFirstNonEmptyOptionLabel(this.patientSelect, {
+      timeout,
+      message: 'Waiting for patient options to load',
+    });
+  }
+
+  async getFirstSelectableLabels() {
+    const titleLabel = await getFirstNonEmptyOptionLabel(this.titleSelect);
+    const doctorLabel = await getFirstNonEmptyOptionLabel(this.doctorSelect);
+    const patientLabel = await getFirstNonEmptyOptionLabel(this.patientSelect);
+
+    if (!titleLabel || !doctorLabel || !patientLabel) {
+      throw new Error('Modal dropdowns not populated (missing first non-empty option label)');
+    }
+
+    return { titleLabel, doctorLabel, patientLabel };
+  }
+
   async fillNewAppointment(options: {
     titleLabel: string;
     doctorLabel: string;
@@ -46,10 +90,7 @@ export class AppointmentModalPage {
     end: string; // HH:MM
     description?: string;
   }) {
-    // Ensure options are loaded
-    await this.titleSelect.waitFor({ state: 'visible' });
-    await this.doctorSelect.waitFor({ state: 'visible' });
-    await this.patientSelect.waitFor({ state: 'visible' });
+    await this.waitForDropdownsLoaded();
     await this.titleSelect.selectOption({ label: options.titleLabel });
     await this.doctorSelect.selectOption({ label: options.doctorLabel });
     await this.patientSelect.selectOption({ label: options.patientLabel });
@@ -67,11 +108,66 @@ export class AppointmentModalPage {
     await this.endTimeInput.fill(end);
   }
 
+  async updateTimesAndWaitForAvailability(date: string, start: string, end: string) {
+    await waitForResponseAfter(
+      this.page,
+      async () => {
+        await this.updateTimes(date, start, end);
+      },
+      (r) => r.url().includes('/api/availability/?') && r.request().method() === 'GET',
+      10_000
+    );
+  }
+
   async save() {
     await this.saveButton.click();
   }
 
+  async saveAndWaitForAppointmentsMutation(timeout = 10_000) {
+    await waitForResponseAfter(
+      this.page,
+      async () => {
+        await this.saveButton.click();
+      },
+      (r) => {
+        const url = r.url();
+        const method = r.request().method();
+        return url.includes('/api/appointments/') && (method === 'POST' || method === 'PATCH');
+      },
+      timeout
+    );
+  }
+
   async delete() {
     await this.deleteButton.click();
+  }
+
+  async deleteAndConfirm(timeout = 10_000) {
+    this.page.once('dialog', (d) => d.accept());
+
+    await waitForResponseAfter(
+      this.page,
+      async () => {
+        await this.deleteButton.click();
+      },
+      (r) => r.url().includes('/api/appointments/') && r.request().method() === 'DELETE',
+      timeout
+    );
+  }
+
+  async waitForOptionValue(value: string, timeout = 10_000) {
+    await waitForOptionValue(this.doctorSelect, value, timeout);
+  }
+
+  async waitForDoctorOptionValueMissing(value: string, timeout = 10_000) {
+    await waitForOptionValueMissing(this.doctorSelect, value, timeout);
+  }
+
+  async waitForPatientOptionValue(value: string, timeout = 10_000) {
+    await waitForOptionValue(this.patientSelect, value, timeout);
+  }
+
+  async waitForPatientOptionValueMissing(value: string, timeout = 10_000) {
+    await waitForOptionValueMissing(this.patientSelect, value, timeout);
   }
 }
