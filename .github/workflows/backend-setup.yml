@@ -137,11 +137,11 @@ jobs:
           echo "BASE_URL=${BASE_URL}" | tee -a django/logs/system/ci.log
           echo "POSTGRES_DB=${POSTGRES_DB}" | tee -a django/logs/system/ci.log
           echo "POSTGRES_USER=${POSTGRES_USER}" | tee -a django/logs/system/ci.log
-          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" | tee -a django/logs/system/ci.log
+          echo "POSTGRES_PASSWORD=***" | tee -a django/logs/system/ci.log
           echo "AGENT_OUTPUT_DIR=${AGENT_OUTPUT_DIR:-agent-outputs}" | tee -a django/logs/system/ci.log
           echo "E2E_USER=${E2E_USER}" | tee -a django/logs/system/ci.log
-          echo "E2E_PASSWORD=${E2E_PASSWORD}" | tee -a django/logs/system/ci.log
-          echo "DATABASE_URL=${DATABASE_URL}" | tee -a django/logs/system/ci.log
+          echo "E2E_PASSWORD=***" | tee -a django/logs/system/ci.log
+          echo "DATABASE_URL=***" | tee -a django/logs/system/ci.log
 
       # Django DB prep
       - name: Apply migrations

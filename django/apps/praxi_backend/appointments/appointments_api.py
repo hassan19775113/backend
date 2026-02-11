@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from django.utils import timezone
+from django.conf import settings
 from praxi_backend.patients.utils import get_patient_display_name_map
 from rest_framework import generics, serializers, status
 from rest_framework.permissions import IsAuthenticated
@@ -111,9 +112,9 @@ class AppointmentListCreateView(generics.ListCreateAPIView):
             role = getattr(user, "role", None)
             role_name = getattr(role, "name", None) if role else None
 
-        # Wenn Benutzer keine Rolle hat, erlaube POST mit IsAuthenticated
-        # (für Development/Testing, wo Benutzer möglicherweise keine Rolle haben)
-        if not role_name and self.request.method == "POST":
+        # If a user has no role, allow POST only in DEBUG mode.
+        # In production this would silently bypass RBAC.
+        if not role_name and self.request.method == "POST" and getattr(settings, "DEBUG", False):
             return [IsAuthenticated()]
 
         # Ansonsten verwende AppointmentPermission (erfordert Rolle)

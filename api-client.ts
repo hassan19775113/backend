@@ -1,4 +1,5 @@
 import { request, APIRequestContext } from '@playwright/test';
+import fs from 'fs';
 import path from 'path';
 
 // Simple API client wrapper using storageState for authenticated requests.
@@ -12,8 +13,27 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 export class ApiClient {
   private ctx: APIRequestContext | null = null;
 
+  private getAccessTokenFromStorageState(): string {
+    const raw = fs.readFileSync(STORAGE_STATE, 'utf-8');
+    const json = JSON.parse(raw);
+    const origins = Array.isArray(json?.origins) ? json.origins : [];
+    for (const origin of origins) {
+      const items = Array.isArray(origin?.localStorage) ? origin.localStorage : [];
+      const match = items.find((i: any) => i?.name === 'access_token');
+      if (match?.value) return String(match.value);
+    }
+    throw new Error('access_token not found in storageState.json (run Playwright globalSetup first)');
+  }
+
   async init() {
-    this.ctx = await request.newContext({ baseURL: BASE_URL, storageState: STORAGE_STATE });
+    const accessToken = this.getAccessTokenFromStorageState();
+    this.ctx = await request.newContext({
+      baseURL: BASE_URL,
+      storageState: STORAGE_STATE,
+      extraHTTPHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
   }
 
   async dispose() {
