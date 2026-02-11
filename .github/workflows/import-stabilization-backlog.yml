@@ -64,8 +64,8 @@ jobs:
           else
             echo "Importing project YAML..."
             if [ -z "${GH_TOKEN:-}" ]; then
-              echo "Missing GH_TOKEN. Set repo secret IMPORT_GH_TOKEN with Projects access." >&2
-              exit 1
+              echo "Skipping project import: missing repo secret IMPORT_GH_TOKEN (PAT/Fine-grained token with Projects access)."
+              exit 0
             fi
             gh project item-import \
               --owner "${{ github.repository_owner }}" \
