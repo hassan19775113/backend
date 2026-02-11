@@ -34,26 +34,35 @@ test('create appointment via calendar modal with live options', async ({ page, b
   await modal.expectOpen();
 
   // Resolve dropdown values dynamically inside the modal (appointment types, doctors, patients are loaded there).
-  const modalTitleLabel = await modal.titleSelect.evaluate((select) => {
-    const opts = Array.from(select.querySelectorAll('option'));
-    const first = opts.find((o) => o.value && o.value.trim().length > 0);
-    return first?.textContent?.trim() || null;
-  });
-  const modalDoctorLabel = await modal.doctorSelect.evaluate((select) => {
-    const opts = Array.from(select.querySelectorAll('option'));
-    const first = opts.find((o) => o.value && o.value.trim().length > 0);
-    return first?.textContent?.trim() || null;
-  });
-  const modalPatientLabel = await modal.patientSelect.evaluate((select) => {
-    const opts = Array.from(select.querySelectorAll('option'));
-    const first = opts.find((o) => o.value && o.value.trim().length > 0);
-    return first?.textContent?.trim() || null;
-  });
+  const getFirstNonEmptyOptionLabel = async (select: any) =>
+    select.evaluate((el: HTMLSelectElement) => {
+      const opts = Array.from(el.querySelectorAll('option'));
+      const first = opts.find((o) => o.value && o.value.trim().length > 0);
+      return first?.textContent?.trim() || null;
+    });
 
-  // Guard: ensure we found options
-  expect(modalTitleLabel, 'No appointment type option found').toBeTruthy();
-  expect(modalDoctorLabel, 'No doctor option found').toBeTruthy();
-  expect(modalPatientLabel, 'No patient option found').toBeTruthy();
+  await expect
+    .poll(() => getFirstNonEmptyOptionLabel(modal.titleSelect), {
+      message: 'Waiting for appointment type options to load',
+      timeout: 10_000,
+    })
+    .not.toBeNull();
+  await expect
+    .poll(() => getFirstNonEmptyOptionLabel(modal.doctorSelect), {
+      message: 'Waiting for doctor options to load',
+      timeout: 10_000,
+    })
+    .not.toBeNull();
+  await expect
+    .poll(() => getFirstNonEmptyOptionLabel(modal.patientSelect), {
+      message: 'Waiting for patient options to load',
+      timeout: 10_000,
+    })
+    .not.toBeNull();
+
+  const modalTitleLabel = await getFirstNonEmptyOptionLabel(modal.titleSelect);
+  const modalDoctorLabel = await getFirstNonEmptyOptionLabel(modal.doctorSelect);
+  const modalPatientLabel = await getFirstNonEmptyOptionLabel(modal.patientSelect);
 
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -62,9 +71,9 @@ test('create appointment via calendar modal with live options', async ({ page, b
   const date = `${yyyy}-${mm}-${dd}`;
 
   await modal.fillNewAppointment({
-    titleLabel: modalTitleLabel!,
-    doctorLabel: modalDoctorLabel!,
-    patientLabel: modalPatientLabel!,
+    titleLabel: String(modalTitleLabel),
+    doctorLabel: String(modalDoctorLabel),
+    patientLabel: String(modalPatientLabel),
     date,
     start: '09:00',
     end: '09:30',

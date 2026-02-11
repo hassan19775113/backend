@@ -7,23 +7,23 @@ test('navigate through primary sections', async ({ page, baseURL }) => {
   const nav = new NavPage(page);
 
   // Start at main dashboard
-  await page.goto(`${baseURL}/praxi_backend/`);
+  await page.goto(`${baseURL}/praxi_backend/dashboard/`);
   await nav.expectHeaderVisible();
 
   await nav.gotoScheduling();
-  await expect(page).toHaveURL(/\/praxi_backend\/appointments/);
+  await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/appointments\//);
 
   await nav.gotoPatients();
-  await expect(page).toHaveURL(/\/praxi_backend\/patients/);
+  await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/patients\//);
 
   await nav.gotoDoctors();
-  await expect(page).toHaveURL(/\/praxi_backend\/doctors/);
+  await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/doctors\//);
 
   await nav.gotoOperations();
-  await expect(page).toHaveURL(/\/praxi_backend\/operations/);
+  await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/operations\//);
 
   await nav.gotoResources();
-  await expect(page).toHaveURL(/\/praxi_backend\/resources/);
+  await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/resources\//);
 
   // Admin might require permissions; just assert navigation attempt does not throw
   await nav.gotoAdmin();

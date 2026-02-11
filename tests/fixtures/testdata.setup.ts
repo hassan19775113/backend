@@ -21,13 +21,18 @@ export const test = base.extend<{ testData: TestData }>({
 
     try {
       // Ensure we have a doctor
-      const doctorRes = await api.createDoctor();
-      if (doctorRes.ok()) {
-        const doctor = await doctorRes.json();
-        data.doctorId = doctor.id || doctor.pk;
-      } else {
-        throw new Error(`createDoctor failed: ${doctorRes.status()}`);
+      // NOTE: /api/appointments/doctors/ is list-only (GET). Creating doctors is not exposed via API.
+      // For E2E we rely on seeded doctor users and pick the first one.
+      const doctorsRes = await api.listDoctors();
+      if (!doctorsRes.ok()) {
+        throw new Error(`listDoctors failed: ${doctorsRes.status()}`);
       }
+      const doctors = await doctorsRes.json();
+      const firstDoctor = Array.isArray(doctors) ? doctors[0] : doctors.results?.[0];
+      if (!firstDoctor?.id) {
+        throw new Error('No doctors available (expected seeded doctor users)');
+      }
+      data.doctorId = firstDoctor.id;
 
       // Ensure we have a patient
       const patientRes = await api.createPatient();
