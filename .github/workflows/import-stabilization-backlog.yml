@@ -27,18 +27,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load issues.json
-        id: load
+      - name: Generate issues.json from stabilization epics
+        shell: bash
         run: |
-          echo "json=$(cat automation/issues.json | jq -c .)" >> $GITHUB_OUTPUT
+          set -eo pipefail
+          if [ -f docs/stabilization-epics.md ]; then
+            echo "Generating automation/issues.json from docs/stabilization-epics.md"
+            python3 scripts/stabilization_epics_to_issues.py docs/stabilization-epics.md automation/issues.json
+          else
+            echo "docs/stabilization-epics.md not found; using existing automation/issues.json"
+          fi
 
       - name: Import Issues
         run: |
+          set -eo pipefail
           echo "Starting issue import..."
-          echo "${{ steps.load.outputs.json }}" | jq -c '.[]' | while read issue; do
+          jq -c '.[]' automation/issues.json | while read issue; do
             TITLE=$(echo "$issue" | jq -r '.title')
             BODY=$(echo "$issue" | jq -r '.body')
-            LABELS=$(echo "$issue" | jq -r '.labels | join(",")')
+            LABELS=$(echo "$issue" | jq -r '.labels? | join(",")')
 
             # Check if issue already exists
             if gh issue list --search "$TITLE" --json title | jq -e ".[] | select(.title==\"$TITLE\")" > /dev/null; then
@@ -50,10 +57,16 @@ jobs:
               echo "[DRY RUN] Would create issue: $TITLE"
             else
               echo "Creating issue: $TITLE"
-              gh issue create \
-                --title "$TITLE" \
-                --body "$BODY" \
-                --label "$LABELS"
+              if [ -n "${LABELS:-}" ] && [ "${LABELS}" != "null" ]; then
+                gh issue create \
+                  --title "$TITLE" \
+                  --body "$BODY" \
+                  --label "$LABELS"
+              else
+                gh issue create \
+                  --title "$TITLE" \
+                  --body "$BODY"
+              fi
             fi
           done
 
