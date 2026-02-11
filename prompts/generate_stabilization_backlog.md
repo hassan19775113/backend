@@ -56,7 +56,7 @@ Your output must contain EXACTLY four artifacts:
     ci-1, ci-2, sched-1, tests-1, sec-1, err-1, obs-1, docs-1
 
 ============================================================
-4) WORKFLOW: import-stabilization-backlog.yml
+4) WORKFLOW: agent-engine.yml (single orchestrator)
 ============================================================
 Generate a fully working GitHub Actions workflow that:
 
