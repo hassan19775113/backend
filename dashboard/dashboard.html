@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CI Agent Dashboard</title>
+  <style>
+      body { font-family: Arial, sans-serif; margin: 20px; position: relative; background: #ffffff; color: #000000; }
+      @media (prefers-color-scheme: dark) {
+        body { background: #121212; color: #e0e0e0; }
+        .card { background: #1e1e1e; border: 1px solid #333; }
+        .badge img { filter: invert(1); }
+      }
+      .card { padding: 16px; margin: 12px 0; border-radius: 8px; background: #f5f5f5; }
+    .badge { position: absolute; top: 20px; right: 20px; }
+    h1 { margin-bottom: 0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f5f5f5; text-align: left; }
+    .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .green { background: #2ecc71; }
+    .yellow { background: #f1c40f; }
+    .red { background: #e74c3c; }
+    .gray { background: #bdc3c7; }
+    .section { margin-top: 20px; }
+    .box { border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #fafafa; }
+    .theme-toggle { position: absolute; top: 20px; left: 20px; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; background: #f5f5f5; cursor: pointer; }
+    body.dark { background: #121212; color: #e0e0e0; }
+    body.dark .card { background: #1e1e1e; border: 1px solid #333; }
+    body.dark .badge img { filter: invert(1); }
+    body.dark table th { background: #1e1e1e; }
+    body.dark table th, body.dark table td { border-color: #333; }
+  </style>
+</head>
+<body>
+  <h1>CI Agent Dashboard</h1>
+  <div class="badge"><img src="badge.svg" alt="Status badge" /></div>
+  <button class="theme-toggle" id="themeToggle">Toggle Theme</button>
+  <p>Aggregated status from agent outputs.</p>
+
+  <div class="section">
+    <h2>Agent Status</h2>
+    <table>
+      <thead><tr><th>Agent</th><th>Status</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Auth Validator</td><td><span class="dot green"></span>ok</td><td></td></tr>
+<tr><td>Seed Orchestrator</td><td><span class="dot green"></span>ok</td><td></td></tr>
+<tr><td>Page Smoke</td><td><span class="dot green"></span>ok</td><td></td></tr>
+<tr><td>Flaky Classifier</td><td><span class="dot green"></span>ok</td><td></td></tr>
+<tr><td>Selector Auditor</td><td><span class="dot green"></span>ok</td><td></td></tr>
+<tr><td>Fix-Agent Supervisor</td><td><span class="dot green"></span>ok</td><td>Deterministic failures detected</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section card">
+    <h3>Self-Heal Decision</h3>
+    <p><strong>Decision:</strong> run-self-heal</p>
+    <p><strong>Reason:</strong> Deterministic failures detected</p>
+    <p><strong>Recommendations:</strong><br>Trigger Self-Heal Agent with patch generation</p>
+  </div>
+
+  <div class="section">
+    <h3>Artifacts</h3>
+    <ul>
+      <li>Playwright report: <code>playwright-report</code></li>
+      <li>Test results: <code>test-results</code></li>
+      <li>Logs: <code>logs/playwright.log</code></li>
+      <li>Storage state: <code>tests/fixtures/storageState.json</code></li>
+    </ul>
+  </div>
+  <script>
+    (function() {
+      const btn = document.getElementById('themeToggle');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) document.body.classList.add('dark');
+      btn.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+      });
+    })();
+  </script>
+</body>
+</html>
