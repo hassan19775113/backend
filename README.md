@@ -279,6 +279,28 @@ Aus `praxi_backend/appointments/urls.py` (Auszug):
 
 ---
 
+## Releases & Changelog (Conventional Commits)
+
+Dieses Repo nutzt ein Release-Workflow zur automatischen Changelog-Generierung auf Basis von **Conventional Commits**.
+
+### Workflow
+
+- Workflow-Datei: `.github/workflows/release-changelog.yml`
+- Trigger: **GitHub Release** → `published`
+- Output:
+  - `release-changelog.md` + `CHANGELOG.generated.md` als GitHub Actions **Artifact**
+  - Best-effort PR-Kommentar auf dem PR, der den Release-Commit enthält (falls GitHub eine PR-Zuordnung liefern kann)
+
+### Commit-Konvention
+
+Beispiele:
+
+- `feat(appointments): add conflict rule for resources`
+- `fix(auth): handle refresh token rotation`
+- `chore(ci): pin playwright version`
+
+---
+
 ## Troubleshooting
 
 ### Häufige 403 (Forbidden)
