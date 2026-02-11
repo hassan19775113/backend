@@ -162,9 +162,25 @@ jobs:
           echo "Creating E2E user" | tee -a django/logs/system/ci.log
           python django/manage.py shell -c "
           from django.contrib.auth import get_user_model;
+          from praxi_backend.core.models import Role;
+          
           User = get_user_model();
+          
+          # Delete existing E2E user if exists
           User.objects.filter(username='e2e_ci').delete();
-          User.objects.create_superuser('e2e_ci','admin@example.com','e2e_ci_pw')
+          
+          # Create or get admin role
+          admin_role, created = Role.objects.get_or_create(
+              name='admin',
+              defaults={'label': 'Admin'}
+          );
+          
+          # Create superuser WITH role assigned
+          user = User.objects.create_superuser('e2e_ci', 'admin@example.com', 'e2e_ci_pw');
+          user.role = admin_role;
+          user.save();
+          
+          print(f'✅ E2E user created with role: {user.role.name}');
           " || {
             echo "E2E user creation failed" | tee -a django/logs/system/ci.log
             exit 1
