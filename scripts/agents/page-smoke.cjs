@@ -9,7 +9,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 
 const PAGES = [
   { key: 'calendar', path: '/praxi_backend/appointments/', anchor: '#appointmentCalendar' },
-  { key: 'patients', path: '/praxi_backend/patients/', anchor: '#patientSelect' },
+  { key: 'patients', path: '/praxi_backend/patients/', anchor: '#patientsTable' },
   { key: 'operations', path: '/praxi_backend/operations/', anchor: '#periodSelect' },
   { key: 'scheduling', path: '/praxi_backend/scheduling/', anchor: '#trendChart' },
 ];
