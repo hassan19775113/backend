@@ -1,0 +1,221 @@
+[
+  {
+    "title": "Define Scheduling Domain Contracts",
+    "body": "Epic: Refactor Scheduling Engine Into Service Layer\n\nProblem Summary:\nScheduling rules live in serializers with no documented boundaries or invariants.\n\nAcceptance Criteria:\n- Create an ADR describing inputs, outputs, and invariants of the scheduling engine.\n- Map existing serializer logic to service operations.\n- Architecture owner approves the contract.",
+    "labels": [
+      "P1",
+      "backend",
+      "docs"
+    ]
+  },
+  {
+    "title": "Implement SchedulingService Interface",
+    "body": "Epic: Refactor Scheduling Engine Into Service Layer\n\nProblem Summary:\nLack of service abstraction prevents reuse and isolated testing.\n\nAcceptance Criteria:\n- Introduce a SchedulingService class with plan, commit, and rollback methods.\n- Serializer and view layers invoke the service instead of direct ORM logic.\n- Add type hints and docstrings for public methods.",
+    "labels": [
+      "P0",
+      "backend",
+      "architecture"
+    ]
+  },
+  {
+    "title": "Extract Validation Logic from Serializers",
+    "body": "Epic: Refactor Scheduling Engine Into Service Layer\n\nProblem Summary:\nFat serializers mix validation, orchestration, and persistence concerns.\n\nAcceptance Criteria:\n- Move business validations into a dedicated validators module used by the service.\n- Serializers focus on shape and basic field validation only.\n- API responses remain unchanged.",
+    "labels": [
+      "P1",
+      "backend",
+      "api"
+    ]
+  },
+  {
+    "title": "Introduce Scheduling Orchestration Module",
+    "body": "Epic: Refactor Scheduling Engine Into Service Layer\n\nProblem Summary:\nBulk scheduling logic is duplicated across tasks and cron jobs.\n\nAcceptance Criteria:\n- Create an orchestration helper handling batching, retries, and conflict resolution.\n- Expose hooks for async tasks and background workers.\n- Document usage in the developer guide.",
+    "labels": [
+      "P2",
+      "backend"
+    ]
+  },
+  {
+    "title": "Build Scheduling Engine Test Harness",
+    "body": "Epic: Add Unit Test Coverage for Scheduling Engine\n\nProblem Summary:\nNo isolated harness exists to test scheduling flows without hitting the database.\n\nAcceptance Criteria:\n- Provide fixtures and mocks for service dependencies.\n- Support running tests via pytest and Django test runner.\n- Include harness in the CI matrix.",
+    "labels": [
+      "P0",
+      "tests",
+      "backend"
+    ]
+  },
+  {
+    "title": "Cover Conflict Resolution Rules",
+    "body": "Epic: Add Unit Test Coverage for Scheduling Engine\n\nProblem Summary:\nOverlap detection regressions slip through due to missing targeted tests.\n\nAcceptance Criteria:\n- Add unit tests for overlapping appointments, resources, and rooms.\n- Include positive and negative scenarios with assertions on error codes.\n- Report coverage deltas in CI output.",
+    "labels": [
+      "P0",
+      "tests",
+      "backend"
+    ]
+  },
+  {
+    "title": "Validate Capacity Planning Calculations",
+    "body": "Epic: Add Unit Test Coverage for Scheduling Engine\n\nProblem Summary:\nCapacity algorithms lack regression tests causing misallocation.\n\nAcceptance Criteria:\n- Add tests for capacity by practitioner, room, and daypart.\n- Simulate edge loads using fixtures without real DB access.\n- Tests must pass deterministically.",
+    "labels": [
+      "P1",
+      "tests",
+      "backend"
+    ]
+  },
+  {
+    "title": "Guard Timezone and DST Edge Cases",
+    "body": "Epic: Add Unit Test Coverage for Scheduling Engine\n\nProblem Summary:\nScheduling fails during daylight-saving transitions across locales.\n\nAcceptance Criteria:\n- Add tests covering forward and backward DST shifts for supported time zones.\n- Verify serialization uses timezone-aware datetimes.\n- Document DST handling strategy.",
+    "labels": [
+      "P1",
+      "tests",
+      "backend"
+    ]
+  },
+  {
+    "title": "Integrate Centralized Secret Manager",
+    "body": "Epic: Security Hardening & Secret Management\n\nProblem Summary:\nSecrets are sourced from .env files without rotation or access control.\n\nAcceptance Criteria:\n- Integrate the app and CI with the chosen cloud secret manager via adapter.\n- Document local development fallback.\n- CI retrieves secrets via OIDC-backed credentials.",
+    "labels": [
+      "P0",
+      "security",
+      "backend",
+      "ci"
+    ]
+  },
+  {
+    "title": "Purge Hardcoded Secrets from Repository",
+    "body": "Epic: Security Hardening & Secret Management\n\nProblem Summary:\nMultiple modules contain plaintext API keys and credentials.\n\nAcceptance Criteria:\n- Replace secrets with environment lookups or secret manager references.\n- Add a pre-commit hook scanning for secrets.\n- Scrub git history where feasible and document exceptions.",
+    "labels": [
+      "P0",
+      "security",
+      "backend"
+    ]
+  },
+  {
+    "title": "Add Secret Scanning Gate to CI",
+    "body": "Epic: Security Hardening & Secret Management\n\nProblem Summary:\nNo automated detection of leaked secrets in pull requests.\n\nAcceptance Criteria:\n- Add TruffleHog or Gitleaks step that fails on detections.\n- Upload scan reports as artifacts for triage.\n- Document false-positive handling in README.",
+    "labels": [
+      "P1",
+      "security",
+      "ci"
+    ]
+  },
+  {
+    "title": "Enforce Least-Privilege Database Roles",
+    "body": "Epic: Security Hardening & Secret Management\n\nProblem Summary:\nThe application uses a superuser role across all environments.\n\nAcceptance Criteria:\n- Create a dedicated app role with restricted grants.\n- Update connection strings and migrations to use the new role.\n- Add a migration guard preventing accidental superuser usage.",
+    "labels": [
+      "P1",
+      "security",
+      "database"
+    ]
+  },
+  {
+    "title": "Define Global DRF Error Contract",
+    "body": "Epic: Standardize API Error Handling\n\nProblem Summary:\nAPIs return inconsistent structures for errors, confusing clients.\n\nAcceptance Criteria:\n- Publish an error schema with code, message, and trace_id fields.\n- Update the DRF exception handler to emit the schema.\n- Backfill documentation in the OpenAPI spec.",
+    "labels": [
+      "P0",
+      "api",
+      "backend"
+    ]
+  },
+  {
+    "title": "Normalize Serializer Validation Errors",
+    "body": "Epic: Standardize API Error Handling\n\nProblem Summary:\nField error responses vary by serializer causing front-end hacks.\n\nAcceptance Criteria:\n- Build a central utility to format validation errors consistently.\n- Update the top serializers to use the utility.\n- Add regression tests verifying the schema.",
+    "labels": [
+      "P1",
+      "api",
+      "backend"
+    ]
+  },
+  {
+    "title": "Attach Trace IDs to 5xx Responses",
+    "body": "Epic: Standardize API Error Handling\n\nProblem Summary:\nOperators cannot correlate API failures with logs.\n\nAcceptance Criteria:\n- Middleware injects a trace_id into error responses and logs.\n- Observability documentation updated with lookup steps.\n- Integration test ensures trace_id presence.",
+    "labels": [
+      "P1",
+      "api",
+      "observability"
+    ]
+  },
+  {
+    "title": "Add Contract Tests for Error Payloads",
+    "body": "Epic: Standardize API Error Handling\n\nProblem Summary:\nNo automated guard ensures error payloads stay consistent.\n\nAcceptance Criteria:\n- Write pytest contract tests hitting representative endpoints.\n- Tests assert schema compliance and localization behavior.\n- Tests run in CI pipeline.",
+    "labels": [
+      "P2",
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "title": "Adopt Structured Logging with Context",
+    "body": "Epic: Observability & Logging Improvements\n\nProblem Summary:\nPlaintext logs lack context for debugging production outages.\n\nAcceptance Criteria:\n- Configure a JSON/logfmt formatter including request_id, user_id, and feature flags.\n- Update log shipping configuration to accept structured payloads.\n- Verify logs in staging before rollout.",
+    "labels": [
+      "P0",
+      "observability",
+      "backend"
+    ]
+  },
+  {
+    "title": "Instrument Scheduling Service with APM Traces",
+    "body": "Epic: Observability & Logging Improvements\n\nProblem Summary:\nNo visibility into scheduling performance hotspots.\n\nAcceptance Criteria:\n- Add OpenTelemetry spans around scheduling service operations.\n- Export traces to the chosen APM backend.\n- Confirm overhead remains under 200 ms per request.",
+    "labels": [
+      "P1",
+      "observability",
+      "backend"
+    ]
+  },
+  {
+    "title": "Emit Scheduling Metrics to Monitoring Stack",
+    "body": "Epic: Observability & Logging Improvements\n\nProblem Summary:\nLack of metrics for queue depth or SLA adherence.\n\nAcceptance Criteria:\n- Publish metrics for latency, retries, and failures to StatsD/Prometheus.\n- Create dashboards and alerts with ops sign-off.\n- Document metric names and thresholds.",
+    "labels": [
+      "P1",
+      "observability",
+      "backend",
+      "ops"
+    ]
+  },
+  {
+    "title": "Define Log Retention and PII Scrubbing",
+    "body": "Epic: Observability & Logging Improvements\n\nProblem Summary:\nLogs retain personally identifiable information indefinitely.\n\nAcceptance Criteria:\n- Implement log scrubbing middleware removing PII fields.\n- Configure retention and deletion automation per compliance needs.\n- Obtain compliance approval.",
+    "labels": [
+      "P2",
+      "observability",
+      "security"
+    ]
+  },
+  {
+    "title": "Create Onboarding Runbook",
+    "body": "Epic: Documentation & Developer Experience\n\nProblem Summary:\nNew engineers spend weeks piecing together tribal knowledge.\n\nAcceptance Criteria:\n- Write a runbook covering environment setup, env vars, and CI overview.\n- Host in docs/ with a table of contents.\n- Reviewed by at least two recent hires.",
+    "labels": [
+      "P1",
+      "docs",
+      "dx"
+    ]
+  },
+  {
+    "title": "Document CI/CD Troubleshooting Guide",
+    "body": "Epic: Documentation & Developer Experience\n\nProblem Summary:\nRepeated questions arise about pipeline failures and log locations.\n\nAcceptance Criteria:\n- Guide lists common failures, log locations, and escalation steps.\n- Linked from workflow summary outputs.\n- Updated whenever new failure mode is discovered.",
+    "labels": [
+      "P1",
+      "docs",
+      "ci",
+      "dx"
+    ]
+  },
+  {
+    "title": "Provide Dev Containers for Local Work",
+    "body": "Epic: Documentation & Developer Experience\n\nProblem Summary:\nLocal environments rarely match production, causing \"works on my machine\" bugs.\n\nAcceptance Criteria:\n- Add a devcontainer with Django, Postgres, and Playwright dependencies.\n- Support VS Code and GitHub Codespaces usage.\n- README includes setup instructions.",
+    "labels": [
+      "P2",
+      "dx",
+      "backend"
+    ]
+  },
+  {
+    "title": "Automate Changelog Generation",
+    "body": "Epic: Documentation & Developer Experience\n\nProblem Summary:\nManual changelog updates lag behind releases.\n\nAcceptance Criteria:\n- Add a release workflow generating changelog from conventional commits.\n- Publish artifact and PR comment on releases.\n- Document the new process in README.",
+    "labels": [
+      "P2",
+      "docs",
+      "dx",
+      "ci"
+    ]
+  }
+]
