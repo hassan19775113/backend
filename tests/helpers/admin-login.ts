@@ -33,7 +33,7 @@ export async function adminLoginIfNeeded(page: Page, username?: string, password
   await expect(submit).toBeVisible();
 
   await Promise.all([
-    page.waitForLoadState('domcontentloaded'),
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
     submit.click(),
   ]);
 }
