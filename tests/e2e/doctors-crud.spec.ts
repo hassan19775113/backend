@@ -1,32 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 
 import { ApiClient } from '../../api-client';
+import { adminLoginIfNeeded } from '../helpers/admin-login';
 import { NavPage } from '../pages/nav-page';
 
 const ADMIN_BASE_PATH = '/praxi_backend/Dashboardadministration';
-
-function adminCredsOrNull(): { username: string; password: string } | null {
-  const username = process.env.DJANGO_ADMIN_USER || process.env.E2E_USER;
-  const password = process.env.DJANGO_ADMIN_PASSWORD || process.env.E2E_PASSWORD;
-  if (!username || !password) return null;
-  return { username, password };
-}
-
-async function adminLoginIfNeeded(page: Page) {
-  // Django admin login form has #id_username + #id_password.
-  // The user create/change forms also have #id_username but use #id_password1/#id_password2.
-  // Only treat this as a login page when the password field is present.
-  if (!(await page.locator('#id_username').count())) return;
-  if (!(await page.locator('#id_password').count())) return;
-  const creds = adminCredsOrNull();
-  test.skip(!creds, 'Missing DJANGO_ADMIN_USER/DJANGO_ADMIN_PASSWORD (or E2E_USER/E2E_PASSWORD) for admin UI actions');
-  await page.locator('#id_username').fill(creds!.username);
-  await page.locator('#id_password').fill(creds!.password);
-  await Promise.all([
-    page.waitForLoadState('domcontentloaded'),
-    page.locator('input[type="submit"], button[type="submit"]').first().click(),
-  ]);
-}
 
 async function selectRoleDoctor(page: Page) {
   const roleSelect = page.locator('#id_role');
@@ -55,7 +33,7 @@ async function selectRoleDoctor(page: Page) {
 async function createDoctorViaAdmin(page: Page, opts: { username: string; email: string; firstName: string; lastName: string; password: string }) {
   await page.goto(`${ADMIN_BASE_PATH}/core/user/add/`);
   await page.waitForLoadState('domcontentloaded');
-  await adminLoginIfNeeded(page);
+  await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
 
   await page.locator('#id_username').fill(opts.username);
   await page.locator('#id_password1').fill(opts.password);
@@ -80,7 +58,7 @@ async function createDoctorViaAdmin(page: Page, opts: { username: string; email:
 async function deleteUserViaAdmin(page: Page, userId: number) {
   await page.goto(`${ADMIN_BASE_PATH}/core/user/${userId}/delete/`);
   await page.waitForLoadState('domcontentloaded');
-  await adminLoginIfNeeded(page);
+  await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
 
   // If there are protected related objects, Django shows a "Cannot delete" page.
   if (await page.getByText(/cannot delete/i).count()) {
@@ -96,9 +74,6 @@ async function deleteUserViaAdmin(page: Page, userId: number) {
 
 test.describe('Doctors CRUD (Admin UI)', () => {
   test('Create/Read/Update/Delete doctor user via admin UI', async ({ page, baseURL }) => {
-    const creds = adminCredsOrNull();
-    test.skip(!creds, 'Missing admin credentials for doctors CRUD');
-
     // Use dashboard header to ensure the authenticated browser session is alive.
     await page.goto(`${baseURL}/praxi_backend/dashboard/`);
     const nav = new NavPage(page);
@@ -107,7 +82,7 @@ test.describe('Doctors CRUD (Admin UI)', () => {
 
     // We might land on admin index (or login). Ensure login if needed.
     await page.waitForLoadState('domcontentloaded');
-    await adminLoginIfNeeded(page);
+    await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
 
     const suffix = `${Date.now()}`;
     const username = `e2e_doctor_${suffix}`;
@@ -121,13 +96,13 @@ test.describe('Doctors CRUD (Admin UI)', () => {
     // Read/list: changelist filtered by username
     await page.goto(`${ADMIN_BASE_PATH}/core/user/?q=${encodeURIComponent(username)}`);
     await page.waitForLoadState('domcontentloaded');
-    await adminLoginIfNeeded(page);
+    await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
     await expect(page.getByRole('link', { name: username })).toBeVisible();
 
     // Update: change last name
     await page.goto(`${ADMIN_BASE_PATH}/core/user/${userId}/change/`);
     await page.waitForLoadState('domcontentloaded');
-    await adminLoginIfNeeded(page);
+    await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
     await page.locator('#id_last_name').fill(`${lastName} Updated`);
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
@@ -141,9 +116,6 @@ test.describe('Doctors CRUD (Admin UI)', () => {
   });
 
   test('Dependency rule: prevent deleting doctor with appointments', async ({ page, baseURL }) => {
-    const creds = adminCredsOrNull();
-    test.skip(!creds, 'Missing admin credentials for doctors dependency test');
-
     const api = new ApiClient();
     await api.init();
 
@@ -156,7 +128,7 @@ test.describe('Doctors CRUD (Admin UI)', () => {
       await nav.expectHeaderVisible();
       await nav.gotoAdmin();
       await page.waitForLoadState('domcontentloaded');
-      await adminLoginIfNeeded(page);
+      await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
 
       const suffix = `${Date.now()}`;
       const username = `e2e_doctor_dep_${suffix}`;
@@ -240,12 +212,9 @@ test.describe('Doctors CRUD (Admin UI)', () => {
   });
 
   test('Negative validation: missing required fields', async ({ page }) => {
-    const creds = adminCredsOrNull();
-    test.skip(!creds, 'Missing admin credentials for doctors negative validation');
-
     await page.goto(`${ADMIN_BASE_PATH}/core/user/add/`);
     await page.waitForLoadState('domcontentloaded');
-    await adminLoginIfNeeded(page);
+    await adminLoginIfNeeded(page, process.env.E2E_USER, process.env.E2E_PASSWORD);
 
     // Submit with missing fields
     await Promise.all([
