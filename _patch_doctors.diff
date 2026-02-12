@@ -1,0 +1,16 @@
+﻿diff --git a/tests/e2e/doctors-crud.spec.ts b/tests/e2e/doctors-crud.spec.ts
+index 1bbf4ef..3b5db2a 100644
+--- a/tests/e2e/doctors-crud.spec.ts
++++ b/tests/e2e/doctors-crud.spec.ts
+@@ -13,7 +13,11 @@ function adminCredsOrNull(): { username: string; password: string } | null {
+ }
+ 
+ async function adminLoginIfNeeded(page: Page) {
++  // Django admin login form has #id_username + #id_password.
++  // The user create/change forms also have #id_username but use #id_password1/#id_password2.
++  // Only treat this as a login page when the password field is present.
+   if (!(await page.locator('#id_username').count())) return;
++  if (!(await page.locator('#id_password').count())) return;
+   const creds = adminCredsOrNull();
+   test.skip(!creds, 'Missing DJANGO_ADMIN_USER/DJANGO_ADMIN_PASSWORD (or E2E_USER/E2E_PASSWORD) for admin UI actions');
+   await page.locator('#id_username').fill(creds!.username);

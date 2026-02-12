@@ -54,10 +54,112 @@ jobs:
         mkdir -p logs
         npx playwright test 2>&1 | tee logs/playwright.log
       upload_artifact_name: test-results
-      upload_artifact_path: logs/playwright.log
+      upload_artifact_path: |
+        logs/playwright.log
+        playwright-report/
+        test-results/
       download_storage_state: true
       storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-e2e-tests
+
+  startup-fix-agent:
+    name: Startup Fix Agent (on E2E failure)
+    needs: e2e-tests
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && needs.e2e-tests.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      AI_FIX_BRANCH: ai-fix
+      MAX_ITER: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout tooling (workflow ref)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: tooling
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: 'npm'
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Download E2E artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/e2e
+      - name: Download backend logs
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-logs-e2e-tests
+          path: artifacts/backend-logs
+
+      - name: Prepare ai-fix branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "${AI_FIX_BRANCH}" --quiet || true
+          if git show-ref --verify --quiet "refs/remotes/origin/${AI_FIX_BRANCH}"; then
+            git checkout -B "${AI_FIX_BRANCH}" "origin/${AI_FIX_BRANCH}"
+          else
+            git checkout -B "${AI_FIX_BRANCH}" "origin/main"
+          fi
+
+      - name: Run startup-fix agent
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG_FILE="artifacts/e2e/logs/playwright.log"
+          if [ ! -f "$LOG_FILE" ]; then
+            echo "No playwright log found at $LOG_FILE" >&2
+            exit 1
+          fi
+          mkdir -p agent-outputs
+          node tooling/tools/ai-startup-fix-agent/startup-fix.js --log "$LOG_FILE" --out agent-outputs/startup-fix.json --verbose
+
+      - name: Enforce safe path policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed=$(git diff --name-only)
+          if [ -z "$changed" ]; then
+            echo "No changes produced by startup-fix; skipping commit/push."
+            exit 0
+          fi
+          echo "$changed" | while IFS= read -r f; do
+            case "$f" in
+              tests/*|playwright.config.ts|.github/workflows/agent-engine.yml|.github/workflows/backend-setup.yml)
+                ;;
+              *)
+                echo "Disallowed change detected: $f" >&2
+                exit 2
+                ;;
+            esac
+          done
+
+      - name: Commit and push ai-fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          strategy=$(node -e "const fs=require('fs'); const p='agent-outputs/startup-fix.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); console.log(j.strategy || 'UNKNOWN');")
+          git add -A
+          git commit -m "[AI] startup-fix: ${strategy}"
+          git push origin "${AI_FIX_BRANCH}"
 
   flaky-classifier:
     needs: e2e-tests
@@ -279,3 +381,40 @@ jobs:
               repo: context.repo.repo,
               body: `**Agent Dashboard**\n\nDashboard: ${url}\n\nDecision: ${decision.decision || 'n/a'}`
             });
+
+  self-heal-supervisor:
+    name: Self-heal Supervisor (PR manager)
+    needs: startup-fix-agent
+    if: ${{ github.event_name == 'workflow_dispatch' && always() && needs.startup-fix-agent.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GH_OWNER: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
+      GH_BRANCH_FIX: ai-fix
+      GH_BRANCH_MAIN: main
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.GH_BRANCH_FIX }}
+
+      - name: Checkout tooling (workflow ref)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: tooling
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: 'npm'
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Ensure PR exists/updated
+        run: node --loader ts-node/esm tooling/tools/auto-self-heal.ts

@@ -3,21 +3,23 @@
 import { detectIssue } from "./logParser.js";
 import { getFixStrategy } from "./strategy.js";
 import { applyPatch } from "./patcher.js";
-import { commitAndPush } from "./git.js";
 
 // Fix-Module
-import { generateCreateUserPatch } from "./fixes/createTestUser.js";
 import { applyFixAuthSetup } from "./fixes/fixAuthSetup.js";
 import { applyFixDbEnvVariables } from "./fixes/fixDbEnvVariables.js";
 import { applyFixDjangoSettings } from "./fixes/fixDjangoSettings.js";
 
 /**
  * @param {string} log
- * @param {string} workflowPath
- * @param {{dryRun?: boolean, noPush?: boolean, verbose?: boolean}} options
+ * @param {{dryRun?: boolean, noPush?: boolean, verbose?: boolean, workflowPath?: string}} options
  */
-export async function runStartupFixAgent(log, workflowPath, options = {}) {
-    const { dryRun = false, noPush = false, verbose = false } = options;
+export async function runStartupFixAgent(log, options = {}) {
+    const {
+        dryRun = false,
+        noPush = false,
+        verbose = false,
+        workflowPath = ".github/workflows/backend-setup.yml"
+    } = options;
 
     console.log("🚀 Starte AI Startup Fix Agent...");
     if (verbose) {
@@ -35,22 +37,9 @@ export async function runStartupFixAgent(log, workflowPath, options = {}) {
 
     // 3. Fix ausführen
     switch (strategy.type) {
-        case "CREATE_TEST_USER": {
-            console.log("🛠  Erzeuge Patch für Test-User...");
-            const patch = generateCreateUserPatch();
-
-            if (dryRun) {
-                console.log("🟨 Dry-Run aktiv – Patch wird NICHT geschrieben.");
-                patchApplied = true;
-            } else {
-                patchApplied = applyPatch(workflowPath, patch);
-            }
-            break;
-        }
-
         case "FIX_AUTH_SETUP": {
             console.log("🛠  Repariere auth.setup.ts...");
-            const authSetupPath = "tests/auth.setup.ts";
+            const authSetupPath = "tests/fixtures/auth.setup.ts";
 
             if (dryRun) {
                 console.log(`🟨 Dry-Run aktiv – Datei würde repariert: ${authSetupPath}`);
@@ -106,7 +95,7 @@ export async function runStartupFixAgent(log, workflowPath, options = {}) {
     }
 
     if (dryRun) {
-        console.log("🟨 Dry-Run aktiv – kein Commit, kein Push.");
+        console.log("🟨 Dry-Run aktiv – keine Git-Operationen.");
         return {
             issue,
             strategy: strategy.type,
@@ -116,17 +105,15 @@ export async function runStartupFixAgent(log, workflowPath, options = {}) {
         };
     }
 
-    console.log("📦 Erstelle Commit & Push...");
-    const commitSuccess = commitAndPush(
-        `AI Startup Fix Agent applied fix: ${strategy.type}`,
-        { push: !noPush }
-    );
+    if (noPush) {
+        console.log("🟨 noPush aktiv – keine Git-Operationen.");
+    }
 
     return {
         issue,
         strategy: strategy.type,
         patchApplied: true,
-        committed: commitSuccess,
-        pushed: commitSuccess && !noPush
+        committed: false,
+        pushed: false
     };
 }

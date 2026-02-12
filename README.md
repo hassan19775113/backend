@@ -281,15 +281,7 @@ Aus `praxi_backend/appointments/urls.py` (Auszug):
 
 ## Releases & Changelog (Conventional Commits)
 
-Dieses Repo nutzt ein Release-Workflow zur automatischen Changelog-Generierung auf Basis von **Conventional Commits**.
-
-### Workflow
-
-- Workflow-Datei: `.github/workflows/release-changelog.yml`
-- Trigger: **GitHub Release** → `published`
-- Output:
-  - `release-changelog.md` + `CHANGELOG.generated.md` als GitHub Actions **Artifact**
-  - Best-effort PR-Kommentar auf dem PR, der den Release-Commit enthält (falls GitHub eine PR-Zuordnung liefern kann)
+Dieses Repo nutzt **Conventional Commits** als Basis für ein sauberes Changelog. (CI-Workflows dafür sind bewusst minimal gehalten und werden bei Bedarf wieder eingeführt.)
 
 ### Commit-Konvention
 
@@ -329,17 +321,12 @@ Beispiele:
 - Invariants: storageState liegt unter tests/fixtures/storageState.json und wird über process.cwd() aufgelöst; nie __dirname oder .auth/user.json verwenden.
 - Fixes werden auf Branch ai-fix gepusht; niemals direkt auf main.
 
-### Workflow
-- .github/workflows/e2e-self-heal.yml führt npm ci, tsc und Playwright aus und lädt immer Artefakte hoch: playwright-log, test-results/, storageState.json, npm-error.log, tsc-output.log (7 Tage Aufbewahrung).
+### Design (Single Orchestrator)
+- `agent-engine.yml` ist der einzige Orchestrator.
+- Wenn E2E fehlschlägt, läuft `tools/ai-startup-fix-agent/startup-fix.js` (Fix-Agent) und pusht Fixes auf `ai-fix`.
+- Danach stellt `tools/auto-self-heal.ts` (Supervisor) sicher, dass ein PR von `ai-fix` nach `main` existiert.
 
-### Lokaler autonomer Runner
-1) Env setzen: GITHUB_TOKEN, GH_OWNER, GH_REPO (optional: GH_WORKFLOW_FILE, GH_BRANCH_FIX, GH_BRANCH_MAIN, MAX_ITER)
-2) Dependencies: npm install
-3) Start: npx ts-node tools/auto-self-heal.ts
-
-Der Runner stößt e2e-self-heal auf ai-fix an, wartet auf Abschluss, lädt Artefakte, füttert die Logs in tools/ai-startup-fix-agent/startup-fix.js, committet/pusht auf ai-fix, eröffnet bei Bedarf einen PR nach main und wiederholt bis CI grün ist (max 10 Iterationen).
-
-Safety: kein Push nach main; Abbruch nach MAX_ITER zum Schutz vor Endlosschleifen.
+Safety: Fixes sind auf `tests/**`, `playwright.config.ts` und CI-Workflow-Dateien beschränkt; kein Push nach `main`.
 
 ---
 

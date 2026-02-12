@@ -52,6 +52,9 @@ gh api repos/hassan19775113/PraxiApp/actions/workflows/import-stabilization-back
 - `.github/workflows/backend-setup.yml` → `Backend Setup`
 - `.github/workflows/cleanup-workflow-runs.yml` → `Cleanup Workflow Runs`
 
+> Note (2026-02): The referenced workflows were removed as part of consolidating CI into a single orchestrator.
+> Use `.github/workflows/agent-engine.yml` + `.github/workflows/backend-setup.yml` going forward.
+
 ## What we already tried
 - Renamed the workflow file (new path) → still shows path as name.
 - Hard remove + re-add as two separate commits (forced re-index) → still shows path as name.

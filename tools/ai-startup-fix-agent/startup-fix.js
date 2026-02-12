@@ -26,10 +26,12 @@ if (args.length === 0) {
 const dryRun = args.includes("--dry-run");
 const noPush = args.includes("--no-push");
 const verbose = args.includes("--verbose");
+const outIndex = args.indexOf("--out");
+const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 
 // Flags aus args entfernen
 const filteredArgs = args.filter(
-    a => !["--dry-run", "--no-push", "--verbose"].includes(a)
+    a => !["--dry-run", "--no-push", "--verbose", "--out"].includes(a)
 );
 
 let logContent = "";
@@ -57,17 +59,8 @@ if (filteredArgs[0] === "--log") {
     console.log("📄 Log aus CLI-Argumenten geladen.");
 }
 
-// Standard-Workflow-Pfad
-const workflowPath = path.resolve(process.cwd(), ".github/workflows/ai-startup-fix.yml");
-console.log(`🛠  Workflow-Datei: ${workflowPath}`);
-
-if (!fs.existsSync(workflowPath)) {
-    console.error("❌ Workflow-Datei nicht gefunden!");
-    process.exit(1);
-}
-
 (async () => {
-    const result = await runStartupFixAgent(logContent, workflowPath, {
+    const result = await runStartupFixAgent(logContent, {
         dryRun,
         noPush,
         verbose
@@ -80,6 +73,15 @@ if (!fs.existsSync(workflowPath)) {
     console.log(`Commit erstellt: ${result.committed}`);
     console.log(`Push ausgeführt: ${result.pushed}`);
     console.log("================================================\n");
+
+    if (outPath) {
+        const absOut = path.resolve(process.cwd(), outPath);
+        fs.mkdirSync(path.dirname(absOut), { recursive: true });
+        fs.writeFileSync(absOut, JSON.stringify(result, null, 2), "utf8");
+        if (verbose) {
+            console.log(`🧾 Ergebnis geschrieben: ${absOut}`);
+        }
+    }
 
     if (result.patchApplied && result.committed) {
         console.log("🚀 Fix erfolgreich angewendet.");

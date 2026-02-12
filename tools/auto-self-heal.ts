@@ -1,136 +1,57 @@
 #!/usr/bin/env ts-node
 import { Octokit } from '@octokit/rest';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import AdmZip from 'adm-zip';
-import { execSync, spawnSync } from 'child_process';
+import { execSync } from 'child_process';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const OWNER = process.env.GH_OWNER;
-const REPO = process.env.GH_REPO;
-const WORKFLOW_FILE = process.env.GH_WORKFLOW_FILE || 'e2e-self-heal.yml';
-const WORKFLOW_ID = process.env.GH_WORKFLOW_ID || WORKFLOW_FILE;
+const REPOSITORY = process.env.GITHUB_REPOSITORY;
 const BRANCH_FIX = process.env.GH_BRANCH_FIX || 'ai-fix';
 const BRANCH_MAIN = process.env.GH_BRANCH_MAIN || 'main';
-const MAX_ITER = parseInt(process.env.MAX_ITER || '10', 10);
 
-if (!GITHUB_TOKEN || !OWNER || !REPO) {
-  console.error('Missing env: GITHUB_TOKEN, GH_OWNER, GH_REPO');
+if (!GITHUB_TOKEN || !REPOSITORY) {
+  console.error('Missing env: GITHUB_TOKEN, GITHUB_REPOSITORY');
   process.exit(1);
 }
 
+const [OWNER, REPO] = REPOSITORY.split('/');
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-async function dispatchWorkflow(): Promise<number> {
-  const res = await octokit.actions.createWorkflowDispatch({
-    owner: OWNER,
-    repo: REPO,
-    workflow_id: WORKFLOW_ID,
-    ref: BRANCH_FIX,
-  });
-  if (res.status !== 204) throw new Error('Failed to dispatch workflow');
-  return await waitForNewRunId();
+function getRepoActionsSettingsUrl(owner: string, repo: string): string {
+  return `https://github.com/${owner}/${repo}/settings/actions`;
 }
 
-async function waitForNewRunId(): Promise<number> {
-  for (let i = 0; i < 30; i++) {
-    const runs = await octokit.actions.listWorkflowRuns({
-      owner: OWNER,
-      repo: REPO,
-      workflow_id: WORKFLOW_ID,
-      branch: BRANCH_FIX,
-      per_page: 1,
-    });
-    const run = runs.data.workflow_runs[0];
-    if (run) return run.id;
-    await delay(5000);
+function looksLikeActionsPrCreationBlocked(err: any): boolean {
+  const status = err?.status;
+  const msg = String(err?.message || '');
+  const apiMsg = String(err?.response?.data?.message || '');
+  const combined = `${msg}\n${apiMsg}`.toLowerCase();
+  return (
+    status === 403 &&
+    combined.includes('not permitted to create or approve pull requests')
+  );
+}
+
+function run(cmd: string): string {
+  return execSync(cmd, { encoding: 'utf8' }).trim();
+}
+
+function listChangedFilesAgainstMain(): string[] {
+  run('git fetch origin --quiet');
+  const out = run(`git diff --name-only origin/${BRANCH_MAIN}...HEAD`);
+  return out ? out.split(/\r?\n/).filter(Boolean) : [];
+}
+
+function enforceAllowedPaths(files: string[]) {
+  const allowed = (f: string) =>
+    f.startsWith('tests/') ||
+    f === 'playwright.config.ts' ||
+    f === '.github/workflows/agent-engine.yml' ||
+    f === '.github/workflows/backend-setup.yml';
+
+  const blocked = files.filter((f) => !allowed(f));
+  if (blocked.length > 0) {
+    console.error('Disallowed files changed by self-heal:', blocked.join(', '));
+    process.exit(2);
   }
-  throw new Error('No workflow run found after dispatch');
-}
-
-async function waitForRun(runId: number): Promise<string> {
-  while (true) {
-    const run = await octokit.actions.getWorkflowRun({
-      owner: OWNER,
-      repo: REPO,
-      run_id: runId,
-    });
-    const status = run.data.status || '';
-    const conclusion = run.data.conclusion || '';
-    if (status === 'completed') return conclusion;
-    await delay(10000);
-  }
-}
-
-async function downloadArtifacts(runId: number, outDir: string) {
-  const { data } = await octokit.actions.listWorkflowRunArtifacts({
-    owner: OWNER,
-    repo: REPO,
-    run_id: runId,
-  });
-  for (const artifact of data.artifacts) {
-    const zipRes = await octokit.actions.downloadArtifact({
-      owner: OWNER,
-      repo: REPO,
-      artifact_id: artifact.id,
-      archive_format: 'zip',
-    });
-    const zipPath = path.join(outDir, `${artifact.name}.zip`);
-    fs.writeFileSync(zipPath, Buffer.from(zipRes.data as ArrayBuffer));
-    const zip = new AdmZip(zipPath);
-    zip.extractAllTo(path.join(outDir, artifact.name), true);
-  }
-}
-
-function runCmd(cmd: string, cwd = process.cwd()) {
-  console.log(`> ${cmd}`);
-  execSync(cmd, { stdio: 'inherit', cwd });
-}
-
-function tryRead(file: string): string | null {
-  try {
-    return fs.readFileSync(file, 'utf8');
-  } catch {
-    return null;
-  }
-}
-
-function feedLogsToAgent(logDir: string) {
-  const pwLog = tryRead(path.join(logDir, 'playwright-log', 'playwright.log'));
-  const npmLog = tryRead(path.join(logDir, 'npm-error-log', 'npm-error.log'));
-  const tscLog = tryRead(path.join(logDir, 'tsc-output-log', 'tsc-output.log'));
-
-  const payload = [
-    pwLog ? `Playwright log:\n${pwLog}` : '',
-    npmLog ? `npm log:\n${npmLog}` : '',
-    tscLog ? `tsc log:\n${tscLog}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n\n---\n\n');
-
-  const tmpLog = path.join(logDir, 'combined.log');
-  fs.writeFileSync(tmpLog, payload, 'utf8');
-
-  const res = spawnSync('node', ['tools/ai-startup-fix-agent/startup-fix.js', '--log', tmpLog, '--verbose'], {
-    stdio: 'inherit',
-  });
-  if (res.status !== 0) {
-    throw new Error('AI Startup Fix Agent failed');
-  }
-}
-
-function ensureAiFixBranch() {
-  try {
-    runCmd(`git rev-parse --verify ${BRANCH_FIX}`);
-    runCmd(`git checkout ${BRANCH_FIX}`);
-  } catch {
-    runCmd(`git checkout -b ${BRANCH_FIX} origin/${BRANCH_FIX}`);
-  }
-}
-
-function pushAiFix() {
-  runCmd(`git push origin ${BRANCH_FIX}`);
 }
 
 async function ensurePullRequest() {
@@ -142,52 +63,67 @@ async function ensurePullRequest() {
     state: 'open',
     per_page: 1,
   });
+
+  const runUrl = process.env.GITHUB_RUN_ID
+    ? `https://github.com/${OWNER}/${REPO}/actions/runs/${process.env.GITHUB_RUN_ID}`
+    : undefined;
+
+  const title = '[AI] Self-heal: automated fixes';
+  const body = [
+    'Automated self-heal changes generated by CI.',
+    runUrl ? `Source run: ${runUrl}` : undefined,
+    '',
+    'Safety: changes restricted to tests and CI files.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
   if (prs.data.length === 0) {
     await octokit.pulls.create({
       owner: OWNER,
       repo: REPO,
       head: BRANCH_FIX,
       base: BRANCH_MAIN,
-      title: 'AI self-heal: fix E2E pipeline',
-      body: 'Automated fixes from AI Startup Fix Agent.',
+      title,
+      body,
     });
+    console.log(`Created PR from ${BRANCH_FIX} to ${BRANCH_MAIN}`);
+    return;
   }
+
+  const pr = prs.data[0];
+  await octokit.pulls.update({
+    owner: OWNER,
+    repo: REPO,
+    pull_number: pr.number,
+    title,
+    body,
+  });
+  console.log(`Updated PR #${pr.number}`);
 }
 
 async function main() {
-  ensureAiFixBranch();
-  for (let i = 1; i <= MAX_ITER; i++) {
-    console.log(`\n=== Iteration ${i}/${MAX_ITER} ===`);
-    const runId = await dispatchWorkflow();
-    const conclusion = await waitForRun(runId);
-    console.log(`Workflow concluded: ${conclusion}`);
-
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'praxi-logs-'));
-    await downloadArtifacts(runId, tempDir);
-
-    feedLogsToAgent(tempDir);
-
-    try {
-      runCmd('git diff --quiet --cached || git commit -m "AI self-heal: apply fixes"');
-    } catch {
-      /* nothing to commit */
-    }
-    pushAiFix();
-    await ensurePullRequest();
-
-    if (conclusion === 'success') {
-      console.log('CI is green. Exiting.');
-      return;
-    }
+  const changed = listChangedFilesAgainstMain();
+  if (changed.length === 0) {
+    console.log('No changes detected on ai-fix; nothing to supervise.');
+    return;
   }
-  throw new Error('Max iterations reached without green CI');
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  enforceAllowedPaths(changed);
+  await ensurePullRequest();
 }
 
 main().catch((err) => {
+  if (looksLikeActionsPrCreationBlocked(err)) {
+    console.error(
+      [
+        'PR creation is blocked for the built-in GITHUB_TOKEN.',
+        'Enable it in repository settings:',
+        `- ${getRepoActionsSettingsUrl(OWNER, REPO)} → Workflow permissions`,
+        "- Select 'Read and write permissions'",
+        "- Check 'Allow GitHub Actions to create and approve pull requests'",
+      ].join('\n'),
+    );
+  }
   console.error(err);
   process.exit(1);
 });
