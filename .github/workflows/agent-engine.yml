@@ -77,6 +77,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Checkout tooling (workflow ref)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: tooling
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -119,7 +126,7 @@ jobs:
             exit 1
           fi
           mkdir -p agent-outputs
-          node tools/ai-startup-fix-agent/startup-fix.js --log "$LOG_FILE" --out agent-outputs/startup-fix.json --verbose
+          node tooling/tools/ai-startup-fix-agent/startup-fix.js --log "$LOG_FILE" --out agent-outputs/startup-fix.json --verbose
 
       - name: Enforce safe path policy
         shell: bash
@@ -395,6 +402,13 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ env.GH_BRANCH_FIX }}
+
+      - name: Checkout tooling (workflow ref)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: tooling
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -403,4 +417,4 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
       - name: Ensure PR exists/updated
-        run: node --loader ts-node/esm tools/auto-self-heal.ts
+        run: node --loader ts-node/esm tooling/tools/auto-self-heal.ts
