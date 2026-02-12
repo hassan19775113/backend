@@ -376,6 +376,7 @@ jobs:
         with:
           name: ${{ inputs.storage_state_artifact_name }}
           path: ${{ inputs.storage_state_path }}
+          retention-days: 7
           if-no-files-found: warn
 
       # Tolerant shutdown of Django
@@ -442,6 +443,7 @@ jobs:
         with:
           name: ${{ inputs.upload_artifact_name }}
           path: ${{ inputs.upload_artifact_path }}
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Upload logs
@@ -451,6 +453,7 @@ jobs:
         with:
           name: ${{ inputs.logs_artifact_name || format('backend-logs-{0}', github.job) }}
           path: django/logs/
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Workflow summary
@@ -459,11 +462,13 @@ jobs:
         run: |
           set -euo pipefail
           DOC_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/ci-cd-troubleshooting.md"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           LOG_ARTIFACT_NAME="${{ inputs.logs_artifact_name || format('backend-logs-{0}', github.job) }}"
 
           {
             echo "## Troubleshooting"
             echo "- Guide: ${DOC_URL}"
+            echo "- Artifacts: ${RUN_URL}"
             echo "- Logs artifact: **${LOG_ARTIFACT_NAME}**"
             if [ -n "${{ inputs.upload_artifact_name || '' }}" ]; then
               echo "- Output artifact: **${{ inputs.upload_artifact_name }}**"
