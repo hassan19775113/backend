@@ -24,6 +24,19 @@ htmlcov/
 .coverage.*
 node_modules/
 
+# Playwright / local test artifacts
+_sanity_run/
+**/test-results/
+**/playwright-report/
+**/blob-report/
+**/trace.zip
+**/*.webm
+**/*.mp4
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+
 # Vercel
 .vercel
 .vercel/*

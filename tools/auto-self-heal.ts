@@ -15,6 +15,21 @@ if (!GITHUB_TOKEN || !REPOSITORY) {
 const [OWNER, REPO] = REPOSITORY.split('/');
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
+function getRepoActionsSettingsUrl(owner: string, repo: string): string {
+  return `https://github.com/${owner}/${repo}/settings/actions`;
+}
+
+function looksLikeActionsPrCreationBlocked(err: any): boolean {
+  const status = err?.status;
+  const msg = String(err?.message || '');
+  const apiMsg = String(err?.response?.data?.message || '');
+  const combined = `${msg}\n${apiMsg}`.toLowerCase();
+  return (
+    status === 403 &&
+    combined.includes('not permitted to create or approve pull requests')
+  );
+}
+
 function run(cmd: string): string {
   return execSync(cmd, { encoding: 'utf8' }).trim();
 }
@@ -98,6 +113,17 @@ async function main() {
 }
 
 main().catch((err) => {
+  if (looksLikeActionsPrCreationBlocked(err)) {
+    console.error(
+      [
+        'PR creation is blocked for the built-in GITHUB_TOKEN.',
+        'Enable it in repository settings:',
+        `- ${getRepoActionsSettingsUrl(OWNER, REPO)} → Workflow permissions`,
+        "- Select 'Read and write permissions'",
+        "- Check 'Allow GitHub Actions to create and approve pull requests'",
+      ].join('\n'),
+    );
+  }
   console.error(err);
   process.exit(1);
 });
