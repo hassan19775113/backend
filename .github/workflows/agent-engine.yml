@@ -65,7 +65,7 @@ jobs:
   startup-fix-agent:
     name: Startup Fix Agent (on E2E failure)
     needs: e2e-tests
-    if: ${{ github.event_name == 'workflow_dispatch' && needs.e2e-tests.result == 'failure' }}
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && needs.e2e-tests.result == 'failure' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

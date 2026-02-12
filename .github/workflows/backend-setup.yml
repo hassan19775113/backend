@@ -437,7 +437,7 @@ jobs:
           echo "--- end DB diagnostics ---" | tee -a django/logs/system/ci.log
 
       - name: Upload artifact
-        if: ${{ inputs.upload_artifact_name && inputs.upload_artifact_path }}
+        if: ${{ always() && inputs.upload_artifact_name && inputs.upload_artifact_path }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.upload_artifact_name }}
