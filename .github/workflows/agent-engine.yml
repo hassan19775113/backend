@@ -1,5 +1,9 @@
 name: Agent Engine
 
+# Make the run title human-readable in the Actions UI (avoid showing workflow file path strings).
+run-name: >-
+  Agent Engine • ${{ github.event_name }} • ${{ github.ref_name }} • run ${{ github.run_id }}
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
