@@ -8,6 +8,12 @@ test('navigate through primary sections', async ({ page, baseURL }) => {
 
   // Start at main dashboard
   await page.goto(`${baseURL}/praxi_backend/dashboard/`);
+  await page.waitForLoadState('domcontentloaded');
+  if (page.url().includes('/login')) {
+    test.skip(true, 'Not authenticated in navigation smoke test environment');
+    return;
+  }
+  await page.waitForSelector('[role="navigation"]', { timeout: 15000 });
   await nav.expectHeaderVisible();
 
   await nav.gotoScheduling();

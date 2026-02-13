@@ -58,6 +58,9 @@ export class NavPage {
   }
 
   async expectHeaderVisible() {
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForSelector('[role="navigation"]', { timeout: 15000 });
+    await expect(this.page.locator('.prx-header__nav')).toBeVisible();
     await expect(this.page.getByRole('navigation')).toBeVisible();
   }
 }
