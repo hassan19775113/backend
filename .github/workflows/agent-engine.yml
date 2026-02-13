@@ -1044,7 +1044,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python django/manage.py seed_test_data
+          if python django/manage.py help | grep -q '^\s*seed_test_data\s'; then
+            python django/manage.py seed_test_data
+          elif python django/manage.py help | grep -q '^\s*create_test_data\s'; then
+            python django/manage.py create_test_data
+          else
+            echo "Neither seed_test_data nor create_test_data command exists." >&2
+            python django/manage.py help
+            exit 1
+          fi
 
       - name: Run Django unit tests
         shell: bash
