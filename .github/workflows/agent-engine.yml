@@ -540,3 +540,173 @@ jobs:
             status="pr_not_created"
           fi
           echo "self_heal_status=$status" >> "$GITHUB_OUTPUT"
+
+  public-dashboard-access:
+    name: Public Dashboard Access (cloudflared)
+    needs:
+      - auth-validator
+      - seed-orchestrator
+      - page-smoke
+      - e2e-tests
+      - startup-fix-agent
+      - flaky-classifier
+      - selector-auditor
+      - self-heal-supervisor
+      - fix-agent-supervisor
+      - ci-dashboard-agent
+      - publish-dashboard
+      - post-dashboard-comment
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      POSTGRES_DB: praxiapp_system
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: 127.0.0.1
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432
+        options: >-
+          --health-cmd="pg_isready -h 127.0.0.1 -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure Postgres env
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "POSTGRES_PORT=${{ job.services.postgres.ports[5432] }}" >> "$GITHUB_ENV"
+          echo "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${{ job.services.postgres.ports[5432] }}/${POSTGRES_DB}" >> "$GITHUB_ENV"
+
+      - name: Wait for Postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for Postgres to accept connections..."
+          ready=false
+          for i in {1..90}; do
+            if pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" >/dev/null 2>&1; then
+              ready=true
+              echo "Postgres is ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != "true" ]; then
+            echo "Postgres not ready after 90 seconds" >&2
+            exit 1
+          fi
+
+      - name: Apply migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python django/manage.py migrate
+
+      - name: Seed the database
+        shell: bash
+        run: |
+          set -euo pipefail
+          python django/manage.py seed
+
+      - name: Ensure doctor exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          python django/manage.py shell -c "
+          from django.contrib.auth import get_user_model;
+          from praxi_backend.core.models import Role;
+
+          User = get_user_model();
+          doctor_role, _ = Role.objects.get_or_create(name='doctor', defaults={'label': 'Arzt'});
+
+          qs = User.objects.filter(is_active=True, role=doctor_role);
+          if qs.exists():
+              print(f'✅ Doctors present: {qs.count()}');
+          else:
+              u = User.objects.create_user('e2e_doctor', 'e2e_doctor@seed.local', 'test1234', first_name='E2E', last_name='Doctor');
+              u.role = doctor_role;
+              u.is_staff = True;
+              u.save();
+              print('✅ Created fallback doctor user');
+          "
+
+      - name: Start Django server
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup python django/manage.py runserver 0.0.0.0:8000 > django-server.log 2>&1 &
+
+      - name: Wait for Django port
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for Django (port 8000)..."
+          ready=false
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:8000/api/health/ >/dev/null 2>&1; then
+              ready=true
+              echo "Django is reachable after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != "true" ]; then
+            echo "Django did not become reachable within 60 seconds" >&2
+            exit 1
+          fi
+
+      - name: Install cloudflared
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+
+      - name: Start public tunnel
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./cloudflared tunnel --url http://localhost:8000 --no-autoupdate > tunnel.log 2>&1 &
+
+      - name: Extract and print public URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for trycloudflare URL..."
+          url=""
+          for i in {1..60}; do
+            url=$(grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' tunnel.log | head -n 1 || true)
+            if [ -n "$url" ]; then
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$url" ]; then
+            echo "No trycloudflare URL found in tunnel.log" >&2
+            exit 1
+          fi
+          echo "${url}/admin/login/?next=/praxi_backend/Dashboardadministration/"
