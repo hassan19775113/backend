@@ -44,6 +44,10 @@ on:
         type: string
         default: tests/fixtures/storageState.json
 
+      generate_storage_state:
+        required: false
+        type: boolean
+        default: true
       download_extra_artifact_name:
         required: false
         type: string
@@ -175,22 +179,7 @@ jobs:
           npx playwright@${PLAYWRIGHT_VERSION} install chromium
 
           echo "Smoke-testing Playwright Chromium launch" | tee -a django/logs/system/ci.log
-          if ! node - <<'NODE'
-          const { chromium } = require('playwright');
-
-          (async () => {
-            const browser = await chromium.launch({ headless: true });
-            const context = await browser.newContext();
-            const page = await context.newPage();
-            await page.setContent('<html><body>ok</body></html>');
-            await context.close();
-            await browser.close();
-            console.log('chromium_launch_ok');
-          })().catch((err) => {
-            console.error(err);
-            process.exit(1);
-          });
-          NODE
+          if ! node -e "const { chromium } = require('playwright'); (async () => { const browser = await chromium.launch({ headless: true }); const context = await browser.newContext(); const page = await context.newPage(); await page.setContent('<html><body>ok</body></html>'); await context.close(); await browser.close(); console.log('chromium_launch_ok'); })().catch((err) => { console.error(err); process.exit(1); });"
           then
             echo "Chromium failed to launch; installing Playwright OS deps" | tee -a django/logs/system/ci.log
             npx playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium
@@ -358,6 +347,7 @@ jobs:
           fi
 
       - name: Generate fresh storage state
+        if: ${{ inputs.generate_storage_state }}
         continue-on-error: ${{ inputs.best_effort }}
         shell: bash
         env:
@@ -462,59 +452,6 @@ jobs:
               done
               if [ "$found_any" != "true" ]; then
                 echo "No JSON outputs found in $OUT_DIR" | tee -a django/logs/system/ci.log
-              else
-                # Emit a concise annotation so the root cause is visible in the Actions "Annotations" UI.
-                # This helps debugging when job logs are not accessible.
-                first_json=$(ls -1 "$OUT_DIR"/*.json 2>/dev/null | head -1 || true)
-                if [ -n "${first_json:-}" ]; then
-                  summary=$(node - <<'NODE'
-                  const fs = require('fs');
-                  const p = process.env.FIRST_JSON;
-
-                  function safeStr(v, max = 180) {
-                    const s = String(v ?? '').replace(/\s+/g, ' ').trim();
-                    return s.length > max ? s.slice(0, max - 1) + '…' : s;
-                  }
-
-                  try {
-                    const txt = fs.readFileSync(p, 'utf8');
-                    const j = JSON.parse(txt);
-                    const status = j?.status ?? 'unknown';
-                    const reason = j?.reason ?? j?.message ?? '';
-
-                    if (Array.isArray(j?.results)) {
-                      const bad = j.results.find((r) => r && r.status && r.status !== 'ok');
-                      if (bad) {
-                        const bits = [
-                          `status=${status}`,
-                          bad.key ? `key=${bad.key}` : null,
-                          bad.status ? `pageStatus=${bad.status}` : null,
-                          bad.reason ? `reason=${safeStr(bad.reason)}` : null,
-                          typeof bad.httpStatus === 'number' ? `http=${bad.httpStatus}` : null,
-                          bad.finalUrl ? `url=${safeStr(bad.finalUrl)}` : null,
-                          bad.anchor ? `anchor=${bad.anchor}` : null,
-                          bad.path ? `path=${bad.path}` : null,
-                        ].filter(Boolean);
-                        process.stdout.write(bits.join(' | '));
-                        process.exit(0);
-                      }
-                    }
-
-                    const msg = [
-                      `status=${status}`,
-                      reason ? `reason=${safeStr(reason)}` : null,
-                    ].filter(Boolean).join(' | ');
-                    process.stdout.write(msg || `status=${status}`);
-                  } catch (e) {
-                    process.stdout.write('unable-to-parse-agent-json');
-                  }
-                  NODE
-                  FIRST_JSON="$first_json")
-
-                  if [ -n "${summary:-}" ]; then
-                    echo "::error title=Agent output summary::${summary}"
-                  fi
-                fi
               fi
             else
               echo "Agent output directory missing: $OUT_DIR" | tee -a django/logs/system/ci.log
@@ -601,19 +538,7 @@ jobs:
             echo "exit_code=$?"
             echo ""
             echo "tcp_connect (127.0.0.1:${POSTGRES_PORT}):"
-          python - <<'PY'
-          import os
-          import socket
-
-          host = "127.0.0.1"
-          port = int(os.environ.get("POSTGRES_PORT", "5432"))
-
-          try:
-              with socket.create_connection((host, port), timeout=5):
-                  print("tcp_ok")
-          except Exception as e:
-              print("tcp_fail", repr(e))
-          PY
+            python -c "import os,socket; host='127.0.0.1'; port=int(os.environ.get('POSTGRES_PORT','5432')); sock=socket.socket(); sock.settimeout(5); code=sock.connect_ex((host,port)); print('tcp_ok' if code==0 else f'tcp_fail code={code}'); sock.close()"
             echo ""
             echo "postgres_container_logs (tail 200):"
             if [ -n "${POSTGRES_CONTAINER_ID:-}" ]; then
@@ -626,6 +551,41 @@ jobs:
           echo "--- DB diagnostics (${OUT_FILE}) ---" | tee -a django/logs/system/ci.log
           cat "$OUT_FILE" | tee -a django/logs/system/ci.log
           echo "--- end DB diagnostics ---" | tee -a django/logs/system/ci.log
+
+      - name: Ensure JSON output artifact exists
+        if: ${{ always() && inputs.upload_artifact_name && inputs.upload_artifact_path }}
+        shell: bash
+        env:
+          ARTIFACT_NAME: ${{ inputs.upload_artifact_name }}
+          ARTIFACT_PATH: ${{ inputs.upload_artifact_path }}
+        run: |
+          set -uo pipefail
+
+          # If upload_artifact_path is a multi-line list (e.g. Playwright results), don't try to
+          # materialize a placeholder. We only support single-file JSON outputs here.
+          if printf '%s' "${{ inputs.upload_artifact_path }}" | grep -q $'\n'; then
+            exit 0
+          fi
+
+          out_path="${{ inputs.upload_artifact_path }}"
+          case "$out_path" in
+            *.json)
+              ;;
+            *)
+              exit 0
+              ;;
+          esac
+
+          if [ -f "$out_path" ]; then
+            exit 0
+          fi
+
+          if ! node -e "const fs=require('fs'); const path=require('path'); const out=process.argv[1]; const payload={status:'error',reason:'missing-agent-output',details:{message:'Expected agent output JSON was not created. See backend logs artifact for details.',artifact:{name:process.env.ARTIFACT_NAME,path:process.env.ARTIFACT_PATH},run:{id:process.env.GITHUB_RUN_ID,job:process.env.GITHUB_JOB,sha:process.env.GITHUB_SHA}},timestamp:new Date().toISOString()}; fs.mkdirSync(path.dirname(out),{recursive:true}); fs.writeFileSync(out, JSON.stringify(payload,null,2)+'\\n','utf8');" "$out_path"; then
+            ts=$(date -u +%FT%TZ 2>/dev/null || echo "")
+            printf '{"status":"error","reason":"missing-agent-output","details":{"message":"placeholder-json-writer-failed"},"timestamp":"%s"}\n' "$ts" > "$out_path" 2>/dev/null || true
+          fi
+
+          echo "Created placeholder agent output at $out_path" | tee -a django/logs/system/ci.log
 
       - name: Upload artifact
         if: ${{ always() && inputs.upload_artifact_name && inputs.upload_artifact_path }}

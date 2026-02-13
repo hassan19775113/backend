@@ -28,7 +28,8 @@ jobs:
     name: Auth Validator
     uses: ./.github/workflows/backend-setup.yml
     with:
-      agent_command: bash -c "set -eo pipefail; mkdir -p agent-outputs; node scripts/agents/auth-validator.js | tee agent-outputs/auth-validator.json >/dev/null"
+      generate_storage_state: false
+      agent_command: node scripts/agents/auth-validator.js
       upload_artifact_name: auth-validator-output
       upload_artifact_path: agent-outputs/auth-validator.json
       logs_artifact_name: backend-logs-auth-validator
@@ -38,6 +39,7 @@ jobs:
     needs: auth-validator
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       agent_command: bash -c "export SEED_COMMAND=\"python django/manage.py seed\" && node scripts/agents/seed-orchestrator.js" > agent-outputs/seed-orchestrator.json
       upload_artifact_name: seed-orchestrator-output
       upload_artifact_path: agent-outputs/seed-orchestrator.json
@@ -48,6 +50,7 @@ jobs:
     needs: seed-orchestrator
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       agent_command: node scripts/agents/page-smoke.cjs > agent-outputs/page-smoke.json
       upload_artifact_name: page-smoke-output
       upload_artifact_path: agent-outputs/page-smoke.json
@@ -58,6 +61,7 @@ jobs:
     needs: page-smoke
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       agent_command: |
         mkdir -p logs
         npx playwright test 2>&1 | tee logs/playwright.log
@@ -131,6 +135,7 @@ jobs:
     needs: e2e-tests
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       agent_command: node scripts/agents/flaky-classifier.cjs > agent-outputs/flaky-classifier.json
       upload_artifact_name: flaky-classifier-output
       upload_artifact_path: agent-outputs/flaky-classifier.json
@@ -141,6 +146,7 @@ jobs:
     needs: e2e-tests
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       agent_command: node scripts/agents/selector-auditor.cjs > agent-outputs/selector-auditor.json
       upload_artifact_name: selector-auditor-output
       upload_artifact_path: agent-outputs/selector-auditor.json
@@ -514,6 +520,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && always() && needs.self-heal-supervisor.outputs.should_self_heal == 'true' }}
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       # Integration point: run safe self-heal actions (no code edits) and upload a report artifact.
       agent_command: |
         mkdir -p self-heal
@@ -604,6 +611,7 @@ jobs:
     if: ${{ always() && needs.e2e-tests.result == 'failure' && needs.fix-agent-prep.result != 'skipped' }}
     uses: ./.github/workflows/backend-setup.yml
     with:
+      generate_storage_state: true
       # Integration point: scoped, guarded code changes only; emit patch + metadata artifacts (no PR creation).
       best_effort: true
       agent_command: |
