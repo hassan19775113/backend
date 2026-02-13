@@ -19,7 +19,7 @@ export class SchedulingKpisPage {
   }
 
   async goto(baseURL: string) {
-    await this.page.goto(`${baseURL}/praxi_backend/scheduling/`);
+    await this.page.goto(`${baseURL}/praxi_backend/dashboard/scheduling/`);
     await this.page.waitForLoadState('domcontentloaded');
   }
 
