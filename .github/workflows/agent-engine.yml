@@ -790,8 +790,25 @@ jobs:
           AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
         run: |
           set -euo pipefail
+
+          CLOUD_AGENT_URL="https://<YOUR-VERCEL-URL>/api/ci/logs"
+
+          if [ -z "${AGENT_TOKEN:-}" ]; then
+            echo "AGENT_TOKEN is not available; skipping log upload."
+            exit 0
+          fi
+
+          if echo "$CLOUD_AGENT_URL" | grep -q "<YOUR-VERCEL-URL>"; then
+            echo "CLOUD_AGENT_URL is still the default placeholder; skipping log upload."
+            exit 0
+          fi
+
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${AGENT_TOKEN}" \
             -d @payload.json \
-            https://<YOUR-VERCEL-URL>/api/ci/logs
+            "$CLOUD_AGENT_URL" || {
+              code=$?
+              echo "Log upload failed (curl exit code: ${code}); continuing without failing the workflow."
+              exit 0
+            }

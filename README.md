@@ -18,7 +18,7 @@ This repo includes a small Vercel-deployable API endpoint that receives CI logs 
 
 - `AGENT_TOKEN`
   - Incoming authentication for GitHub Actions.
-  - Requests must include: `Authorization: Bearer <TOKEN>`.
+  - Requests must include: `Authorization: Bearer AGENT_TOKEN`.
 
 - `DEVELOPER_AGENT_URL`
   - Base URL of your Developer-Agent.
@@ -26,7 +26,7 @@ This repo includes a small Vercel-deployable API endpoint that receives CI logs 
 
 - `DEVELOPER_AGENT_TOKEN`
   - Secret used to authenticate to the Developer-Agent.
-  - Forwarded as: `Authorization: Bearer <DEVELOPER_AGENT_TOKEN>`.
+  - Forwarded as: `Authorization: Bearer DEVELOPER_AGENT_TOKEN`.
 
 ### Request payload
 
@@ -57,17 +57,17 @@ The endpoint expects JSON with these fields:
 
 Requests must include:
 
-`Authorization: Bearer <DEVELOPER_AGENT_TOKEN>`
+`Authorization: Bearer DEVELOPER_AGENT_TOKEN`
 
 ### Behavior
 
 - Validates the incoming JSON payload (same fields as `/api/ci/logs` forwards)
 - Saves logs to:
-  - `logs/<run_id>/playwright.log`
-  - `logs/<run_id>/backend.log`
+  - `logs/RUN_ID/playwright.log`
+  - `logs/RUN_ID/backend.log`
 - Writes analysis + trigger metadata:
-  - `logs/<run_id>/analysis.json`
-  - `logs/<run_id>/triggers.json` (only when `status == "failed"`)
+  - `logs/RUN_ID/analysis.json`
+  - `logs/RUN_ID/triggers.json` (only when `status == "failed"`)
 
 PraxiApp ist ein Backend für Praxis-Workflows (Termine, OP-Planung, Ressourcen, Patientenfluss) mit einem klaren Fokus auf **RBAC**, **Audit Logging** und einer **Single-Datenbank-Architektur** (eine Django-managed PostgreSQL DB unter Alias `default`).
 
@@ -146,7 +146,7 @@ Dieses Repository enthält:
   - `dashboard/` – staff-only HTML-Dashboard
 - `DEPLOYMENT.md` – Deployment-Checkliste
 
-> Es existieren außerdem Root-Module `core/` und `appointments/` (außerhalb `praxi_backend/`). Diese sind **Kompatibilitäts-Wrapper** und re-exporten nur Symbole. Produktivcode sollte konsequent `praxi_backend.<app>.*` importieren.
+> Es existieren außerdem Root-Module `core/` und `appointments/` (außerhalb `praxi_backend/`). Diese sind **Kompatibilitäts-Wrapper** und re-exporten nur Symbole. Produktivcode sollte konsequent `praxi_backend.APP.*` importieren.
 
 ---
 
@@ -154,7 +154,7 @@ Dieses Repository enthält:
 
 ### Layering (Model → Serializer → View)
 
-- **Modelle** (`praxi_backend/<app>/models.py`): Datenstruktur, Beziehungen innerhalb der System-DB
+- **Modelle** (`praxi_backend/APP/models.py`): Datenstruktur, Beziehungen innerhalb der System-DB
 - **Serializer** (`serializers.py`): Validierung + API-Repräsentation (Read/Write-Serializer-Muster)
 - **Permissions** (`permissions.py` bzw. `core/permissions.py`): Rollen-/Objektregeln
 - **Views** (`views.py`): Endpunkte, QuerySets (mit explizitem `.using('default')`), Auditing
@@ -187,8 +187,8 @@ Dieses Repository enthält:
 
 ```
 Client
-  └─ HTTP Request (JSON, Authorization: Bearer <JWT>)
-       └─ DRF View (praxi_backend.<app>.views.*)
+  └─ HTTP Request (JSON, Authorization: Bearer JWT)
+  └─ DRF View (praxi_backend.APP.views.*)
             ├─ Authentication (JWT; in DEV zusätzlich SessionAuth möglich)
             ├─ Permission Check (RBAC + ggf. object-level)
             ├─ Serializer.validate()  ← Geschäftsregeln (z.B. Sprechzeiten, Ressourcen)
@@ -276,44 +276,44 @@ Aus `praxi_backend/appointments/urls.py` (Auszug):
 - Termine
   - `GET/POST /api/appointments/`
   - `GET /api/appointments/suggest/`
-  - `GET/PATCH/DELETE /api/appointments/<id>/`
+  - `GET/PATCH/DELETE /api/appointments/id/`
 - Termin-Typen
   - `GET/POST /api/appointment-types/`
-  - `GET/PATCH/DELETE /api/appointment-types/<id>/`
+  - `GET/PATCH/DELETE /api/appointment-types/id/`
 - OPs
   - `GET/POST /api/operations/`
   - `GET /api/operations/suggest/`
-  - `GET/PATCH/DELETE /api/operations/<id>/`
+  - `GET/PATCH/DELETE /api/operations/id/`
 - OP-Dashboard/Timeline/Stats
-  - `GET /api/op-dashboard/` (+ `/live/`, `/<id>/status/`)
+  - `GET /api/op-dashboard/` (+ `/live/`, `/id/status/`)
   - `GET /api/op-timeline/` (+ `/rooms/`, `/live/`)
   - `GET /api/op-stats/*` (overview/rooms/devices/surgeons/types)
 - Ressourcen
   - `GET/POST /api/resources/`
-  - `GET/PATCH/DELETE /api/resources/<id>/`
+  - `GET/PATCH/DELETE /api/resources/id/`
   - `GET /api/resource-calendar/` (+ `/resources/`)
 - Zeiten
-  - `GET/POST /api/practice-hours/`, `GET/PATCH/DELETE /api/practice-hours/<id>/`
-  - `GET/POST /api/doctor-hours/`, `GET/PATCH/DELETE /api/doctor-hours/<id>/`
-  - `GET/POST /api/doctor-absences/`, `GET/PATCH/DELETE /api/doctor-absences/<id>/`
-  - `GET/POST /api/doctor-breaks/`, `GET/PATCH/DELETE /api/doctor-breaks/<id>/`
+  - `GET/POST /api/practice-hours/`, `GET/PATCH/DELETE /api/practice-hours/id/`
+  - `GET/POST /api/doctor-hours/`, `GET/PATCH/DELETE /api/doctor-hours/id/`
+  - `GET/POST /api/doctor-absences/`, `GET/PATCH/DELETE /api/doctor-absences/id/`
+  - `GET/POST /api/doctor-breaks/`, `GET/PATCH/DELETE /api/doctor-breaks/id/`
 - Patient Flow
   - `GET/POST /api/patient-flow/`
   - `GET /api/patient-flow/live/`
-  - `GET/PATCH/DELETE /api/patient-flow/<id>/`
-  - `POST /api/patient-flow/<id>/status/`
+  - `GET/PATCH/DELETE /api/patient-flow/id/`
+  - `POST /api/patient-flow/id/status/`
 
 ### Patients (System-DB Cache)
 
 | Methode | Pfad | Zweck |
 |---|---|---|
 | GET/POST | `/api/patients/` | Cache-Patienten listen/erstellen |
-| GET/PUT/PATCH | `/api/patients/<id>/` | Cache-Patient ändern |
+| GET/PUT/PATCH | `/api/patients/id/` | Cache-Patient ändern |
 
 ### Beispiel: Login + Auth Header
 
 - Login: `POST /api/auth/login/` mit `{"username": "…", "password": "…"}`
-- Danach: `Authorization: Bearer <access>`
+- Danach: `Authorization: Bearer ACCESS_TOKEN`
 
 ---
 
