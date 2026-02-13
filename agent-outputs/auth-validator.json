@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "reason": "missing_env",
+  "details": {
+    "message": "E2E_USER or E2E_PASSWORD missing"
+  },
+  "timestamp": "2026-02-13T11:35:05.253Z"
+}
