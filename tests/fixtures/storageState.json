@@ -2,20 +2,20 @@
   "cookies": [
     {
       "name": "csrftoken",
-      "value": "PVIhcq3FGx4gTUxxtJpF6GYEVOerxPWb",
-      "domain": "127.0.0.1",
+      "value": "eSv8ZYzubkJy1Z1gfeujmjFaP9a0NhNd",
+      "domain": "localhost",
       "path": "/",
-      "expires": 1802408369.793936,
+      "expires": 1802472245.400402,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "sessionid",
-      "value": "u0zhiw217ibtyf5fa7caquqriwm5jmhi",
-      "domain": "127.0.0.1",
+      "value": "ytz8r9im46vuckrxuq3by03q8tz9p9pm",
+      "domain": "localhost",
       "path": "/",
-      "expires": 1772168369.794167,
+      "expires": 1772232245.400534,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -23,7 +23,7 @@
   ],
   "origins": [
     {
-      "origin": "http://127.0.0.1:8000",
+      "origin": "http://localhost:8000",
       "localStorage": [
         {
           "name": "theme",
@@ -31,11 +31,11 @@
         },
         {
           "name": "refresh_token",
-          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MTU2MzU2NywiaWF0IjoxNzcwOTU4NzY3LCJqdGkiOiIyYzZlMmVjNDllZmY0ZDEwYjE0NGUxOGRlNGRhMTE2YSIsInVzZXJfaWQiOiIxIiwicm9sZSI6ImFkbWluIn0.8IECut5R-ZSgUwnqf-yz-MKzB7_7W7s2vk_A0HOWUr0"
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MTYyNzQ0MCwiaWF0IjoxNzcxMDIyNjQwLCJqdGkiOiJhMDYxMTBkYjlhYjk0NWQ1YmNkZDBmMTgwYjU2OTljOCIsInVzZXJfaWQiOiIyMSIsInJvbGUiOiJhZG1pbiJ9.EBLmpT0YxyvcQ-prNo6d0W69XKFIiaaWO7-nzQTEDXc"
         },
         {
           "name": "access_token",
-          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwOTY1OTY3LCJpYXQiOjE3NzA5NTg3NjcsImp0aSI6IjkzNjU4NDExYTQ2ZDQ2NjFiYzZlMDVmMzViMjU5OTlmIiwidXNlcl9pZCI6IjEiLCJyb2xlIjoiYWRtaW4ifQ.FZy1NTe24tNzInz5Pe0uJuUWo7ePxn1tVBZNB7MDtzs"
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcxMDI5ODQwLCJpYXQiOjE3NzEwMjI2NDAsImp0aSI6ImUzNzU5NWRlNjVhNTQzZDFiYTE1NjkwMDU3NWI1MmU1IiwidXNlcl9pZCI6IjIxIiwicm9sZSI6ImFkbWluIn0.jxE9tqvDDOlX6-0jqAGGo5etyRuv5qmTNsAiZxPV7ro"
         }
       ]
     }

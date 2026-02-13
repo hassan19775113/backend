@@ -8,11 +8,11 @@ const STORAGE_PATH = path.resolve(process.cwd(), 'tests', 'fixtures', 'storageSt
 
 async function globalSetup(config: FullConfig) {
   const baseURL = process.env.BASE_URL || 'http://localhost:8000';
-  const username = process.env.E2E_USER;
-  const password = process.env.E2E_PASSWORD;
+  const username = process.env.E2E_USER || 'e2e_ci';
+  const password = process.env.E2E_PASSWORD || 'test1234';
 
-  if (!username || !password) {
-    throw new Error("E2E_USER or E2E_PASSWORD missing in ENV");
+  if (!process.env.E2E_USER || !process.env.E2E_PASSWORD) {
+    console.warn('E2E_USER/E2E_PASSWORD not set; using local defaults e2e_ci/test1234');
   }
 
   const api = await request.newContext({ baseURL });
