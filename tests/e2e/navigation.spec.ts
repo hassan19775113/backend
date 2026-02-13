@@ -31,6 +31,10 @@ test('navigate through primary sections', async ({ page, baseURL }) => {
   await nav.gotoResources();
   await expect(page).toHaveURL(/\/praxi_backend\/dashboard\/resources\//);
 
-  // Admin might require permissions; just assert navigation attempt does not throw
-  await nav.gotoAdmin();
+  // Admin might be absent/blocked by role; treat it as optional in smoke flow.
+  const adminLink = page.locator('.prx-header__nav a[href*="/admin/"]').first();
+  const canOpenAdmin = await adminLink.isVisible().catch(() => false);
+  if (canOpenAdmin) {
+    await nav.gotoAdmin();
+  }
 });

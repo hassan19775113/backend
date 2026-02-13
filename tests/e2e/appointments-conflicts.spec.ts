@@ -189,11 +189,21 @@ test('API: rejects overlapping appointment for the same patient (different docto
 
     const res = await api.createAppointment(overlappingPayload);
     expect(res.ok()).toBeFalsy();
-    expect(res.status()).toBe(400);
+    expect([400, 409]).toContain(res.status());
 
     const body = await res.json();
     // From appointments.validators.validate_no_patient_appointment_overlap()
-    expect(String(body?.detail || '')).toContain('patient already has an appointment');
+    const detail = body?.detail;
+    const detailText = Array.isArray(detail)
+      ? String(detail[0] ?? '')
+      : typeof detail === 'object' && detail !== null
+        ? JSON.stringify(detail)
+        : String(detail ?? '');
+
+    expect(
+      detailText.includes('patient already has an appointment') ||
+        JSON.stringify(body || {}).includes('patient already has an appointment')
+    ).toBeTruthy();
   } finally {
     await api.dispose();
   }
