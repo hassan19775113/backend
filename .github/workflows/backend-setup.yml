@@ -399,6 +399,25 @@ jobs:
               echo "-----------------------------------------" | tee -a django/logs/system/ci.log
             fi
 
+            # If this was a Playwright run, surface the first failing test in GitHub Annotations.
+            # E2E runs write to logs/playwright.log (see agent-engine.yml).
+            if [ -f logs/playwright.log ]; then
+              echo "--- playwright.log (first failure + tail) ---" | tee -a django/logs/system/ci.log
+
+              # Remove ANSI escapes to keep annotations readable.
+              first_fail=$(grep -m 1 -E '^[[:space:]]*[0-9]+\) ' logs/playwright.log | sed -r 's/\x1B\[[0-9;]*[A-Za-z]//g' || true)
+              if [ -n "$first_fail" ]; then
+                echo "::error title=Playwright first failing test::${first_fail}"
+                echo "First failing test: ${first_fail}" | tee -a django/logs/system/ci.log
+              else
+                echo "No structured Playwright failure header found." | tee -a django/logs/system/ci.log
+              fi
+
+              echo "--- playwright.log (last 80 lines) ---" | tee -a django/logs/system/ci.log
+              tail -80 logs/playwright.log | tee -a django/logs/system/ci.log
+              echo "-------------------------------------" | tee -a django/logs/system/ci.log
+            fi
+
             exit 1
           }
 
