@@ -1044,12 +1044,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if python django/manage.py help | grep -q '^\s*seed_test_data\s'; then
+          commands="$(python django/manage.py help | awk '/^    [a-z_][a-z0-9_]*$/{print $1}')"
+
+          if echo "$commands" | grep -Fxq 'seed_test_data'; then
             python django/manage.py seed_test_data
-          elif python django/manage.py help | grep -q '^\s*create_test_data\s'; then
+          elif echo "$commands" | grep -Fxq 'create_test_data'; then
             python django/manage.py create_test_data
+          elif echo "$commands" | grep -Fxq 'seed'; then
+            python django/manage.py seed
           else
-            echo "Neither seed_test_data nor create_test_data command exists." >&2
+            echo "No supported seed command found (expected: seed_test_data, create_test_data, or seed)." >&2
             python django/manage.py help
             exit 1
           fi
