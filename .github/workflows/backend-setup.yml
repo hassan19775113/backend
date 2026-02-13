@@ -335,6 +335,7 @@ jobs:
 
       # Run the agent command with safe output dir
       - name: Run agent command
+        # Strategy A: auth-validator runs once in Agent Engine; backend-setup only runs the provided agent_command.
         shell: bash
         env:
           AGENT_OUTPUT_DIR: ${{ env.AGENT_OUTPUT_DIR }}
@@ -344,18 +345,8 @@ jobs:
           set -eo pipefail
           OUT_DIR="${AGENT_OUTPUT_DIR:-agent-outputs}"
           mkdir -p "$OUT_DIR" django/logs/agent || true
-          echo "Running auth-validator; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
-          echo "E2E_USER=$E2E_USER" | tee -a django/logs/system/ci.log
-          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" node scripts/agents/auth-validator.js >> django/logs/agent/agent.log 2>&1 || {
-            echo "Auth-validator failed" | tee -a django/logs/system/ci.log
-            if [ -f django/logs/agent/agent.log ]; then
-              echo "--- agent.log ---" | tee -a django/logs/system/ci.log
-              cat django/logs/agent/agent.log | tee -a django/logs/system/ci.log
-              echo "-----------------" | tee -a django/logs/system/ci.log
-            fi
-            exit 1
-          }
           echo "Running agent command; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
+          echo "E2E_USER=$E2E_USER" | tee -a django/logs/system/ci.log
 
           # Run agent command and capture exit code.
           # IMPORTANT: `set -o pipefail` must be enabled inside the nested bash,
@@ -385,9 +376,9 @@ jobs:
               echo "Agent output directory missing: $OUT_DIR" | tee -a django/logs/system/ci.log
             fi
 
-            # Also show auth-validator log for context
+            # Also show agent.log for context (if the caller wrote to it)
             if [ -f django/logs/agent/agent.log ]; then
-              echo "--- agent.log (auth-validator context) ---" | tee -a django/logs/system/ci.log
+              echo "--- agent.log ---" | tee -a django/logs/system/ci.log
               cat django/logs/agent/agent.log | tee -a django/logs/system/ci.log
               echo "------------------------------------------" | tee -a django/logs/system/ci.log
             fi

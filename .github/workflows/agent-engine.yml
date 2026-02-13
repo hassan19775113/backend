@@ -4,6 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+    inputs:
+      enable_public_tunnel:
+        description: 'If true, start a public cloudflared tunnel on full success (manual runs only)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -226,28 +232,36 @@ jobs:
         with:
           node-version: '20.11.1'
       - name: Download agent outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: auth-validator-output
           path: agent-outputs
       - name: Download seed outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: seed-orchestrator-output
           path: agent-outputs
       - name: Download smoke outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: page-smoke-output
           path: agent-outputs
       - name: Download flaky outputs
         if: ${{ needs.flaky-classifier.result == 'success' }}
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: flaky-classifier-output
           path: agent-outputs
       - name: Download selector outputs
         if: ${{ needs.selector-auditor.result == 'success' }}
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: selector-auditor-output
@@ -289,34 +303,43 @@ jobs:
         with:
           node-version: '20.11.1'
       - name: Download agent outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: auth-validator-output
           path: agent-outputs
       - name: Download seed outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: seed-orchestrator-output
           path: agent-outputs
       - name: Download smoke outputs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: page-smoke-output
           path: agent-outputs
       - name: Download flaky outputs
         if: ${{ needs.flaky-classifier.result == 'success' }}
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: flaky-classifier-output
           path: agent-outputs
       - name: Download selector outputs
         if: ${{ needs.selector-auditor.result == 'success' }}
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: selector-auditor-output
           path: agent-outputs
       - name: Download supervisor outputs
         if: ${{ needs.fix-agent-supervisor.result == 'success' }}
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: fix-agent-supervisor-output
@@ -358,10 +381,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download dashboard artifact
+        # Best-effort: if dashboard wasn't produced, skip publishing without failing the workflow.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: dashboard
           path: public
+
+      - name: Check dashboard presence
+        id: has_dashboard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f public/dashboard.html ]; then
+            echo "has_dashboard=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_dashboard=false" >> "$GITHUB_OUTPUT"
+            echo "No dashboard artifact found; skipping Pages publish."
+          fi
       - name: Check whether GitHub Pages is enabled
         id: pages
         uses: actions/github-script@v7
@@ -381,19 +418,23 @@ jobs:
               throw e;
             }
       - name: Configure GitHub Pages
-        if: steps.pages.outputs.enabled == 'true'
+        if: steps.pages.outputs.enabled == 'true' && steps.has_dashboard.outputs.has_dashboard == 'true'
         uses: actions/configure-pages@v5
       - name: Upload to GitHub Pages artifact
-        if: steps.pages.outputs.enabled == 'true'
+        if: steps.pages.outputs.enabled == 'true' && steps.has_dashboard.outputs.has_dashboard == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
       - name: Deploy to GitHub Pages
-        if: steps.pages.outputs.enabled == 'true'
+        if: steps.pages.outputs.enabled == 'true' && steps.has_dashboard.outputs.has_dashboard == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Skip Pages deploy (no dashboard)
+        if: steps.has_dashboard.outputs.has_dashboard != 'true'
+        run: |
+          echo "No dashboard to publish."
       - name: Skip Pages deploy (not enabled)
-        if: steps.pages.outputs.enabled != 'true'
+        if: steps.pages.outputs.enabled != 'true' && steps.has_dashboard.outputs.has_dashboard == 'true'
         run: |
           echo "GitHub Pages is not enabled for this repository."
           echo "Enable it at: https://github.com/${{ github.repository }}/settings/pages"
@@ -408,10 +449,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download supervisor decision
+        # Best-effort: avoid noise failures when supervisor output artifact is missing.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: fix-agent-supervisor-output
           path: agent-outputs
+
+      - name: Ensure supervisor decision exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p agent-outputs
+          if [ ! -f agent-outputs/supervisor-decision.json ]; then
+            echo '{"decision":"n/a","dashboardUrl":"","reason":"missing supervisor decision artifact"}' > agent-outputs/supervisor-decision.json
+          fi
       - name: Read supervisor decision
         run: cat agent-outputs/supervisor-decision.json
       - name: Post PR comment
@@ -544,19 +596,15 @@ jobs:
   public-dashboard-access:
     name: Public Dashboard Access (cloudflared)
     needs:
+      # Tight success semantics: only depend on the critical chain + dashboard publish.
       - auth-validator
       - seed-orchestrator
       - page-smoke
       - e2e-tests
-      - startup-fix-agent
-      - flaky-classifier
-      - selector-auditor
-      - self-heal-supervisor
-      - fix-agent-supervisor
       - ci-dashboard-agent
       - publish-dashboard
-      - post-dashboard-comment
-    if: ${{ success() }}
+    # Safety: only allow the public tunnel on explicit manual intent.
+    if: ${{ success() && github.event_name == 'workflow_dispatch' && inputs.enable_public_tunnel }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -680,10 +728,14 @@ jobs:
           fi
 
       - name: Install cloudflared
+        # Security: pin and verify cloudflared instead of downloading an unpinned "latest" binary.
         shell: bash
         run: |
           set -euo pipefail
-          curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          CLOUDFLARED_VERSION="2026.2.0"
+          CLOUDFLARED_SHA256="176746db3be7dc7bd48f3dd287c8930a4645ebb6e6700f883fddda5a4c307c16"
+          curl -L -o cloudflared "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-amd64"
+          echo "${CLOUDFLARED_SHA256}  cloudflared" | sha256sum -c -
           chmod +x cloudflared
 
       - name: Start public tunnel
