@@ -632,6 +632,50 @@ jobs:
           cat "$OUT_FILE" | tee -a django/logs/system/ci.log
           echo "--- end DB diagnostics ---" | tee -a django/logs/system/ci.log
 
+      - name: Ensure JSON output artifact exists
+        if: ${{ always() && inputs.upload_artifact_name && inputs.upload_artifact_path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # If upload_artifact_path is a multi-line list (e.g. Playwright results), don't try to
+          # materialize a placeholder. We only support single-file JSON outputs here.
+          if printf '%s' "${{ inputs.upload_artifact_path }}" | grep -q $'\n'; then
+            exit 0
+          fi
+
+          out_path="${{ inputs.upload_artifact_path }}"
+          case "$out_path" in
+            *.json)
+              ;;
+            *)
+              exit 0
+              ;;
+          esac
+
+          if [ -f "$out_path" ]; then
+            exit 0
+          fi
+
+          mkdir -p "$(dirname "$out_path")" || true
+          {
+            echo '{'
+            echo '  "status": "error",'
+            echo '  "reason": "missing-agent-output",'
+            echo '  "message": "Expected agent output JSON was not created. See backend logs artifact for details.",'
+            echo '  "artifact": { '
+            echo '    "name": "${{ inputs.upload_artifact_name }}",'
+            echo '    "path": "${{ inputs.upload_artifact_path }}"'
+            echo '  },'
+            echo '  "run": {'
+            echo '    "id": "'"${GITHUB_RUN_ID}"'" ,'
+            echo '    "job": "'"${GITHUB_JOB}"'" ,'
+            echo '    "sha": "'"${GITHUB_SHA}"'"'
+            echo '  }'
+            echo '}'
+          } > "$out_path"
+          echo "Created placeholder agent output at $out_path" | tee -a django/logs/system/ci.log
+
       - name: Upload artifact
         if: ${{ always() && inputs.upload_artifact_name && inputs.upload_artifact_path }}
         uses: actions/upload-artifact@v4
