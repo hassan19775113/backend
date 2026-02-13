@@ -128,6 +128,23 @@ jobs:
           mkdir -p agent-outputs
           node tooling/tools/ai-startup-fix-agent/startup-fix.js --log "$LOG_FILE" --out agent-outputs/startup-fix.json --verbose
 
+      - name: Ensure startup-fix output exists
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p agent-outputs
+          if [ ! -f agent-outputs/startup-fix.json ]; then
+            echo '{}' > agent-outputs/startup-fix.json
+          fi
+
+      - name: Upload startup-fix output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-fix-output
+          path: agent-outputs/startup-fix.json
+
       - name: Enforce safe path policy
         shell: bash
         run: |
@@ -191,6 +208,14 @@ jobs:
       - e2e-tests
       - flaky-classifier
       - selector-auditor
+      - self-heal-supervisor
+    if: >-
+      ${{
+        always() && (
+          github.event_name == 'pull_request'
+          || (github.event_name == 'workflow_dispatch' && needs.self-heal-supervisor.outputs.created_pr_number != '')
+        )
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -215,11 +240,13 @@ jobs:
           name: page-smoke-output
           path: agent-outputs
       - name: Download flaky outputs
+        if: ${{ needs.flaky-classifier.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: flaky-classifier-output
           path: agent-outputs
       - name: Download selector outputs
+        if: ${{ needs.selector-auditor.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: selector-auditor-output
@@ -245,8 +272,15 @@ jobs:
       - flaky-classifier
       - selector-auditor
       - fix-agent-supervisor
+      - self-heal-supervisor
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      SELF_HEAL_STATUS: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.self_heal_status || '' }}
+      SELF_HEAL_CREATED_PR_NUMBER: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.created_pr_number || '' }}
+      SELF_HEAL_ERROR_CLASSIFICATION: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.error_classification || '' }}
+      SELF_HEAL_FIX_SUMMARY: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.fix_summary || '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node
@@ -269,16 +303,19 @@ jobs:
           name: page-smoke-output
           path: agent-outputs
       - name: Download flaky outputs
+        if: ${{ needs.flaky-classifier.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: flaky-classifier-output
           path: agent-outputs
       - name: Download selector outputs
+        if: ${{ needs.selector-auditor.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: selector-auditor-output
           path: agent-outputs
       - name: Download supervisor outputs
+        if: ${{ needs.fix-agent-supervisor.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: fix-agent-supervisor-output
@@ -299,7 +336,10 @@ jobs:
           path: agent-outputs/ci-dashboard-agent.json
 
   publish-dashboard:
-    needs: ci-dashboard-agent
+    needs:
+      - ci-dashboard-agent
+      - self-heal-supervisor
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -309,6 +349,11 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      SELF_HEAL_STATUS: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.self_heal_status || '' }}
+      SELF_HEAL_CREATED_PR_NUMBER: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.created_pr_number || '' }}
+      SELF_HEAL_ERROR_CLASSIFICATION: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.error_classification || '' }}
+      SELF_HEAL_FIX_SUMMARY: ${{ needs.self-heal-supervisor.result == 'success' && needs.self-heal-supervisor.outputs.fix_summary || '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Download dashboard artifact
@@ -355,7 +400,7 @@ jobs:
   post-dashboard-comment:
     runs-on: ubuntu-latest
     needs: publish-dashboard
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' && always() }}
     timeout-minutes: 30
     permissions:
       pull-requests: write
@@ -388,6 +433,11 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && always() && needs.startup-fix-agent.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      self_heal_status: ${{ steps.self_heal_status.outputs.self_heal_status }}
+      created_pr_number: ${{ steps.pr_lookup.outputs.created_pr_number }}
+      error_classification: ${{ steps.extract_fix.outputs.error_classification }}
+      fix_summary: ${{ steps.extract_fix.outputs.fix_summary }}
     permissions:
       contents: write
       pull-requests: write
@@ -416,5 +466,66 @@ jobs:
           cache: 'npm'
       - name: Install Node dependencies
         run: npm ci
+
+      - name: Download startup-fix output
+        uses: actions/download-artifact@v4
+        with:
+          name: startup-fix-output
+          path: agent-outputs
+
+      - name: Extract self-heal metadata
+        id: extract_fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          classification=""
+          summary=""
+          if [ -f agent-outputs/startup-fix.json ]; then
+            classification=$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('agent-outputs/startup-fix.json','utf8')); console.log(String(j.error_classification || j.strategy || j.classification || ''));" || true)
+            summary=$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('agent-outputs/startup-fix.json','utf8')); console.log(String(j.fix_summary || j.summary || j.strategy || ''));" || true)
+          fi
+          echo "error_classification=${classification}" >> "$GITHUB_OUTPUT"
+          echo "fix_summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$summary" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Ensure PR exists/updated
         run: node --loader ts-node/esm tooling/tools/auto-self-heal.ts
+
+      - name: Lookup PR for ai-fix
+        id: pr_lookup
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const head = `${owner}:${process.env.GH_BRANCH_FIX || 'ai-fix'}`;
+            const base = process.env.GH_BRANCH_MAIN || 'main';
+            const { data } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head,
+              base,
+              per_page: 1,
+            });
+            const pr = data && data.length ? data[0] : null;
+            core.setOutput('created_pr_number', pr ? String(pr.number) : '');
+
+      - name: Set self-heal status output
+        id: self_heal_status
+        shell: bash
+        run: |
+          set -euo pipefail
+          pr="${{ steps.pr_lookup.outputs.created_pr_number }}"
+          status=""
+          git fetch origin --quiet || true
+          changed=$(git diff --name-only "origin/${GH_BRANCH_MAIN}"...HEAD || true)
+          if [ -z "$changed" ]; then
+            status="no_changes"
+          elif [ -n "$pr" ]; then
+            status="pr_ready"
+          else
+            status="pr_not_created"
+          fi
+          echo "self_heal_status=$status" >> "$GITHUB_OUTPUT"
