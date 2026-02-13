@@ -142,12 +142,35 @@ export class ApiClient {
       first_name: 'E2E',
       last_name: `Patient ${Date.now()}`,
     };
-    const body = {
-      id: base?.id ?? this.generateLegacyPatientId(),
+    const hasExplicitId = base?.id !== undefined && base?.id !== null;
+
+    const makeBody = () => ({
+      id: hasExplicitId ? base.id : this.generateLegacyPatientId(),
       ...base,
-    };
-    // Endpoint derived from index links (/api/patients)
-    return this.post('/api/patients/', body);
+    });
+
+    const maxAttempts = hasExplicitId ? 1 : 6;
+    let lastResponse: any = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const body = makeBody();
+      const response = await this.post('/api/patients/', body);
+      if (response.ok()) {
+        return response;
+      }
+
+      lastResponse = response;
+      const text = await response.text();
+      const isDuplicateId =
+        text.includes('duplicate key value violates unique constraint') &&
+        (text.includes('patients_pkey1') || text.includes('Key (id)=') || text.includes('UNIQUE constraint failed'));
+
+      if (!isDuplicateId || hasExplicitId || attempt === maxAttempts) {
+        return response;
+      }
+    }
+
+    return lastResponse;
   }
 
   async checkAvailability(startISO: string, endISO: string, excludeId?: string | number) {
