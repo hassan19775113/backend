@@ -110,6 +110,13 @@ async function createBrowserStorageState(tokens) {
     submit.click(),
   ]);
 
+  // Some environments perform multiple redirects and may not trigger a clean
+  // navigation event we can reliably await. Wait for the URL to leave the login
+  // page before declaring failure.
+  await page
+    .waitForURL((url) => !url.pathname.includes('/admin/login'), { timeout: 15_000 })
+    .catch(() => null);
+
   if (page.url().includes('/admin/login')) {
     const errorText = await page.locator('.errornote, .errorlist').first().textContent().catch(() => null);
     throw new Error(`admin-login-failed${errorText ? `: ${errorText.trim()}` : ''}`);
@@ -140,7 +147,23 @@ async function main() {
   }
 
   const tokens = await fetchJwtTokens();
-  await createBrowserStorageState(tokens);
+  // Playwright Chromium can occasionally crash right after launch on some CI
+  // images (missing OS deps, sandbox issues, transient runner hiccups). A small
+  // retry here makes auth setup more resilient.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await createBrowserStorageState(tokens);
+      break;
+    } catch (err) {
+      const message = String(err?.message || err);
+      const retryable = /Target page, context or browser has been closed/i.test(message);
+      if (attempt < 2 && retryable) {
+        await new Promise((r) => setTimeout(r, 750));
+        continue;
+      }
+      throw err;
+    }
+  }
   refreshed = true;
 
   const healthy = await checkHealth(STORAGE_PATH);
