@@ -3,6 +3,14 @@ name: Backend Setup
 on:
   workflow_call:
     inputs:
+      superuser_username:
+        required: false
+        type: string
+        default: e2e_ci
+      superuser_password:
+        required: false
+        type: string
+        default: e2e_ci_pw
       agent_command:
         required: true
         type: string
@@ -67,8 +75,7 @@ env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
   AGENT_OUTPUT_DIR: agent-outputs
-  E2E_USER: e2e_ci
-  E2E_PASSWORD: e2e_ci_pw
+  STORAGE_STATE_PATH: playwright/.auth/storageState.json
 
 jobs:
   backend-job:
@@ -107,6 +114,7 @@ jobs:
         run: |
           set -eo pipefail
           mkdir -p django/logs/django django/logs/agent django/logs/system
+          mkdir -p playwright/.auth
           : > django/logs/django/server.log
           : > django/logs/django/server.pid
           : > django/logs/agent/agent.log
@@ -120,13 +128,6 @@ jobs:
           echo "POSTGRES_PORT=${{ job.services.postgres.ports[5432] }}" >> "$GITHUB_ENV"
           echo "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${{ job.services.postgres.ports[5432] }}/${POSTGRES_DB}" >> "$GITHUB_ENV"
           echo "Configured Postgres: 127.0.0.1:${{ job.services.postgres.ports[5432] }}" | tee -a django/logs/system/ci.log
-
-      - name: Download storage state
-        if: ${{ inputs.download_storage_state }}
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.storage_state_artifact_name }}
-          path: tests/fixtures
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -176,6 +177,8 @@ jobs:
       # Log critical env for transparency
       - name: Show debug environment
         shell: bash
+        env:
+          E2E_USER: ${{ inputs.superuser_username }}
         run: |
           set -eo pipefail
           echo "BASE_URL=${BASE_URL}" | tee -a django/logs/system/ci.log
@@ -184,7 +187,7 @@ jobs:
           echo "POSTGRES_PASSWORD=***" | tee -a django/logs/system/ci.log
           echo "AGENT_OUTPUT_DIR=${AGENT_OUTPUT_DIR:-agent-outputs}" | tee -a django/logs/system/ci.log
           echo "E2E_USER=${E2E_USER}" | tee -a django/logs/system/ci.log
-          echo "E2E_PASSWORD=***" | tee -a django/logs/system/ci.log
+          echo "STORAGE_STATE_PATH=${STORAGE_STATE_PATH}" | tee -a django/logs/system/ci.log
           echo "DATABASE_URL=***" | tee -a django/logs/system/ci.log
 
       # Django DB prep
@@ -224,17 +227,24 @@ jobs:
       - name: Create E2E user
         continue-on-error: ${{ inputs.best_effort }}
         shell: bash
+        env:
+          E2E_USER: ${{ inputs.superuser_username }}
+          E2E_PASSWORD: ${{ inputs.superuser_password }}
         run: |
           set -eo pipefail
           echo "Creating E2E user" | tee -a django/logs/system/ci.log
           python django/manage.py shell -c "
           from django.contrib.auth import get_user_model;
           from praxi_backend.core.models import Role;
+          import os;
           
           User = get_user_model();
+
+          username = os.environ.get('E2E_USER', 'e2e_ci');
+          password = os.environ.get('E2E_PASSWORD', 'e2e_ci_pw');
           
           # Delete existing E2E user if exists
-          User.objects.filter(username='e2e_ci').delete();
+          User.objects.filter(username=username).delete();
           
           # Create or get admin role
           admin_role, _ = Role.objects.get_or_create(
@@ -243,7 +253,7 @@ jobs:
           );
           
           # Create superuser WITH role assigned
-          user = User.objects.create_superuser('e2e_ci', 'admin@example.com', 'e2e_ci_pw');
+          user = User.objects.create_superuser(username, 'admin@example.com', password);
           user.role = admin_role;
           user.save();
           
@@ -325,6 +335,31 @@ jobs:
             exit 1
           fi
 
+      - name: Generate fresh storage state
+        continue-on-error: ${{ inputs.best_effort }}
+        shell: bash
+        env:
+          BASE_URL: http://127.0.0.1:8000
+          DJANGO_SUPERUSER_USERNAME: ${{ inputs.superuser_username }}
+          DJANGO_SUPERUSER_PASSWORD: ${{ inputs.superuser_password }}
+          E2E_USER: ${{ inputs.superuser_username }}
+          E2E_PASSWORD: ${{ inputs.superuser_password }}
+          STORAGE_PATH: ${{ env.STORAGE_STATE_PATH }}
+        run: |
+          set -eo pipefail
+          mkdir -p "$(dirname "${STORAGE_PATH}")"
+          rm -f "${STORAGE_PATH}" || true
+          echo "Generating fresh storage state at ${STORAGE_PATH}" | tee -a django/logs/system/ci.log
+          node scripts/agents/auth-validator.js 2>&1 | tee -a django/logs/system/ci.log
+          if [ ! -f "${STORAGE_PATH}" ]; then
+            echo "Storage state was not created at ${STORAGE_PATH}" | tee -a django/logs/system/ci.log
+            exit 1
+          fi
+
+          # Back-compat for Playwright config defaults
+          mkdir -p tests/fixtures
+          cp "${STORAGE_PATH}" tests/fixtures/storageState.json
+
       # Wait for HTTP readiness; dump server.log on failure
       - name: Unified health checks (DB, Django, HTTP)
         continue-on-error: ${{ inputs.best_effort }}
@@ -366,24 +401,26 @@ jobs:
 
       # Run the agent command with safe output dir
       - name: Run agent command
-        # Strategy A: auth-validator runs once in Agent Engine; backend-setup only runs the provided agent_command.
+        # backend-setup always generates fresh auth state per job; agent_command must use that state.
         continue-on-error: ${{ inputs.best_effort }}
         shell: bash
         env:
           AGENT_OUTPUT_DIR: ${{ env.AGENT_OUTPUT_DIR }}
-          E2E_USER: ${{ env.E2E_USER }}
-          E2E_PASSWORD: ${{ env.E2E_PASSWORD }}
+          E2E_USER: ${{ inputs.superuser_username }}
+          E2E_PASSWORD: ${{ inputs.superuser_password }}
+          STORAGE_PATH: ${{ env.STORAGE_STATE_PATH }}
         run: |
           set -eo pipefail
           OUT_DIR="${AGENT_OUTPUT_DIR:-agent-outputs}"
           mkdir -p "$OUT_DIR" django/logs/agent || true
           echo "Running agent command; AGENT_OUTPUT_DIR=$OUT_DIR" | tee -a django/logs/system/ci.log
           echo "E2E_USER=$E2E_USER" | tee -a django/logs/system/ci.log
+          echo "STORAGE_PATH=$STORAGE_PATH" | tee -a django/logs/system/ci.log
 
           # Run agent command and capture exit code.
           # IMPORTANT: `set -o pipefail` must be enabled inside the nested bash,
           # otherwise pipelines like `cmd | tee file` will mask failures.
-          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" bash -c 'set -eo pipefail
+          AGENT_OUTPUT_DIR="$OUT_DIR" E2E_USER="$E2E_USER" E2E_PASSWORD="$E2E_PASSWORD" STORAGE_PATH="$STORAGE_PATH" bash -c 'set -eo pipefail
           ${{ inputs.agent_command }}' 2>&1 || {
             AGENT_EXIT_CODE=$?
             echo "Agent command failed with exit code $AGENT_EXIT_CODE" | tee -a django/logs/system/ci.log
@@ -500,11 +537,13 @@ jobs:
           echo "Agent command completed successfully" | tee -a django/logs/system/ci.log
 
       - name: Upload storage state
-        if: ${{ inputs.upload_storage_state }}
+        if: ${{ always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.storage_state_artifact_name }}
-          path: ${{ inputs.storage_state_path }}
+          name: storage-state
+          path: playwright/.auth/storageState.json
+          overwrite: true
           retention-days: 7
           if-no-files-found: warn
 

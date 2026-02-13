@@ -31,9 +31,6 @@ jobs:
       agent_command: node scripts/agents/auth-validator.js > agent-outputs/auth-validator.json
       upload_artifact_name: auth-validator-output
       upload_artifact_path: agent-outputs/auth-validator.json
-      upload_storage_state: true
-      storage_state_artifact_name: storage-state
-      storage_state_path: tests/fixtures/storageState.json
       logs_artifact_name: backend-logs-auth-validator
 
   seed-orchestrator:
@@ -44,8 +41,6 @@ jobs:
       agent_command: bash -c "export SEED_COMMAND=\"python django/manage.py seed\" && node scripts/agents/seed-orchestrator.js" > agent-outputs/seed-orchestrator.json
       upload_artifact_name: seed-orchestrator-output
       upload_artifact_path: agent-outputs/seed-orchestrator.json
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-seed-orchestrator
 
   page-smoke:
@@ -56,8 +51,6 @@ jobs:
       agent_command: node scripts/agents/page-smoke.cjs > agent-outputs/page-smoke.json
       upload_artifact_name: page-smoke-output
       upload_artifact_path: agent-outputs/page-smoke.json
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-page-smoke
 
   e2e-tests:
@@ -73,8 +66,6 @@ jobs:
         logs/playwright.log
         playwright-report/
         test-results/
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-e2e-tests
 
   startup-fix-agent:
@@ -143,8 +134,6 @@ jobs:
       agent_command: node scripts/agents/flaky-classifier.cjs > agent-outputs/flaky-classifier.json
       upload_artifact_name: flaky-classifier-output
       upload_artifact_path: agent-outputs/flaky-classifier.json
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-flaky-classifier
 
   selector-auditor:
@@ -155,8 +144,6 @@ jobs:
       agent_command: node scripts/agents/selector-auditor.cjs > agent-outputs/selector-auditor.json
       upload_artifact_name: selector-auditor-output
       upload_artifact_path: agent-outputs/selector-auditor.json
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       logs_artifact_name: backend-logs-selector-auditor
 
   fix-agent-supervisor:
@@ -531,8 +518,6 @@ jobs:
       agent_command: |
         mkdir -p self-heal
         node tools/self-heal/execute.mjs --context self-heal/context.json --decision self-heal/decision.json
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       download_extra_artifact_name: self-heal-bundle
       download_extra_artifact_path: .
       upload_artifact_name: self-heal-report
@@ -624,8 +609,6 @@ jobs:
       agent_command: |
         mkdir -p fix-agent
         node tools/fix-agent/apply-and-validate.mjs --input fix-agent/input.json --out-dir fix-agent
-      download_storage_state: true
-      storage_state_artifact_name: storage-state
       download_extra_artifact_name: fix-agent-input
       download_extra_artifact_path: .
       upload_artifact_name: fix-agent-output
