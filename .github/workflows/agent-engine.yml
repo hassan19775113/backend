@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   auth-validator:
+    name: Auth Validator
     uses: ./.github/workflows/backend-setup.yml
     with:
       agent_command: node scripts/agents/auth-validator.js > agent-outputs/auth-validator.json
@@ -35,6 +36,7 @@ jobs:
       logs_artifact_name: backend-logs-auth-validator
 
   seed-orchestrator:
+    name: Seed Orchestrator
     needs: auth-validator
     uses: ./.github/workflows/backend-setup.yml
     with:
@@ -46,6 +48,7 @@ jobs:
       logs_artifact_name: backend-logs-seed-orchestrator
 
   page-smoke:
+    name: Page Smoke
     needs: seed-orchestrator
     uses: ./.github/workflows/backend-setup.yml
     with:
@@ -57,6 +60,7 @@ jobs:
       logs_artifact_name: backend-logs-page-smoke
 
   e2e-tests:
+    name: E2E Tests
     needs: page-smoke
     uses: ./.github/workflows/backend-setup.yml
     with:
@@ -131,6 +135,7 @@ jobs:
           path: self-heal/context.json
 
   flaky-classifier:
+    name: Flaky Classifier
     needs: e2e-tests
     uses: ./.github/workflows/backend-setup.yml
     with:
@@ -142,6 +147,7 @@ jobs:
       logs_artifact_name: backend-logs-flaky-classifier
 
   selector-auditor:
+    name: Selector Auditor
     needs: e2e-tests
     uses: ./.github/workflows/backend-setup.yml
     with:
