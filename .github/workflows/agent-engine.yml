@@ -1058,6 +1058,28 @@ jobs:
             exit 1
           fi
 
+      - name: Ensure E2E login user
+        shell: bash
+        run: |
+          set -euo pipefail
+          python django/manage.py shell -c "
+          from praxi_backend.core.models import User
+
+          user, _ = User.objects.get_or_create(
+              username='e2e_ci',
+              defaults={
+                  'email': 'e2e_ci@seed.local',
+                  'is_active': True,
+                  'is_staff': True,
+              },
+          )
+          user.is_active = True
+          user.is_staff = True
+          user.set_password('test1234')
+          user.save()
+          print('✅ ensured e2e_ci credentials')
+          "
+
       - name: Run Django unit tests
         shell: bash
         run: |
