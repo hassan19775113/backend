@@ -179,7 +179,14 @@ export const test = base.extend<{ testData: TestData }>({
     } finally {
       // Cleanup appointment if created
       if (data.appointmentId) {
-        await api.deleteAppointment(data.appointmentId);
+        try {
+          const existing = await api.get(`/api/appointments/${data.appointmentId}/`);
+          if (existing.ok()) {
+            await api.deleteAppointment(data.appointmentId);
+          }
+        } catch {
+          // idempotent cleanup: ignore races/404s from tests deleting the same appointment
+        }
       }
       await api.dispose();
     }
