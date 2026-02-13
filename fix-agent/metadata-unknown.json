@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "generated_at": "2026-02-13T08:58:40.133Z",
+  "run_id": "unknown",
+  "error_type": "unknown",
+  "allowed": false,
+  "guardrails": {
+    "max_files": 4,
+    "max_lines": 180,
+    "allowed_roots": [
+      "tests/",
+      "django/"
+    ]
+  },
+  "suggestions": {
+    "branch_name": "fix-agent/run-unknown-unknown",
+    "commit_message": "Fix(unknown): stabilize failing CI run unknown",
+    "pr_title": "Fix(unknown): stabilize CI failures",
+    "pr_body": "Automated Fix-Agent patch for run_id=unknown.\n\n- Guardrails: scoped changes only; capped file/line changes\n- Validation: minimal subset when possible\n\nPlease review carefully before merging."
+  },
+  "inputs": {
+    "has_classification": false,
+    "has_fix_instructions": false
+  },
+  "change_summary": {
+    "attempted_files": [],
+    "changed_files": [],
+    "diff_stats": null
+  },
+  "validation": {
+    "attempted": false,
+    "command": null,
+    "exit_code": null,
+    "ok": null,
+    "notes": "Missing classification/instructions; patch intentionally empty."
+  },
+  "needs_manual_review": true,
+  "errors": []
+}

@@ -534,6 +534,96 @@ jobs:
         self-heal/context.json
       logs_artifact_name: backend-logs-self-heal
 
+  fix-agent-prep:
+    name: Fix-Agent Prep (build patch input)
+    needs:
+      - e2e-tests
+      - self-heal-runner
+    if: ${{ always() && needs.e2e-tests.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # NOTE: best-effort: failures here must not flip the overall CI signal.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: 'npm'
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Download E2E artifacts
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/e2e
+      - name: Download backend logs
+        # Best-effort: avoid noise failures when upstream artifacts are missing.
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-logs-e2e-tests
+          path: artifacts/backend-logs
+
+      - name: Prepare Fix-Agent input
+        # Integration point: fetch Developer-Agent fix instructions (via Cloud-Agent) and persist a stable input.json.
+        shell: bash
+        env:
+          AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          CLOUD_AGENT_URL: https://praxi-app.vercel.app/api/ci/logs
+          E2E_STATUS: ${{ needs.e2e-tests.result }}
+        run: |
+          set -euo pipefail
+          mkdir -p fix-agent
+          node tools/fix-agent/prepare-input.mjs --out-dir fix-agent --out fix-agent/input.json
+
+      - name: Ensure Fix-Agent input exists
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p fix-agent
+          if [ ! -f fix-agent/input.json ]; then
+            echo '{"version":1,"error":"input_missing"}' > fix-agent/input.json
+          fi
+
+      - name: Upload Fix-Agent input
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: fix-agent-input
+          path: fix-agent/input.json
+
+  fix-agent-runner:
+    name: Fix-Agent Runner (prepare patch)
+    needs:
+      - auth-validator
+      - e2e-tests
+      - fix-agent-prep
+    if: ${{ always() && needs.e2e-tests.result == 'failure' && needs.fix-agent-prep.result != 'skipped' }}
+    # NOTE: best-effort: patch generation must not flip the overall CI signal.
+    continue-on-error: true
+    uses: ./.github/workflows/backend-setup.yml
+    with:
+      # Integration point: scoped, guarded code changes only; emit patch + metadata artifacts (no PR creation).
+      agent_command: |
+        mkdir -p fix-agent
+        node tools/fix-agent/apply-and-validate.mjs --input fix-agent/input.json --out-dir fix-agent
+      download_storage_state: true
+      storage_state_artifact_name: storage-state
+      download_extra_artifact_name: fix-agent-input
+      download_extra_artifact_path: .
+      upload_artifact_name: fix-agent-output
+      upload_artifact_path: |
+        fix-agent/patch-${{ github.run_id }}.diff
+        fix-agent/metadata-${{ github.run_id }}.json
+      logs_artifact_name: backend-logs-fix-agent
+
   public-dashboard-access:
     name: Public Dashboard Access (cloudflared)
     needs:
