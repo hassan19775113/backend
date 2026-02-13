@@ -81,6 +81,7 @@ async function main() {
   assert(workflow.includes('run-name:'), 'Missing run-name (Actions UI readability)', failures);
 
   // 2) Artifact/log flow expectations
+  const workflowAndBackendSetup = `${workflow}\n${backendSetup}`;
   const artifactNames = [
     'test-results',
     'backend-logs-e2e-tests',
@@ -93,7 +94,11 @@ async function main() {
     'dashboard',
   ];
   for (const name of artifactNames) {
-    assert(workflow.includes(name), `Expected artifact name missing from workflow text: ${name}`, failures);
+    assert(
+      workflowAndBackendSetup.includes(name),
+      `Expected artifact name missing from workflow/back-end setup text: ${name}`,
+      failures,
+    );
   }
 
   // 3) Self-heal triggers/guardrails

@@ -28,7 +28,7 @@ jobs:
     name: Auth Validator
     uses: ./.github/workflows/backend-setup.yml
     with:
-      agent_command: node scripts/agents/auth-validator.js > agent-outputs/auth-validator.json
+      agent_command: bash -c "set -eo pipefail; mkdir -p agent-outputs; node scripts/agents/auth-validator.js | tee agent-outputs/auth-validator.json >/dev/null"
       upload_artifact_name: auth-validator-output
       upload_artifact_path: agent-outputs/auth-validator.json
       logs_artifact_name: backend-logs-auth-validator
