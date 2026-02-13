@@ -69,27 +69,15 @@ jobs:
       logs_artifact_name: backend-logs-e2e-tests
 
   startup-fix-agent:
-    name: Startup Fix Agent (on E2E failure)
+    name: Startup Fix Agent (prepare self-heal context)
     needs: e2e-tests
     if: ${{ always() && github.event_name == 'workflow_dispatch' && needs.e2e-tests.result == 'failure' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: write
-    env:
-      AI_FIX_BRANCH: ai-fix
-      MAX_ITER: '1'
+    # NOTE: this job must not edit code; it only prepares structured context.
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Checkout tooling (workflow ref)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.sha }}
-          path: tooling
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -109,81 +97,34 @@ jobs:
           name: backend-logs-e2e-tests
           path: artifacts/backend-logs
 
-      - name: Prepare ai-fix branch
+      - name: Prepare self-heal context
+        # Integration point: collect logs and fetch Developer-Agent classification + self-heal plan.
         shell: bash
+        env:
+          AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          CLOUD_AGENT_URL: https://praxi-app.vercel.app/api/ci/logs
+          E2E_STATUS: ${{ needs.e2e-tests.result }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin "${AI_FIX_BRANCH}" --quiet || true
-          if git show-ref --verify --quiet "refs/remotes/origin/${AI_FIX_BRANCH}"; then
-            git checkout -B "${AI_FIX_BRANCH}" "origin/${AI_FIX_BRANCH}"
-          else
-            git checkout -B "${AI_FIX_BRANCH}" "origin/main"
-          fi
+          mkdir -p self-heal
+          node tools/self-heal/prepare-context.mjs --out-dir self-heal
 
-      - name: Run startup-fix agent
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          LOG_FILE="artifacts/e2e/logs/playwright.log"
-          if [ ! -f "$LOG_FILE" ]; then
-            echo "No playwright log found at $LOG_FILE" >&2
-            exit 1
-          fi
-          mkdir -p agent-outputs
-          node tooling/tools/ai-startup-fix-agent/startup-fix.js --log "$LOG_FILE" --out agent-outputs/startup-fix.json --verbose
-
-      - name: Ensure startup-fix output exists
+      - name: Ensure context exists
         if: ${{ always() }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p agent-outputs
-          if [ ! -f agent-outputs/startup-fix.json ]; then
-            echo '{}' > agent-outputs/startup-fix.json
+          mkdir -p self-heal
+          if [ ! -f self-heal/context.json ]; then
+            echo '{"version":1,"error":"context_missing"}' > self-heal/context.json
           fi
 
-      - name: Upload startup-fix output
+      - name: Upload self-heal context
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: startup-fix-output
-          path: agent-outputs/startup-fix.json
-
-      - name: Enforce safe path policy
-        shell: bash
-        run: |
-          set -euo pipefail
-          changed=$(git diff --name-only)
-          if [ -z "$changed" ]; then
-            echo "No changes produced by startup-fix; skipping commit/push."
-            exit 0
-          fi
-          echo "$changed" | while IFS= read -r f; do
-            case "$f" in
-              tests/*|playwright.config.ts|.github/workflows/agent-engine.yml|.github/workflows/backend-setup.yml)
-                ;;
-              *)
-                echo "Disallowed change detected: $f" >&2
-                exit 2
-                ;;
-            esac
-          done
-
-      - name: Commit and push ai-fix
-        shell: bash
-        run: |
-          set -euo pipefail
-          if git diff --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-          strategy=$(node -e "const fs=require('fs'); const p='agent-outputs/startup-fix.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); console.log(j.strategy || 'UNKNOWN');")
-          git add -A
-          git commit -m "[AI] startup-fix: ${strategy}"
-          git push origin "${AI_FIX_BRANCH}"
+          name: self-heal-context
+          path: self-heal/context.json
 
   flaky-classifier:
     needs: e2e-tests
@@ -481,47 +422,25 @@ jobs:
             });
 
   self-heal-supervisor:
-    name: Self-heal Supervisor (PR manager)
+    name: Self-heal Supervisor (coordinate self-heal)
     needs: startup-fix-agent
     if: ${{ github.event_name == 'workflow_dispatch' && always() && needs.startup-fix-agent.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
       self_heal_status: ${{ steps.self_heal_status.outputs.self_heal_status }}
-      created_pr_number: ${{ steps.pr_lookup.outputs.created_pr_number }}
-      error_classification: ${{ steps.extract_fix.outputs.error_classification }}
-      fix_summary: ${{ steps.extract_fix.outputs.fix_summary }}
+      should_self_heal: ${{ steps.decide.outputs.should_self_heal }}
+      # Compatibility: downstream jobs expect this output to exist.
+      created_pr_number: ${{ steps.compat.outputs.created_pr_number }}
+      error_classification: ${{ steps.decide.outputs.error_classification }}
+      fix_summary: ${{ steps.decide.outputs.fix_summary }}
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     env:
       GITHUB_TOKEN: ${{ github.token }}
-      GH_OWNER: ${{ github.repository_owner }}
-      GH_REPO: ${{ github.event.repository.name }}
-      GH_BRANCH_FIX: ai-fix
-      GH_BRANCH_MAIN: main
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Checkout ai-fix branch if it exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin "${GH_BRANCH_FIX}" --quiet || true
-          if git show-ref --verify --quiet "refs/remotes/origin/${GH_BRANCH_FIX}"; then
-            git checkout -B "${GH_BRANCH_FIX}" "origin/${GH_BRANCH_FIX}"
-          else
-            echo "Branch ${GH_BRANCH_FIX} not found; continuing without it."
-          fi
-
-      - name: Checkout tooling (workflow ref)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.sha }}
-          path: tooling
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -530,68 +449,90 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Download startup-fix output
+      - name: Download self-heal context
+        # Integration point: consume prepared context from startup-fix-agent.
         uses: actions/download-artifact@v4
         with:
-          name: startup-fix-output
-          path: agent-outputs
+          name: self-heal-context
+          path: .
 
-      - name: Extract self-heal metadata
-        id: extract_fix
+      - name: Decide self-heal actions
+        # Integration point: enforce guardrails (eligible error types only, rerun-only policy).
+        id: decide
         shell: bash
         run: |
           set -euo pipefail
-          classification=""
-          summary=""
-          if [ -f agent-outputs/startup-fix.json ]; then
-            classification=$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('agent-outputs/startup-fix.json','utf8')); console.log(String(j.error_classification || j.strategy || j.classification || ''));" || true)
-            summary=$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('agent-outputs/startup-fix.json','utf8')); console.log(String(j.fix_summary || j.summary || j.strategy || ''));" || true)
-          fi
+          node tools/self-heal/decide.mjs --context self-heal/context.json --out self-heal/decision.json
+          should=$(node -e "const j=require('./self-heal/decision.json'); process.stdout.write(String(!!j.allowed));")
+          classification=$(node -e "const j=require('./self-heal/decision.json'); process.stdout.write(String(j.error_type||''));")
+          summary=$(node -e "const j=require('./self-heal/decision.json'); process.stdout.write(String(j.reason||''));")
+          echo "should_self_heal=${should}" >> "$GITHUB_OUTPUT"
           echo "error_classification=${classification}" >> "$GITHUB_OUTPUT"
           echo "fix_summary<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$summary" >> "$GITHUB_OUTPUT"
+          echo "${summary}" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Ensure PR exists/updated
-        run: node --loader ts-node/esm tooling/tools/auto-self-heal.ts
-
-      - name: Lookup PR for ai-fix
-        id: pr_lookup
-        uses: actions/github-script@v7
+      - name: Upload self-heal decision
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const head = `${owner}:${process.env.GH_BRANCH_FIX || 'ai-fix'}`;
-            const base = process.env.GH_BRANCH_MAIN || 'main';
-            const { data } = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: 'open',
-              head,
-              base,
-              per_page: 1,
-            });
-            const pr = data && data.length ? data[0] : null;
-            core.setOutput('created_pr_number', pr ? String(pr.number) : '');
+          name: self-heal-decision
+          path: self-heal/decision.json
+
+      - name: Upload self-heal bundle
+        # Integration point: bundle context+decision for the self-heal runner.
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-heal-bundle
+          path: |
+            self-heal/context.json
+            self-heal/decision.json
+
+      - name: Compatibility outputs
+        id: compat
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "created_pr_number=" >> "$GITHUB_OUTPUT"
 
       - name: Set self-heal status output
         id: self_heal_status
         shell: bash
         run: |
           set -euo pipefail
-          pr="${{ steps.pr_lookup.outputs.created_pr_number }}"
-          status=""
-          git fetch origin --quiet || true
-          changed=$(git diff --name-only "origin/${GH_BRANCH_MAIN}"...HEAD || true)
-          if [ -z "$changed" ]; then
-            status="no_changes"
-          elif [ -n "$pr" ]; then
-            status="pr_ready"
+          if [ "${{ steps.decide.outputs.should_self_heal }}" = "true" ]; then
+            status="planned"
           else
-            status="pr_not_created"
+            status="skipped"
           fi
           echo "self_heal_status=$status" >> "$GITHUB_OUTPUT"
+
+  self-heal-runner:
+    name: Self-heal Runner (safe rerun)
+    needs:
+      - auth-validator
+      - self-heal-supervisor
+    if: ${{ github.event_name == 'workflow_dispatch' && always() && needs.self-heal-supervisor.outputs.should_self_heal == 'true' }}
+    uses: ./.github/workflows/backend-setup.yml
+    with:
+      # Integration point: run safe self-heal actions (no code edits) and upload a report artifact.
+      agent_command: |
+        mkdir -p self-heal
+        node tools/self-heal/execute.mjs --context self-heal/context.json --decision self-heal/decision.json
+      download_storage_state: true
+      storage_state_artifact_name: storage-state
+      download_extra_artifact_name: self-heal-bundle
+      download_extra_artifact_path: .
+      upload_artifact_name: self-heal-report
+      upload_artifact_path: |
+        self-heal/report-${{ github.run_id }}.json
+        self-heal/playwright-rerun.log
+        self-heal/reseed.log
+        self-heal/auth-validator.log
+        self-heal/decision.json
+        self-heal/context.json
+      logs_artifact_name: backend-logs-self-heal
 
   public-dashboard-access:
     name: Public Dashboard Access (cloudflared)

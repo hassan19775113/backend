@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "prepared_at": "2026-02-13T08:52:33.433Z",
+  "run_id": "unknown",
+  "job_name": "e2e-tests",
+  "timestamp": "2026-02-13T08:52:33.430Z",
+  "branch": "",
+  "commit": "",
+  "status": "failed",
+  "logs": {
+    "playwright_log_path": "artifacts\\e2e\\logs\\playwright.log",
+    "backend_log_path": "artifacts\\backend-logs\\django\\logs\\system\\ci.log",
+    "playwright_log_bytes": 0,
+    "backend_log_bytes": 0,
+    "extracted_spec_paths": []
+  },
+  "developer_agent": {
+    "source": "none",
+    "cloud_agent_url": "https://praxi-app.vercel.app/api/ci/logs",
+    "response": null,
+    "error": "missing_agent_token"
+  },
+  "analysis": {
+    "classification": null,
+    "self_heal_plan": null,
+    "fix_agent_instructions": null
+  }
+}

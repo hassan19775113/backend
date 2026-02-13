@@ -614,6 +614,8 @@ export default async function handler(req: JsonRequest, res: JsonResponse) {
       status: 'processed',
       run_id: runId,
       classification,
+      self_heal_plan: selfHealPlan,
+      fix_agent_instructions: fixInstructions,
       triggers,
     });
   } catch {

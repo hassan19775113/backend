@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "decided_at": "2026-02-13T08:52:33.526Z",
+  "run_id": "unknown",
+  "job_name": "e2e-tests",
+  "branch": "",
+  "commit": "",
+  "error_type": "unknown",
+  "allowed": false,
+  "transient_likelihood": "low",
+  "reason": "Not eligible for self-heal (likely structural or requires code change).",
+  "inputs": {
+    "has_developer_agent_classification": false,
+    "has_developer_agent_self_heal_plan": false
+  },
+  "actions": [],
+  "rerun": null,
+  "recommendations_for_fix_agent": [
+    "Use Fix-Agent for code changes; self-heal skipped by policy."
+  ]
+}

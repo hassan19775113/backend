@@ -192,7 +192,16 @@ export default async function handler(req: JsonRequest, res: JsonResponse) {
       });
     }
 
-    return sendJson(res, 200, { status: 'received' });
+    let upstreamJson: unknown = null;
+    try {
+      upstreamJson = text ? JSON.parse(text) : null;
+    } catch {
+      upstreamJson = null;
+    }
+
+    // NOTE: Returning upstream details enables downstream CI (self-heal) to consume
+    // classification + plans without needing access to Developer-Agent storage.
+    return sendJson(res, 200, { status: 'received', upstream: upstreamJson });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return sendJson(res, 502, { error: 'Forwarding failed', message });

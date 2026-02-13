@@ -29,6 +29,13 @@ on:
         type: string
         default: tests/fixtures/storageState.json
 
+      download_extra_artifact_name:
+        required: false
+        type: string
+      download_extra_artifact_path:
+        required: false
+        type: string
+
       logs_artifact_name:
         required: false
         type: string
@@ -78,6 +85,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download extra artifact
+        # Integration point: optional context injection for self-heal runners.
+        if: ${{ inputs.download_extra_artifact_name && inputs.download_extra_artifact_path }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.download_extra_artifact_name }}
+          path: ${{ inputs.download_extra_artifact_path }}
 
       - name: Init logs
         shell: bash
