@@ -413,7 +413,7 @@ Guardrails:
 - Diff size caps.
 - Always keep artifacts as primary evidence.
 
-### Stage 2 — Conditional autonomy (auto-PR + gated auto-merge)
+### Stage 2 - Conditional autonomy (auto-PR + gated auto-merge) ✅ IMPLEMENTED
 
 Workflow changes:
 - Add an explicit PR creation job that:
@@ -434,6 +434,37 @@ Guardrails:
 - Require CODEOWNERS approval for non-test files.
 - Enforce “green after fix” requirement (rerun CI on the PR).
 - Rate-limit PR creation to avoid spam.
+
+
+**Stage 2 Implementation Status:**
+
+✅ **Completed:**
+- Risk assessment algorithm in `tools/fix-agent/apply-and-validate.mjs`
+  - Scoring factors: error type, file scope, diff size, validation results
+  - Risk levels: low, medium, high, critical
+  - Auto-merge eligibility determination
+- CODEOWNERS file with approval gates (`/.github/CODEOWNERS`)
+- PR creation job in workflow (`create-fix-pr`)
+- Risk-based PR labeling
+- Manual review bypass for safe patches
+
+⏳ **Remaining Work:**
+- Actual auto-merge automation (requires GitHub App or enhanced permissions)
+- Rate limiting on PR creation (track PR creation frequency)
+- CI rerun validation on created PRs
+- Deterministic reproduction checks
+
+**Risk Assessment Details:**
+- Low risk (score ≤ 2): Test-only selector fixes, small diffs
+- Medium risk (score 3-5): Test-only with larger changes or timing adjustments
+- High risk (score 6-10): Backend changes, larger diffs
+- Critical risk (score > 10): Infrastructure changes, missing analysis, oversized diffs
+
+**Auto-merge Eligibility Criteria:**
+- Risk score ≤ 2 (low risk)
+- Changes only in `tests/` directory
+- Diff ≤ 3 files and ≤ 100 lines
+- Validation passed or not attempted (for selector fixes)
 
 ### Stage 3 — Full autonomy (optional; periodic audit)
 
