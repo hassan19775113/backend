@@ -4,7 +4,7 @@ from pathlib import Path
 
 # Phase 7: folder reorg
 # Keep import paths stable (e.g. `praxi_backend.core`) while allowing the app
-# packages to live under: <BASE_DIR>/apps/praxi_backend/<app>
+# packages to live under: <BASE_DIR>/apps/praxi_apps/<app>
 try:
     _apps_pkg = Path(__file__).resolve().parent.parent / "apps" / "praxi_backend"
     if _apps_pkg.exists():
