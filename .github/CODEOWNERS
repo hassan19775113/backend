@@ -1,0 +1,30 @@
+# CODEOWNERS - Stage 2 Conditional Autonomy
+# Defines approval requirements for automated agent PRs
+
+# Default owner for all files
+* @hassan19775113
+
+# Test files - lower approval threshold (can be auto-merged with validation)
+/tests/ @hassan19775113
+
+# Frontend test pages and selectors - low risk
+/tests/pages/ @hassan19775113
+/tests/e2e/ @hassan19775113
+
+# Playwright config - requires review
+playwright.config.ts @hassan19775113
+
+# Backend code - requires explicit approval
+/django/ @hassan19775113
+/praxi_backend/ @hassan19775113
+
+# Infrastructure and CI - critical, requires approval
+/.github/workflows/ @hassan19775113
+/infrastructure/ @hassan19775113
+
+# Security-sensitive files - always requires manual review
+*.env @hassan19775113
+.env.* @hassan19775113
+/requirements.txt @hassan19775113
+/package.json @hassan19775113
+/package-lock.json @hassan19775113

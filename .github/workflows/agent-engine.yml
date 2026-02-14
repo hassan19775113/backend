@@ -697,6 +697,142 @@ jobs:
         fix-agent/metadata-${{ github.run_id }}.json
       logs_artifact_name: backend-logs-fix-agent
 
+  create-fix-pr:
+    name: Create Fix PR (Stage 2)
+    needs:
+      - fix-agent-runner
+    if: ${{ always() && needs.fix-agent-runner.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Download fix-agent output
+        uses: actions/download-artifact@v4
+        with:
+          name: fix-agent-output
+          path: fix-agent
+
+      - name: Extract metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          # Find metadata file
+          METADATA_FILE=$(find fix-agent -name "metadata-*.json" | head -n 1)
+          
+          if [ -z "$METADATA_FILE" ]; then
+            echo "Metadata file not found"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "metadata_file=$METADATA_FILE" >> $GITHUB_OUTPUT
+          
+          # Extract key values
+          RISK_LEVEL=$(jq -r '.risk_assessment.level // "unknown"' "$METADATA_FILE")
+          AUTO_MERGE=$(jq -r '.risk_assessment.auto_merge_eligible // false' "$METADATA_FILE")
+          NEEDS_REVIEW=$(jq -r '.needs_manual_review // true' "$METADATA_FILE")
+          
+          echo "risk_level=$RISK_LEVEL" >> $GITHUB_OUTPUT
+          echo "auto_merge_eligible=$AUTO_MERGE" >> $GITHUB_OUTPUT
+          echo "needs_manual_review=$NEEDS_REVIEW" >> $GITHUB_OUTPUT
+          
+          # Skip PR if needs manual review
+          if [ "$NEEDS_REVIEW" = "true" ]; then
+            echo "Manual review required, skipping PR creation"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Create and push fix branch
+        if: ${{ steps.metadata.outputs.skip != 'true' }}
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Find patch file
+          PATCH_FILE=$(find fix-agent -name "patch-*.diff" | head -n 1)
+          
+          if [ -z "$PATCH_FILE" ]; then
+            echo "Patch file not found"
+            exit 1
+          fi
+          
+          # Check if patch is empty
+          if [ ! -s "$PATCH_FILE" ]; then
+            echo "Patch file is empty, nothing to apply"
+            exit 0
+          fi
+          
+          # Create branch name
+          ERROR_TYPE=$(jq -r '.error_type // "unknown"' "${{ steps.metadata.outputs.metadata_file }}")
+          BRANCH_NAME="fix-agent/run-${RUN_ID}-${ERROR_TYPE}"
+          
+          # Create and checkout branch
+          git checkout -b "$BRANCH_NAME"
+          
+          # Apply patch
+          git apply "$PATCH_FILE"
+          
+          # Stage and commit
+          git add -A
+          git commit -m "fix(${ERROR_TYPE}): automated patch for CI run ${RUN_ID}"
+          
+          # Push branch
+          git push origin "$BRANCH_NAME"
+          
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: ${{ steps.metadata.outputs.skip != 'true' && env.branch_name != '' }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.branch_name }}
+          base: ${{ github.ref_name }}
+          title: "fix: automated CI stabilization for run ${{ github.run_id }}"
+          body: |
+            Automated Fix-Agent patch for run_id=${{ github.run_id }}.
+            
+            **Stage 2 - Conditional Autonomy**
+            
+            - Risk Level: `${{ steps.metadata.outputs.risk_level }}`
+            - Auto-merge Eligible: `${{ steps.metadata.outputs.auto_merge_eligible }}`
+            - Guardrails: scoped changes only; capped file/line changes
+            - Validation: minimal subset when possible
+            
+            This PR was automatically created by the Fix-Agent based on CI failure analysis.
+            Please review carefully before merging.
+          labels: |
+            automated-fix
+            ${{ steps.metadata.outputs.risk_level }}-risk
+          draft: false
+
   public-dashboard-access:
     name: Public Dashboard Access (cloudflared)
     needs:

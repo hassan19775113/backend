@@ -168,6 +168,130 @@ async function computeDiffStats() {
   };
 }
 
+/**
+ * Compute risk assessment for the patch based on:
+ * - Error type
+ * - Changed file paths (tests vs backend vs infrastructure)
+ * - Diff size
+ * - Validation results
+ * 
+ * Risk levels: low, medium, high, critical
+ * Auto-merge eligible only for low-risk changes
+ */
+function computeRiskAssessment(metadata, changedFiles, stats, validationOk) {
+  const assessment = {
+    level: 'unknown',
+    score: 0,
+    factors: [],
+    auto_merge_eligible: false,
+  };
+
+  // Base risk by error type
+  const errorType = metadata.error_type;
+  if (errorType === 'frontend-selector') {
+    assessment.score += 1;
+    assessment.factors.push('error_type:frontend-selector(+1)');
+  } else if (errorType === 'frontend-timing') {
+    assessment.score += 2;
+    assessment.factors.push('error_type:frontend-timing(+2)');
+  } else {
+    assessment.score += 5;
+    assessment.factors.push(`error_type:${errorType}(+5)`);
+  }
+
+  // Assess changed paths
+  let hasBackendChanges = false;
+  let hasTestChanges = false;
+  let hasInfraChanges = false;
+  let hasConfigChanges = false;
+
+  for (const file of changedFiles) {
+    const n = normalizePath(file);
+    
+    if (n.startsWith('tests/')) {
+      hasTestChanges = true;
+    } else if (n.startsWith('django/') || n.startsWith('praxi_backend/')) {
+      hasBackendChanges = true;
+    } else if (n.startsWith('.github/')) {
+      hasInfraChanges = true;
+    } else if (n.includes('config') || n.includes('.json') || n.includes('.yml')) {
+      hasConfigChanges = true;
+    }
+  }
+
+  if (hasTestChanges && !hasBackendChanges && !hasInfraChanges && !hasConfigChanges) {
+    assessment.score += 0;
+    assessment.factors.push('scope:test-only(+0)');
+  } else if (hasBackendChanges && !hasInfraChanges) {
+    assessment.score += 3;
+    assessment.factors.push('scope:backend(+3)');
+  } else if (hasInfraChanges || hasConfigChanges) {
+    assessment.score += 10;
+    assessment.factors.push('scope:infrastructure(+10)');
+  }
+
+  // Assess diff size
+  if (stats.files_changed === 0) {
+    assessment.score += 0;
+    assessment.factors.push('size:empty(+0)');
+  } else if (stats.files_changed <= 2 && stats.lines_total <= 50) {
+    assessment.score += 1;
+    assessment.factors.push('size:small(+1)');
+  } else if (stats.files_changed <= 4 && stats.lines_total <= 150) {
+    assessment.score += 2;
+    assessment.factors.push('size:medium(+2)');
+  } else {
+    assessment.score += 5;
+    assessment.factors.push('size:large(+5)');
+  }
+
+  // Validation impact
+  if (validationOk === true) {
+    assessment.score -= 2;
+    assessment.factors.push('validation:passed(-2)');
+  } else if (validationOk === false) {
+    assessment.score += 3;
+    assessment.factors.push('validation:failed(+3)');
+  }
+
+  // Determine risk level from score
+  if (assessment.score <= 2) {
+    assessment.level = 'low';
+  } else if (assessment.score <= 5) {
+    assessment.level = 'medium';
+  } else if (assessment.score <= 10) {
+    assessment.level = 'high';
+  } else {
+    assessment.level = 'critical';
+  }
+
+  // Auto-merge eligibility:
+  // - Low risk (score <= 2)
+  // - Test-only changes
+  // - Small diff
+  // - Validation passed OR not attempted (for selector fixes)
+  const isLowRisk = assessment.level === 'low';
+  const isTestOnly = hasTestChanges && !hasBackendChanges && !hasInfraChanges && !hasConfigChanges;
+  const isSmallDiff = stats.files_changed <= 3 && stats.lines_total <= 100;
+  const validationAcceptable = validationOk === true || validationOk === null;
+
+  assessment.auto_merge_eligible = isLowRisk && isTestOnly && isSmallDiff && validationAcceptable;
+
+  if (assessment.auto_merge_eligible) {
+    assessment.factors.push('auto_merge:eligible');
+  } else {
+    const reasons = [];
+    if (!isLowRisk) reasons.push('!low_risk');
+    if (!isTestOnly) reasons.push('!test_only');
+    if (!isSmallDiff) reasons.push('!small_diff');
+    if (!validationAcceptable) reasons.push('!validation_ok');
+    assessment.factors.push(`auto_merge:blocked(${reasons.join(',')})`);
+  }
+
+  return assessment;
+}
+
+
 async function main() {
   const args = process.argv.slice(2);
   const inputPath = argValue(args, '--input', path.join('fix-agent', 'input.json'));
@@ -224,6 +348,12 @@ async function main() {
     },
     needs_manual_review: false,
     errors: [],
+    risk_assessment: {
+      level: 'unknown',
+      score: 0,
+      factors: [],
+      auto_merge_eligible: false,
+    },
   };
 
   // Guardrail: if we have no structured analysis, avoid blind edits.
@@ -231,6 +361,12 @@ async function main() {
     metadata.allowed = false;
     metadata.needs_manual_review = true;
     metadata.validation.notes = 'Missing classification/instructions; patch intentionally empty.';
+    metadata.risk_assessment = {
+      level: 'critical',
+      score: 999,
+      factors: ['no_analysis'],
+      auto_merge_eligible: false,
+    };
 
     await writeText(patchPath, '');
     await writeJson(metadataPath, metadata);
@@ -308,6 +444,12 @@ async function main() {
     }
 
     await writeText(patchPath, '');
+    metadata.risk_assessment = {
+      level: 'critical',
+      score: 999,
+      factors: ['diff_too_large'],
+      auto_merge_eligible: false,
+    };
     await writeJson(metadataPath, metadata);
     console.log(`Wrote ${patchPath}`);
     console.log(`Wrote ${metadataPath}`);
@@ -340,10 +482,19 @@ async function main() {
   const diff = await runCmd('git', ['diff']);
   await writeText(patchPath, diff.stdout || '');
 
+  // Compute risk assessment for Stage 2 auto-merge decisions
+  metadata.risk_assessment = computeRiskAssessment(
+    metadata,
+    touched,
+    stats,
+    metadata.validation.ok
+  );
+
   await writeJson(metadataPath, metadata);
 
   console.log(`Wrote ${patchPath}`);
   console.log(`Wrote ${metadataPath}`);
+  console.log(`Risk Assessment: ${metadata.risk_assessment.level} (score: ${metadata.risk_assessment.score}, auto-merge: ${metadata.risk_assessment.auto_merge_eligible})`);
 }
 
 main().catch(async (err) => {
