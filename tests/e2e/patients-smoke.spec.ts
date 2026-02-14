@@ -1,7 +1,9 @@
 import { test, expect } from '../fixtures/testdata.setup';
 import { PatientsPage } from '../pages/patients-page';
 
-test('patients list loads and shows at least one patient', async ({ page, baseURL }) => {
+test('patients list loads and shows at least one patient', async ({ page, baseURL, testData }) => {
+  await expect(testData.patientId, 'testData fixture should create a patient').toBeTruthy();
+
   const patients = new PatientsPage(page);
 
   await page.goto(`${baseURL}/praxi_backend/patients/`);
