@@ -39,7 +39,7 @@ jobs:
     needs: auth-validator
     uses: ./.github/workflows/backend-setup.yml
     with:
-      generate_storage_state: true
+      generate_storage_state: false
       agent_command: bash -c "export SEED_COMMAND=\"python django/manage.py seed\" && node scripts/agents/seed-orchestrator.js" > agent-outputs/seed-orchestrator.json
       upload_artifact_name: seed-orchestrator-output
       upload_artifact_path: agent-outputs/seed-orchestrator.json
@@ -87,7 +87,7 @@ jobs:
     needs: db-doctor
     uses: ./.github/workflows/backend-setup.yml
     with:
-      generate_storage_state: true
+      generate_storage_state: false
       agent_command: |
         mkdir -p logs
         npx playwright test tests/e2e/appointments-availability-doctors.spec.ts --project=chromium 2>&1 | tee logs/availability-ui-smoke.log
@@ -102,7 +102,7 @@ jobs:
     needs: availability-ui-smoke
     uses: ./.github/workflows/backend-setup.yml
     with:
-      generate_storage_state: true
+      generate_storage_state: false
       agent_command: |
         mkdir -p logs
         npx playwright test 2>&1 | tee logs/playwright.log

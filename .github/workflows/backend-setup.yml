@@ -79,7 +79,9 @@ env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
   AGENT_OUTPUT_DIR: agent-outputs
-  STORAGE_STATE_PATH: playwright/.auth/storageState.json
+  # Single source of truth for Playwright auth state path.
+  # Default matches playwright.config.ts (tests/fixtures/storageState.json).
+  STORAGE_STATE_PATH: ${{ inputs.storage_state_path }}
 
 jobs:
   backend-job:
@@ -118,7 +120,7 @@ jobs:
         run: |
           set -eo pipefail
           mkdir -p django/logs/django django/logs/agent django/logs/system
-          mkdir -p playwright/.auth
+          mkdir -p "$(dirname \"${STORAGE_STATE_PATH}\")"
           : > django/logs/django/server.log
           : > django/logs/django/server.pid
           : > django/logs/agent/agent.log
@@ -368,10 +370,6 @@ jobs:
             exit 1
           fi
 
-          # Back-compat for Playwright config defaults
-          mkdir -p tests/fixtures
-          cp "${STORAGE_PATH}" tests/fixtures/storageState.json
-
       # Wait for HTTP readiness; dump server.log on failure
       - name: Unified health checks (DB, Django, HTTP)
         continue-on-error: ${{ inputs.best_effort }}
@@ -501,7 +499,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: storage-state
-          path: playwright/.auth/storageState.json
+          path: ${{ env.STORAGE_STATE_PATH }}
           overwrite: true
           retention-days: 7
           if-no-files-found: warn

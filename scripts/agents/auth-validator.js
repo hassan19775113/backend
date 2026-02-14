@@ -76,6 +76,12 @@ const resources = {
   api: null,
 };
 
+const finalizeState = {
+  done: false,
+  inProgress: false,
+  payload: null,
+};
+
 async function safeClosePlaywright() {
   const closers = [
     async () => {
@@ -105,6 +111,45 @@ async function safeClosePlaywright() {
   }
 }
 
+async function finalizeOnce(payload) {
+  // Ensure we only ever write/log/exit once.
+  if (finalizeState.done || finalizeState.inProgress) return;
+  finalizeState.inProgress = true;
+  finalizeState.payload = payload;
+
+  try {
+    try {
+      if (payload?.status === 'error') {
+        console.error(`[auth-validator] ${String(payload?.reason || 'error')}`);
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      safeWriteJson(OUTPUT_PATH, payload);
+    } catch {
+      // ignore
+    }
+
+    try {
+      console.log(safeJsonStringify(payload));
+    } catch {
+      // ignore
+    }
+  } finally {
+    try {
+      await safeClosePlaywright();
+    } catch {
+      // ignore
+    }
+
+    finalizeState.done = true;
+    finalizeState.inProgress = false;
+    process.exit(0);
+  }
+}
+
 async function fail(reason, details) {
   const payload = {
     status: 'error',
@@ -113,26 +158,7 @@ async function fail(reason, details) {
     timestamp: nowIso(),
   };
 
-  try {
-    console.error(`[auth-validator] ${payload.reason}`);
-  } catch {
-    // ignore
-  }
-
-  try {
-    safeWriteJson(OUTPUT_PATH, payload);
-  } catch {
-    // ignore
-  }
-
-  try {
-    console.log(safeJsonStringify(payload));
-  } catch {
-    // ignore
-  }
-
-  await safeClosePlaywright();
-  process.exit(0);
+  await finalizeOnce(payload);
 }
 
 function storageExists(storagePath) {
@@ -182,10 +208,32 @@ async function checkHealth(storageStatePath) {
     context = await browser.newContext({ baseURL: BASE_URL, storageState: storageStatePath });
     page = await context.newPage();
 
+    const result = await validateAuthOnPage(page);
+    return result.ok;
+  } catch {
+    return false;
+  } finally {
+    try {
+      if (page) await page.close().catch(() => null);
+      if (context) await context.close().catch(() => null);
+      if (browser) await browser.close().catch(() => null);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+async function validateAuthOnPage(page) {
+  try {
     const resp = await page.goto(PROTECTED_PATH, { waitUntil: 'domcontentloaded' });
+    if (!resp) return { ok: false, reason: 'no_response' };
+
     const finalUrl = page.url();
     const redirectedToLogin = finalUrl.includes('/admin/login');
     const hasLoginForm = (await page.locator('#id_username, input[name="username"]').count()) > 0;
+    if (redirectedToLogin || hasLoginForm) {
+      return { ok: false, reason: 'redirected_to_login', details: { finalUrl, redirectedToLogin, hasLoginForm } };
+    }
 
     const tokenCheck = await page.evaluate(async () => {
       const access = localStorage.getItem('access_token');
@@ -198,20 +246,10 @@ async function checkHealth(storageStatePath) {
       return { ok: r.ok, status: r.status };
     });
 
-    if (!resp) return false;
-    if (redirectedToLogin || hasLoginForm) return false;
-    if (!tokenCheck.ok) return false;
-    return true;
-  } catch {
-    return false;
-  } finally {
-    try {
-      if (page) await page.close().catch(() => null);
-      if (context) await context.close().catch(() => null);
-      if (browser) await browser.close().catch(() => null);
-    } catch {
-      // ignore
-    }
+    if (!tokenCheck?.ok) return { ok: false, reason: 'token_check_failed', details: tokenCheck };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: 'exception', details: toErrorDetails(e) };
   }
 }
 
@@ -337,10 +375,7 @@ async function success() {
     timestamp: nowIso(),
   };
 
-  safeWriteJson(OUTPUT_PATH, payload);
-  console.log(safeJsonStringify(payload));
-  await safeClosePlaywright();
-  process.exit(0);
+  await finalizeOnce(payload);
 }
 
 async function run() {
@@ -373,7 +408,20 @@ async function run() {
 
     await createBrowserStorageStateWithRetry(tokens);
 
-    const healthy = await checkHealth(STORAGE_PATH);
+    // After a successful login we already have an authenticated page/context.
+    // Validate in-session to avoid re-launching a second Chromium instance.
+    let healthy = false;
+    if (resources.page) {
+      const result = await validateAuthOnPage(resources.page);
+      healthy = result.ok;
+      if (!healthy) {
+        // As a safety net: retry health check from storage state (fresh browser).
+        healthy = await checkHealth(STORAGE_PATH);
+      }
+    } else {
+      healthy = await checkHealth(STORAGE_PATH);
+    }
+
     if (!healthy) {
       await fail('health_failed_after_login', { storageState: STORAGE_PATH });
       return;
