@@ -15,6 +15,7 @@ test('edit existing appointment time', async ({ page, baseURL, testData }) => {
   }
 
   await calendar.goto(baseURL!);
+  if (process.env.FAULT_SCENARIO === 'timeout') await page.waitForTimeout(60_000);
   if (page.url().includes('/login')) {
     test.skip(true, 'Not authenticated in appointment modal test environment');
     return;

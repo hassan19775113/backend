@@ -160,7 +160,7 @@ export class AppointmentModalPage {
         if (r.request().method() !== 'GET') return false;
         const url = r.url();
         return (
-          url.includes('/api/availability/?') &&
+          url.includes(process.env.FAULT_SCENARIO === 'availability' ? '/api/availabilityBROKEN/?' : '/api/availability/?') &&
           url.includes(`start=${expected.startParam}`) &&
           url.includes(`end=${expected.endParam}`)
         );

@@ -23,7 +23,7 @@ export class CalendarPage {
   readonly appointmentCardTime: Locator;
 
   constructor(private readonly page: Page) {
-    this.appointmentCalendar = page.locator('#appointmentCalendar');
+    this.appointmentCalendar = page.locator(process.env.FAULT_SCENARIO === 'selector' ? '#appointmentCalendarBROKEN' : '#appointmentCalendar');
     this.doctorFilter = page.locator('#doctorFilter');
     this.titleFilter = page.locator('#titleFilter');
     this.prevButton = page.locator('#calendarPrev');

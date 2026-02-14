@@ -9,6 +9,11 @@ on:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
+      fault_scenario:
+        description: 'Inject controlled E2E failure (selector|timeout|availability). Empty = normal run.'
+        type: string
+        required: false
+        default: ''
       enable_public_tunnel:
         description: 'If true, start a public cloudflared tunnel on full success (manual runs only)'
         type: boolean
@@ -135,7 +140,7 @@ jobs:
       generate_storage_state: false
       agent_command: |
         mkdir -p logs
-        npx playwright test 2>&1 | tee logs/playwright.log
+        FAULT_SCENARIO='${{ inputs.fault_scenario }}' npx playwright test 2>&1 | tee logs/playwright.log
       upload_artifact_name: test-results
       upload_artifact_path: |
         logs/playwright.log
@@ -204,6 +209,7 @@ jobs:
   flaky-classifier:
     name: Flaky Classifier
     needs: e2e-tests
+    if: ${{ always() }}
     uses: ./.github/workflows/backend-setup.yml
     with:
       generate_storage_state: true
@@ -215,6 +221,7 @@ jobs:
   selector-auditor:
     name: Selector Auditor
     needs: e2e-tests
+    if: ${{ always() }}
     uses: ./.github/workflows/backend-setup.yml
     with:
       generate_storage_state: true
@@ -232,13 +239,7 @@ jobs:
       - flaky-classifier
       - selector-auditor
       - self-heal-supervisor
-    if: >-
-      ${{
-        always() && (
-          github.event_name == 'pull_request'
-          || (github.event_name == 'workflow_dispatch' && needs.self-heal-supervisor.outputs.created_pr_number != '')
-        )
-      }}
+      if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
